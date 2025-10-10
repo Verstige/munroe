@@ -514,7 +514,7 @@ export default function TeamManagement() {
 
       {/* Add Member Modal */}
       {isAddingMember && (
-        <Card className="fixed inset-4 z-50 max-w-md mx-auto max-h-[90vh] overflow-auto border-primary">
+        <Card className="fixed inset-4 z-50 max-w-md mx-auto max-h-[90vh] overflow-auto border-primary scrollbar-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <UserPlus className="w-5 h-5" />
@@ -546,7 +546,7 @@ export default function TeamManagement() {
 
       {/* Edit Member Modal */}
       {editingMember && (
-        <Card className="fixed inset-4 z-50 max-w-md mx-auto max-h-[90vh] overflow-auto border-primary">
+        <Card className="fixed inset-4 z-50 max-w-md mx-auto max-h-[90vh] overflow-auto border-primary scrollbar-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Edit3 className="w-5 h-5" />

@@ -91,7 +91,7 @@ export default function QuickSwitcher({ isOpen, onClose, projects, onSelectProje
           </div>
 
           {/* Results */}
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto scrollbar-none">
             {filteredProjects.length > 0 ? (
               <div className="space-y-1">
                 {filteredProjects.map((project, index) => (

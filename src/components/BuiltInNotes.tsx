@@ -402,7 +402,7 @@ export default function BuiltInNotes({ projectId, currentUser = "Current User" }
 
       {/* Edit Note Modal */}
       {editingNote && (
-        <Card className="fixed inset-4 z-50 max-w-2xl mx-auto max-h-[90vh] overflow-auto border-primary">
+        <Card className="fixed inset-4 z-50 max-w-2xl mx-auto max-h-[90vh] overflow-auto border-primary scrollbar-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Edit3 className="w-5 h-5" />

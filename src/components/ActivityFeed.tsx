@@ -124,7 +124,7 @@ export default function ActivityFeed({
         </div>
         
         {showFilters && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             {activityTypes.map((type) => (
               <Button
@@ -154,7 +154,7 @@ export default function ActivityFeed({
         )}
       </div>
       
-      <ScrollArea style={{ maxHeight }} className="flex-1">
+      <ScrollArea style={{ maxHeight }} className="flex-1 scrollbar-none">
         <div className="p-4 space-y-3">
           {filteredActivities.length === 0 ? (
             <div className="text-center py-8">

@@ -205,7 +205,7 @@ const MentionInput = forwardRef<HTMLTextAreaElement, MentionInputProps>(({
             <div className="text-xs font-medium text-muted-foreground mb-2 px-2">
               Mention team members
             </div>
-            <ScrollArea className="max-h-60">
+            <ScrollArea className="max-h-60 scrollbar-none">
               <div className="space-y-1">
                 {filteredMembers.map((member, index) => (
                   <Button

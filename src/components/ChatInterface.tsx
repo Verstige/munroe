@@ -199,7 +199,7 @@ export default function ChatInterface({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-none">
         {!projectName ? (
           <div className="flex items-center justify-center h-full">
             <EmptyState 

@@ -12,6 +12,8 @@ import WorkspaceTabs, { type WorkspaceTab } from "@/components/WorkspaceTabs";
 import BuiltInNotes from "@/components/BuiltInNotes";
 import ViewableTasks from "@/components/ViewableTasks";
 import TeamManagement from "@/components/TeamManagement";
+import TimeTracker from "@/components/TimeTracker";
+import RenaChatInterface from "@/components/RenaChatInterface";
 import { mockTeamMembers, mockActivityFeed, type TeamMember, type ActivityItem } from "@/lib/collaboration";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search, Target } from "lucide-react";
 
 interface Project {
   id: string;
@@ -606,7 +609,7 @@ export default function Index() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-gradient-subtle">
+      <div className="flex-1 overflow-auto bg-gradient-subtle scrollbar-none">
         <div className="p-4 md:p-8">
           {/* Header */}
           <div className="mb-6 md:mb-8 animate-fade-in">
@@ -616,6 +619,14 @@ export default function Index() {
             <p className="text-base md:text-lg text-muted-foreground">
               Your project ecosystem at a glance
             </p>
+          </div>
+
+          {/* Rena AI Chat Interface */}
+          <div className="mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            <RenaChatInterface 
+              userName="Julylyan"
+              onSendMessage={(message) => console.log("Rena AI Message:", message)}
+            />
           </div>
 
           {/* Workspace Tabs */}
@@ -629,13 +640,13 @@ export default function Index() {
             ) : projects.length > 0 ? (
                 <AdvancedMindmap
                   nodes={dynamicMindmapNodes}
-                  edges={mindmapEdges}
-                  onOpenProject={handleOpenProject}
-                  activeProjectId={activeProject?.id}
+                edges={mindmapEdges}
+                onOpenProject={handleOpenProject}
+                activeProjectId={activeProject?.id}
                   onAddNewProject={handleAddNewProject}
                   onAddNewSubProject={handleAddNewSubProject}
                   onAddNewLeg={handleAddNewLeg}
-                />
+              />
             ) : (
               <EmptyState 
                 type="no-projects" 
@@ -646,71 +657,80 @@ export default function Index() {
             notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser="Current User" />}
             tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser="Current User" />}
             teamContent={<TeamManagement />}
+            timerContent={
+              <TimeTracker 
+                userId="current-user" 
+                projects={projects.map(p => ({
+                  id: p.id,
+                  name: p.name,
+                  subProjects: dynamicMindmapNodes
+                    .find(node => node.projectId === p.id)
+                    ?.subProjects?.map(sp => ({
+                      id: sp.id,
+                      name: sp.name,
+                      legs: sp.legs?.map(leg => ({
+                        id: leg.id,
+                        name: leg.name
+                      }))
+                    }))
+                }))}
+              />
+            }
             taskNotifications={3}
             teamNotifications={1}
+            timerNotifications={0}
           />
 
-          {/* Activity Feed - below the tabs */}
+          {/* Project Overview Panel - above activity feed */}
           <div className="mt-8 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <div className="max-w-4xl mx-auto">
-              <ActivityFeed 
-                activities={activityFeed}
-                teamMembers={teamMembers}
+              {activeProject ? (
+                <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/20 shadow-glass">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
+                    <h2 className="text-xl font-bold text-primary">Project Overview</h2>
+                    <Badge variant="outline" className="ml-auto">
+                      {activeProject.name}
+                    </Badge>
+                </div>
+                  <ProjectContextPanel 
+                    project={activeProject} 
+                    teamMembers={teamMembers.filter(member => member.projects.includes(activeProject.id))}
+                  />
+                </div>
+              ) : (
+                <div className="bg-gradient-to-r from-muted/30 to-muted/20 rounded-2xl p-8 border border-border/50 shadow-glass text-center">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <Target className="w-6 h-6 text-muted-foreground" />
+                    <h2 className="text-xl font-semibold text-muted-foreground">No Project Selected</h2>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    Click on a project in the mindmap to view its details and overview
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                    <span>Select a project to see its progress, team members, and key metrics</span>
+              </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+          {/* Activity Feed - below the project overview */}
+          <div className="mt-8 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+            <div className="max-w-4xl mx-auto">
+            <ActivityFeed 
+              activities={activityFeed}
+              teamMembers={teamMembers}
                 maxHeight="400px"
                 showFilters={true}
-                />
+            />
               </div>
           </div>
 
         </div>
       </div>
 
-      {/* Right Panel */}
-      <div className="hidden lg:flex w-[420px] h-screen p-6 animate-slide-in gap-4">
-        {/* Project Context Panel */}
-        {activeProject && (
-          <div className="w-[200px] overflow-y-auto">
-            <ProjectContextPanel 
-              project={activeProject} 
-              teamMembers={teamMembers.filter(member => member.projects.includes(activeProject.id))}
-            />
-          </div>
-        )}
-        
-        
-        {/* Chat Panel */}
-        <div className="flex-1">
-          <ChatInterface 
-            projectName={activeProject?.name} 
-            onCloseProject={handleCloseProject}
-            activeProject={activeProject ? {
-              id: activeProject.id,
-              name: activeProject.name,
-              description: activeProject.description,
-              status: activeProject.status,
-              priority: activeProject.priority,
-              tasksCompleted: 12,
-              tasksTotal: 18,
-              teamMembers: 3,
-              daysUntilDeadline: 15,
-              weeklyProgress: 75
-            } : null}
-            allProjects={projects.map(p => ({
-              id: p.id,
-              name: p.name,
-              description: p.description,
-              status: p.status,
-              priority: p.priority,
-              tasksCompleted: Math.floor(Math.random() * 20),
-              tasksTotal: Math.floor(Math.random() * 30) + 10,
-              teamMembers: Math.floor(Math.random() * 5) + 1,
-              daysUntilDeadline: Math.floor(Math.random() * 30) + 5,
-              weeklyProgress: Math.floor(Math.random() * 100)
-            }))}
-            teamMembers={teamMembers}
-          />
-        </div>
-      </div>
 
       {/* New Project Dialog */}
       <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
