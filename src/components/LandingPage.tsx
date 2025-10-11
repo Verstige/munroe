@@ -241,10 +241,11 @@ const LandingPage = () => {
               <Button 
                 size="lg"
                 variant="outline"
+                onClick={() => window.location.href = '/demo'}
                 className="border-blue-400 text-blue-300 hover:bg-blue-400/10 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg w-full sm:w-auto"
               >
                 <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Watch Demo
+                Check out Demo
               </Button>
             </div>
           </div>

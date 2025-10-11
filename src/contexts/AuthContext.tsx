@@ -95,6 +95,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         setProfile(data)
+        
+        // Check if user has full_name but profile doesn't (for existing users)
+        if (!data.full_name && user?.user_metadata?.full_name) {
+          console.log('Updating profile with full name from user metadata:', user.user_metadata.full_name)
+          await updateProfile({ full_name: user.user_metadata.full_name })
+        }
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error)
@@ -103,14 +109,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const createProfile = async (userId: string, email: string) => {
+  const createProfile = async (userId: string, email: string, fullName?: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
         .insert({
           id: userId,
           email,
-          full_name: null,
+          full_name: fullName || null,
           avatar_url: null,
         })
         .select()
@@ -139,8 +145,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
 
       if (data.user && !error) {
-        // Create profile
-        await createProfile(data.user.id, email)
+        // Create profile with the full name
+        await createProfile(data.user.id, email, fullName)
       }
 
       return { error }
