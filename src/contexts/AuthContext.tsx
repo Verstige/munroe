@@ -9,6 +9,7 @@ interface AuthContextType {
   profile: Profile | null
   session: Session | null
   loading: boolean
+  isDemoUser: boolean
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: AuthError | null }>
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
   signOut: () => Promise<{ error: AuthError | null }>
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isDemoUser, setIsDemoUser] = useState(false)
 
   useEffect(() => {
     // Get initial session
@@ -30,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null)
       if (session?.user) {
         fetchProfile(session.user.id)
+        checkIfDemoUser(session.user.email)
       } else {
         setLoading(false)
       }
@@ -44,14 +47,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (session?.user) {
         await fetchProfile(session.user.id)
+        checkIfDemoUser(session.user.email)
       } else {
         setProfile(null)
+        setIsDemoUser(false)
         setLoading(false)
       }
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // Check if user is a demo user
+  const checkIfDemoUser = (email: string | undefined) => {
+    if (!email) {
+      setIsDemoUser(false)
+      return
+    }
+    
+    // Demo accounts that should see mock data
+    const demoEmails = [
+      'demo@rena.ai',
+      'demo@nexus.ai',
+      'demo@example.com',
+      'sarah@company.com',
+      'marcus@company.com',
+      'elena@company.com',
+      'david@company.com'
+    ]
+    
+    setIsDemoUser(demoEmails.includes(email.toLowerCase()))
+  }
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -173,6 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     session,
     loading,
+    isDemoUser,
     signUp,
     signIn,
     signOut,

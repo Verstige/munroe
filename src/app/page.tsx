@@ -13,6 +13,9 @@ import BuiltInNotes from "@/components/BuiltInNotes";
 import ViewableTasks from "@/components/ViewableTasks";
 import TeamManagement from "@/components/TeamManagement";
 import { mockTeamMembers, mockActivityFeed, mockInvitations, type TeamMember, type ActivityItem, type TeamInvitation } from "@/lib/collaboration";
+import { useAuth } from "@/contexts/AuthContext";
+import NewUserWelcome from "@/components/NewUserWelcome";
+import { getUserDisplayName, getUserFirstName } from "@/lib/user-utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,15 +68,16 @@ const mindmapEdges = [
 ];
 
 export default function Index() {
+  const { isDemoUser, profile } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
   const [isQuickSwitcherOpen, setIsQuickSwitcherOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [teamMembers] = useState<TeamMember[]>(mockTeamMembers);
-  const [activityFeed] = useState<ActivityItem[]>(mockActivityFeed);
-  const [invitations] = useState<TeamInvitation[]>(mockInvitations);
+  const [teamMembers] = useState<TeamMember[]>(isDemoUser ? mockTeamMembers : []);
+  const [activityFeed] = useState<ActivityItem[]>(isDemoUser ? mockActivityFeed : []);
+  const [invitations] = useState<TeamInvitation[]>(isDemoUser ? mockInvitations : []);
   const [currentTab, setCurrentTab] = useState<WorkspaceTab>("mindmap");
   const [currentUserRole] = useState<"owner" | "admin" | "member" | "viewer">("admin"); // Mock current user role
 
@@ -85,13 +89,20 @@ export default function Index() {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      setProjects(initialProjects);
-      setFilteredProjects(initialProjects);
+      // Only load mock data for demo users
+      if (isDemoUser) {
+        setProjects(initialProjects);
+        setFilteredProjects(initialProjects);
+      } else {
+        // New users start with empty workspace
+        setProjects([]);
+        setFilteredProjects([]);
+      }
       setIsLoading(false);
     };
 
     loadInitialData();
-  }, []);
+  }, [isDemoUser]);
 
   // Load active project from localStorage on mount
   useEffect(() => {
@@ -226,10 +237,18 @@ export default function Index() {
       {/* Main Content */}
       <div className="flex-1 overflow-auto bg-gradient-subtle">
         <div className="p-4 md:p-8">
-          {/* Header */}
+          {/* Show welcome screen for new users */}
+          {!isDemoUser && projects.length === 0 && !isLoading ? (
+            <NewUserWelcome 
+              onCreateProject={() => setIsNewProjectOpen(true)}
+              onViewDemo={() => window.location.href = '/demo'}
+            />
+          ) : (
+            <>
+              {/* Header */}
           <div className="mb-6 md:mb-8 animate-fade-in text-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
-              Rena Workspace
+              {isDemoUser ? `Welcome back, ${getUserFirstName(profile)}` : "Your Workspace"}
             </h1>
             <p className="text-base md:text-lg text-muted-foreground mb-4">
               Your project ecosystem at a glance
@@ -258,8 +277,8 @@ export default function Index() {
                   />
                 )
               }
-              notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser="Current User" />}
-              tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser="Current User" />}
+              notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
+              tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
               teamContent={<TeamManagement />}
               taskNotifications={3}
               teamNotifications={1}
@@ -313,6 +332,8 @@ export default function Index() {
                 </div>
               )}
             </div>
+          )}
+            </>
           )}
         </div>
       </div>

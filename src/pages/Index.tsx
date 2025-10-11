@@ -16,6 +16,9 @@ import TimeTracker from "@/components/TimeTracker";
 import NovaChatInterface from "@/components/NovaChatInterface";
 import ResourcesSection from "@/components/ResourcesSection";
 import { mockTeamMembers, mockActivityFeed, type TeamMember, type ActivityItem } from "@/lib/collaboration";
+import { useAuth } from "@/contexts/AuthContext";
+import NewUserWelcome from "@/components/NewUserWelcome";
+import { getUserDisplayName, getUserFirstName } from "@/lib/user-utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Target } from "lucide-react";
+import { Search, Target, Menu, X } from "lucide-react";
 
 interface Project {
   id: string;
@@ -359,17 +362,19 @@ const mindmapEdges = [
 ];
 
 export default function Index() {
+  const { isDemoUser, profile } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
   const [isQuickSwitcherOpen, setIsQuickSwitcherOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [teamMembers] = useState<TeamMember[]>(mockTeamMembers);
-  const [activityFeed] = useState<ActivityItem[]>(mockActivityFeed);
+  const [teamMembers] = useState<TeamMember[]>(isDemoUser ? mockTeamMembers : []);
+  const [activityFeed] = useState<ActivityItem[]>(isDemoUser ? mockActivityFeed : []);
   const [currentTab, setCurrentTab] = useState<WorkspaceTab>("mindmap");
   const [currentUserRole] = useState<"owner" | "admin" | "member" | "viewer">("admin");
-  const [dynamicMindmapNodes, setDynamicMindmapNodes] = useState(mindmapNodes);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [dynamicMindmapNodes, setDynamicMindmapNodes] = useState(isDemoUser ? mindmapNodes : []);
 
   // Handle new project creation
   const handleAddNewProject = (projectData: { title: string; description: string }) => {
@@ -477,13 +482,20 @@ export default function Index() {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      setProjects(initialProjects);
-      setFilteredProjects(initialProjects);
+      // Only load mock data for demo users
+      if (isDemoUser) {
+        setProjects(initialProjects);
+        setFilteredProjects(initialProjects);
+      } else {
+        // New users start with empty workspace
+        setProjects([]);
+        setFilteredProjects([]);
+      }
       setIsLoading(false);
     };
 
     loadInitialData();
-  }, []);
+  }, [isDemoUser]);
 
   // Load active project from localStorage on mount
   useEffect(() => {
@@ -601,31 +613,132 @@ export default function Index() {
   return (
     <div className="flex h-screen bg-gradient-subtle overflow-hidden">
       {/* Sidebar */}
-      <Sidebar 
-        onNewProject={() => setIsNewProjectOpen(true)}
-        projects={projects}
-        onSearch={handleSearch}
-        onFilter={handleFilter}
-        isLoading={isLoading}
-      />
+      <div className="hidden lg:block">
+        <Sidebar 
+          onNewProject={() => setIsNewProjectOpen(true)}
+          projects={projects}
+          onSearch={handleSearch}
+          onFilter={handleFilter}
+          isLoading={isLoading}
+        />
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto bg-gradient-subtle scrollbar-none">
-        <div className="p-4 md:p-8">
-          {/* Header */}
-          <div className="mb-6 md:mb-8 animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
-              Welcome back
-            </h1>
-            <p className="text-base md:text-lg text-muted-foreground">
-              Your project ecosystem at a glance
-            </p>
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <Target className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-semibold text-foreground">Nexus AI</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
           </div>
+          
+          {/* Mobile Menu */}
+          {isMobileMenuOpen && (
+            <div className="bg-background/95 backdrop-blur-sm border-t border-border/50 p-4">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Search className="w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search projects..."
+                    className="flex-1"
+                    onChange={(e) => handleSearch(e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentTab("mindmap");
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={currentTab === "mindmap" ? "bg-blue-500/10 border-blue-500/20" : ""}
+                  >
+                    Mindmap
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentTab("notes");
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={currentTab === "notes" ? "bg-blue-500/10 border-blue-500/20" : ""}
+                  >
+                    Notes
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentTab("tasks");
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={currentTab === "tasks" ? "bg-blue-500/10 border-blue-500/20" : ""}
+                  >
+                    Tasks
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setCurrentTab("team");
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={currentTab === "team" ? "bg-blue-500/10 border-blue-500/20" : ""}
+                  >
+                    Team
+                  </Button>
+                </div>
+                <Button
+                  onClick={() => {
+                    setIsNewProjectOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full"
+                >
+                  New Project
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+          {/* Show welcome screen for new users */}
+          {!isDemoUser && projects.length === 0 && !isLoading ? (
+            <NewUserWelcome 
+              onCreateProject={() => setIsNewProjectOpen(true)}
+              onViewDemo={() => window.location.href = '/demo'}
+            />
+          ) : (
+            <>
+              {/* Header */}
+              <div className="mb-4 sm:mb-6 md:mb-8 animate-fade-in">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-foreground">
+                  {isDemoUser ? `Welcome back, ${getUserFirstName(profile)}` : "Your Workspace"}
+                </h1>
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                  {isDemoUser ? "Your project ecosystem at a glance" : "Manage your projects with AI-powered insights"}
+                </p>
+              </div>
 
           {/* Nova AI Chat Interface */}
-          <div className="mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+          <div className="mb-6 sm:mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             <NovaChatInterface 
-              userName="Julylyan"
+              userName={getUserDisplayName(profile)}
               onSendMessage={(message) => console.log("Nova AI Message:", message)}
             />
           </div>
@@ -655,12 +768,12 @@ export default function Index() {
               />
               )
             }
-            notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser="Current User" />}
-            tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser="Current User" />}
+            notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
+            tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
             teamContent={<TeamManagement />}
             timerContent={
               <TimeTracker 
-                userId="current-user" 
+                userId={profile?.id || "current-user"} 
                 projects={projects.map(p => ({
                   id: p.id,
                   name: p.name,
@@ -739,6 +852,8 @@ export default function Index() {
               </div>
           </div>
 
+            </>
+          )}
         </div>
       </div>
 

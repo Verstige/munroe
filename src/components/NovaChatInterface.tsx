@@ -126,8 +126,8 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   return (
     <div className={`w-full max-w-4xl mx-auto ${className}`}>
       {/* Welcome Message */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-medium text-white mb-2">
+      <div className="text-center mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-2xl font-medium text-white mb-2">
           Good to see you, {userName}.
         </h2>
       </div>
@@ -137,7 +137,7 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
         {/* Chat History */}
         <div 
           ref={chatContainerRef}
-          className="h-80 overflow-y-auto p-6 space-y-4 scrollbar-none"
+          className="h-64 sm:h-80 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-none"
         >
           {messages.map((msg) => (
             <div
@@ -163,14 +163,14 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
               
               {/* Message Bubble */}
               <div className={cn(
-                "max-w-[70%] rounded-2xl px-4 py-3",
+                "max-w-[85%] sm:max-w-[70%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3",
                 msg.type === 'user'
                   ? "bg-blue-500 text-white"
                   : "bg-gray-800/80 text-gray-100 border border-gray-700/50"
               )}>
-                <p className="text-sm leading-relaxed">{msg.content}</p>
+                <p className="text-xs sm:text-sm leading-relaxed">{msg.content}</p>
                 <p className={cn(
-                  "text-xs mt-2 opacity-70",
+                  "text-xs mt-1 sm:mt-2 opacity-70",
                   msg.type === 'user' ? "text-blue-100" : "text-gray-400"
                 )}>
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -199,7 +199,7 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
         </div>
 
         {/* Chat Input */}
-        <div className="border-t border-gray-700/50 p-4">
+        <div className="border-t border-gray-700/50 p-3 sm:p-4">
           <form onSubmit={handleSubmit} className="relative">
             <div className="relative bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 rounded-xl overflow-hidden">
               <Input
@@ -207,26 +207,26 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask anything..."
-                className="w-full h-12 pl-12 pr-24 bg-transparent border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none"
+                className="w-full h-10 sm:h-12 pl-10 sm:pl-12 pr-20 sm:pr-24 bg-transparent border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none text-sm sm:text-base"
                 disabled={isTyping}
               />
               
               {/* Left side icons */}
-              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                <Plus className="w-4 h-4 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+              <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2">
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 hover:text-white transition-colors cursor-pointer" />
               </div>
               
               {/* Right side icons */}
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+              <div className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1 sm:gap-2">
                 <Button
                   type="button"
                   onClick={toggleRecording}
                   variant="ghost"
                   size="sm"
-                  className="p-2 hover:bg-gray-700/50 transition-colors"
+                  className="p-1.5 sm:p-2 hover:bg-gray-700/50 transition-colors"
                   disabled={isTyping}
                 >
-                  <Mic className="w-4 h-4 text-gray-400 hover:text-white transition-colors" />
+                  <Mic className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 hover:text-white transition-colors" />
                 </Button>
                 
                 <div className={`relative ${isRecording ? 'animate-pulse' : ''}`}>
@@ -234,21 +234,21 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
                     type="submit"
                     variant="ghost"
                     size="sm"
-                    className={`p-2 rounded-lg transition-all duration-200 ${
+                    className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                       isRecording 
                         ? 'bg-green-500/20 hover:bg-green-500/30' 
                         : 'bg-blue-500/20 hover:bg-blue-500/30'
                     }`}
                     disabled={!message.trim() || isTyping}
                   >
-                    <Volume2 className={`w-4 h-4 transition-colors ${
+                    <Volume2 className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
                       isRecording ? 'text-green-400' : 'text-blue-400'
                     }`} />
                   </Button>
                   
                   {/* Recording indicator */}
                   {isRecording && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                    <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse" />
                   )}
                 </div>
               </div>
@@ -256,33 +256,36 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
           </form>
           
           {/* Quick Actions */}
-          <div className="flex justify-center mt-4 gap-2">
+          <div className="flex flex-wrap justify-center mt-3 sm:mt-4 gap-1 sm:gap-2">
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-white transition-colors px-3 py-1 text-xs"
+              className="text-gray-400 hover:text-white transition-colors px-2 sm:px-3 py-1 text-xs"
               onClick={() => handleQuickAction("Show me my project progress")}
               disabled={isTyping}
             >
-              Project Progress
+              <span className="hidden sm:inline">Project Progress</span>
+              <span className="sm:hidden">Progress</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-white transition-colors px-3 py-1 text-xs"
+              className="text-gray-400 hover:text-white transition-colors px-2 sm:px-3 py-1 text-xs"
               onClick={() => handleQuickAction("What tasks need attention?")}
               disabled={isTyping}
             >
-              Pending Tasks
+              <span className="hidden sm:inline">Pending Tasks</span>
+              <span className="sm:hidden">Tasks</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-white transition-colors px-3 py-1 text-xs"
+              className="text-gray-400 hover:text-white transition-colors px-2 sm:px-3 py-1 text-xs"
               onClick={() => handleQuickAction("Create a new project")}
               disabled={isTyping}
             >
-              New Project
+              <span className="hidden sm:inline">New Project</span>
+              <span className="sm:hidden">New</span>
             </Button>
           </div>
         </div>

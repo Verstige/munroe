@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./components/LandingPage";
 import Index from "./pages/Index";
 import NotFound from "./app/not-found";
+import DemoWorkspace from "./components/DemoWorkspace";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
                 <Index />
               </ProtectedRoute>
             } />
+            <Route path="/demo" element={<DemoWorkspace />} />
             <Route path="/home" element={<LandingPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

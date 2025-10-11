@@ -104,9 +104,9 @@ export default function WorkspaceTabs({
   return (
     <div className={cn("w-full", className)}>
       {/* Custom Horizontal Tab Navigation */}
-      <div className="w-full mb-8">
+      <div className="w-full mb-6 sm:mb-8">
         <div className="flex items-center justify-center">
-          <div className="flex items-center gap-1 bg-muted/30 p-1.5 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm">
+          <div className="flex items-center gap-1 bg-muted/30 p-1 sm:p-1.5 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm overflow-x-auto scrollbar-hide">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -117,24 +117,25 @@ export default function WorkspaceTabs({
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
                   className={cn(
-                    "relative flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-300",
+                    "relative flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-300",
                     "hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
-                    "min-w-[120px] justify-center group",
+                    "min-w-[80px] sm:min-w-[120px] justify-center group flex-shrink-0",
                     isActive 
                       ? "bg-background shadow-md border border-border text-foreground scale-105" 
                       : "text-muted-foreground hover:text-foreground hover:scale-102"
                   )}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <Icon className={cn(
-                      "w-4 h-4 transition-colors", 
+                      "w-3 h-3 sm:w-4 sm:h-4 transition-colors", 
                       isActive ? "text-primary" : "group-hover:text-primary"
                     )} />
-                    <span className="font-medium text-sm">{tab.label}</span>
+                    <span className="font-medium text-xs sm:text-sm hidden sm:inline">{tab.label}</span>
+                    <span className="font-medium text-xs sm:hidden">{tab.label.slice(0, 3)}</span>
                     {tab.badge && (
                       <Badge 
                         variant={isActive ? "default" : "secondary"} 
-                        className="text-xs px-1.5 py-0.5"
+                        className="text-xs px-1 sm:px-1.5 py-0.5"
                       >
                         {tab.badge}
                       </Badge>
@@ -142,14 +143,14 @@ export default function WorkspaceTabs({
                     {notificationCount > 0 && (
                       <Badge 
                         variant="destructive" 
-                        className="text-xs px-1.5 py-0.5 animate-pulse"
+                        className="text-xs px-1 sm:px-1.5 py-0.5 animate-pulse"
                       >
                         {notificationCount}
                       </Badge>
                     )}
                   </div>
                   {isActive && (
-                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-primary to-primary/60 rounded-full" />
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 sm:w-8 h-1 bg-gradient-to-r from-primary to-primary/60 rounded-full" />
                   )}
                 </button>
               );
@@ -158,10 +159,10 @@ export default function WorkspaceTabs({
         </div>
         
         {/* Tab Description */}
-        <div className="text-center mt-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
-            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <p className="text-sm font-medium text-primary">
+        <div className="text-center mt-3 sm:mt-4">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 rounded-full">
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-pulse" />
+            <p className="text-xs sm:text-sm font-medium text-primary">
               {availableTabs.find(tab => tab.id === activeTab)?.description}
             </p>
           </div>
@@ -169,7 +170,7 @@ export default function WorkspaceTabs({
       </div>
 
       {/* Tab Content with Smooth Transitions */}
-      <div className="w-full min-h-[600px]">
+      <div className="w-full min-h-[400px] sm:min-h-[600px]">
         <div className={cn(
           "transition-all duration-300 ease-in-out",
           "opacity-100 transform translate-y-0"
