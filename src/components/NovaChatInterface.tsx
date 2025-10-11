@@ -1,35 +1,43 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Mic, Volume2, Bot, User } from "lucide-react";
+import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { generateBusinessAssistantResponse, generateGeneralChatResponse, generateSmartSuggestions, type AssistantMode, type WorkspaceContext, type ConversationMemory } from "@/lib/gemini";
 
 interface ChatMessage {
   id: string;
   type: 'user' | 'ai';
   content: string;
   timestamp: Date;
+  mode?: AssistantMode;
+  suggestions?: Array<{title: string, description: string, action: string}>;
 }
 
 interface NovaChatInterfaceProps {
   userName?: string;
+  workspaceContext?: WorkspaceContext;
   onSendMessage?: (message: string) => void;
   className?: string;
 }
 
 const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   userName = "User",
+  workspaceContext,
   onSendMessage,
   className = ""
 }) => {
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [assistantMode, setAssistantMode] = useState<AssistantMode>('chat');
+  const [conversationMemory, setConversationMemory] = useState<ConversationMemory[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
       type: 'ai',
-      content: `Hello ${userName}! I'm Nova, your intelligent project companion. I can help you with project management, task tracking, time analysis, and much more. What would you like to know?`,
-      timestamp: new Date()
+      content: `Hello ${userName}! I'm Nova, your intelligent companion. I have two modes: Chat Mode for general conversation and Assistant Mode for deep business insights. What would you like to explore?`,
+      timestamp: new Date(),
+      mode: 'chat'
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
@@ -41,32 +49,156 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Generate AI response (mock for now)
-  const generateAIResponse = async (userMessage: string): Promise<string> => {
+  // Load conversation history from localStorage
+  useEffect(() => {
+    const savedMessages = localStorage.getItem(`nova-conversation-${userName}`);
+    const savedMemory = localStorage.getItem(`nova-memory-${userName}`);
+    
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        // Convert timestamp strings back to Date objects
+        const messagesWithDates = parsedMessages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        setMessages(messagesWithDates);
+      } catch (error) {
+        console.error('Error loading conversation history:', error);
+      }
+    }
+    
+    if (savedMemory) {
+      try {
+        const parsedMemory = JSON.parse(savedMemory);
+        // Convert timestamp strings back to Date objects
+        const memoryWithDates = parsedMemory.map((mem: any) => ({
+          ...mem,
+          timestamp: new Date(mem.timestamp)
+        }));
+        setConversationMemory(memoryWithDates);
+      } catch (error) {
+        console.error('Error loading conversation memory:', error);
+      }
+    }
+  }, [userName]);
+
+  // Save conversation history to localStorage
+  useEffect(() => {
+    if (messages.length > 1) { // Don't save just the welcome message
+      localStorage.setItem(`nova-conversation-${userName}`, JSON.stringify(messages));
+    }
+  }, [messages, userName]);
+
+  // Save conversation memory to localStorage
+  useEffect(() => {
+    if (conversationMemory.length > 0) {
+      localStorage.setItem(`nova-memory-${userName}`, JSON.stringify(conversationMemory));
+    }
+  }, [conversationMemory, userName]);
+
+  // Generate AI response using OpenAI
+  const generateAIResponse = async (userMessage: string): Promise<{response: string, suggestions?: Array<{title: string, description: string, action: string}>}> => {
     setIsTyping(true);
     
-    // Simulate AI thinking time
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    try {
+      let response: string;
+      let suggestions: Array<{title: string, description: string, action: string}> = [];
+
+      if (assistantMode === 'assistant') {
+        // Business Intelligence Mode
+        response = await generateBusinessAssistantResponse(
+          userMessage,
+          workspaceContext || {
+            projects: [],
+            tasks: [],
+            teamMembers: [],
+            notes: [],
+            currentUser: { name: userName, email: 'user@example.com' }
+          },
+          conversationMemory
+        );
+        
+        // Generate business-focused suggestions
+        suggestions = await generateSmartSuggestions(
+          workspaceContext || {
+            projects: [],
+            tasks: [],
+            teamMembers: [],
+            notes: [],
+            currentUser: { name: userName, email: 'user@example.com' }
+          },
+          'assistant'
+        );
+      } else {
+        // General Chat Mode
+        response = await generateGeneralChatResponse(
+          userMessage,
+          conversationMemory
+        );
+        
+        // Generate general suggestions
+        suggestions = await generateSmartSuggestions(
+          workspaceContext || {
+            projects: [],
+            tasks: [],
+            teamMembers: [],
+            notes: [],
+            currentUser: { name: userName, email: 'user@example.com' }
+          },
+          'chat'
+        );
+      }
+
+      // Update conversation memory
+      const userMemory: ConversationMemory = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: userMessage,
+        mode: assistantMode,
+        timestamp: new Date(),
+        importance: 'medium'
+      };
+
+      const aiMemory: ConversationMemory = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response,
+        mode: assistantMode,
+        timestamp: new Date(),
+        importance: 'medium'
+      };
+
+      setConversationMemory(prev => [...prev.slice(-20), userMemory, aiMemory]); // Keep last 20 messages
+      setIsTyping(false);
+      
+      return { response, suggestions };
+    } catch (error) {
+      console.error('AI Response Error:', error);
+      setIsTyping(false);
+      return { 
+        response: 'I apologize, but I encountered an error processing your request. Please try again.',
+        suggestions: []
+      };
+    }
+  };
+
+  // Mode switching function
+  const switchMode = (newMode: AssistantMode) => {
+    setAssistantMode(newMode);
     
-    // Mock responses based on message content
-    const responses = {
-      'project': "I can see you're interested in project management. I can help you analyze your current projects, suggest improvements, or create new ones. What specific aspect would you like to focus on?",
-      'task': "I'd be happy to help with task management! I can show you pending tasks, help prioritize work, or assist with task creation. What tasks are you working on?",
-      'time': "Let me analyze your time tracking data. I can provide insights on productivity patterns, suggest time optimizations, or help you set better time estimates for your projects.",
-      'progress': "Based on your project data, I can see several areas where we can improve progress tracking. Would you like me to show you a detailed progress report or suggest next steps?",
-      'default': "That's an interesting question! I'm here to help you with project management, task tracking, time analysis, and team collaboration. Could you be more specific about what you'd like to accomplish?"
+    // Add mode switch message
+    const modeSwitchMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: 'ai',
+      content: newMode === 'assistant' 
+        ? `🧠 **Switched to Assistant Mode** - I'm now your Business Intelligence Assistant! I can analyze your projects, team performance, and provide strategic insights. What business aspect would you like to explore?`
+        : `💬 **Switched to Chat Mode** - I'm now your general conversation partner! Feel free to ask me anything - I'm here to help with questions, brainstorming, or just chatting.`,
+      timestamp: new Date(),
+      mode: newMode
     };
-
-    const lowerMessage = userMessage.toLowerCase();
-    let response = responses.default;
     
-    if (lowerMessage.includes('project')) response = responses.project;
-    else if (lowerMessage.includes('task')) response = responses.task;
-    else if (lowerMessage.includes('time') || lowerMessage.includes('timer')) response = responses.time;
-    else if (lowerMessage.includes('progress')) response = responses.progress;
-
-    setIsTyping(false);
-    return response;
+    setMessages(prev => [...prev, modeSwitchMessage]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,7 +211,8 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
         id: Date.now().toString(),
         type: 'user',
         content: userMessage,
-        timestamp: new Date()
+        timestamp: new Date(),
+        mode: assistantMode
       };
       
       setMessages(prev => [...prev, newUserMessage]);
@@ -91,13 +224,15 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
       }
       
       // Generate AI response
-      const aiResponse = await generateAIResponse(userMessage);
+      const { response, suggestions } = await generateAIResponse(userMessage);
       
       const newAIMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
-        content: aiResponse,
-        timestamp: new Date()
+        content: response,
+        timestamp: new Date(),
+        mode: assistantMode,
+        suggestions
       };
       
       setMessages(prev => [...prev, newAIMessage]);
@@ -123,6 +258,24 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
     }, 100);
   };
 
+  const clearConversation = () => {
+    // Reset to initial state
+    setMessages([
+      {
+        id: '1',
+        type: 'ai',
+        content: `Hello ${userName}! I'm Nova, your intelligent companion. I have two modes: Chat Mode for general conversation and Assistant Mode for deep business insights. What would you like to explore?`,
+        timestamp: new Date(),
+        mode: 'chat'
+      }
+    ]);
+    setConversationMemory([]);
+    
+    // Clear localStorage
+    localStorage.removeItem(`nova-conversation-${userName}`);
+    localStorage.removeItem(`nova-memory-${userName}`);
+  };
+
   return (
     <div className={`w-full max-w-4xl mx-auto ${className}`}>
       {/* Welcome Message */}
@@ -130,6 +283,72 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
         <h2 className="text-lg sm:text-2xl font-medium text-white mb-2">
           Good to see you, {userName}.
         </h2>
+      </div>
+
+      {/* Mode Selector */}
+      <div className="flex justify-center items-center gap-4 mb-4 sm:mb-6">
+        <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-1 flex gap-1">
+          <Button 
+            variant={assistantMode === 'assistant' ? 'default' : 'ghost'}
+            onClick={() => switchMode('assistant')}
+            className={`px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              assistantMode === 'assistant'
+                ? 'bg-blue-500 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`}
+          >
+            <Brain className="w-4 h-4 mr-2" />
+            Assistant Mode
+          </Button>
+          <Button 
+            variant={assistantMode === 'chat' ? 'default' : 'ghost'}
+            onClick={() => switchMode('chat')}
+            className={`px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              assistantMode === 'chat'
+                ? 'bg-blue-500 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Chat Mode
+          </Button>
+        </div>
+        
+        {/* Clear Conversation Button */}
+        {messages.length > 1 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearConversation}
+            className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            title="Clear conversation history"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Mode-specific header */}
+      <div className="text-center mb-4">
+        {assistantMode === 'assistant' ? (
+          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-3 mx-4">
+            <h3 className="text-sm sm:text-base font-medium text-blue-300 mb-1">
+              🧠 Business Intelligence Assistant
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-400">
+              Ask about your projects, team performance, business strategy, and ecosystem insights
+            </p>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 rounded-lg p-3 mx-4">
+            <h3 className="text-sm sm:text-base font-medium text-green-300 mb-1">
+              💬 General Chat Assistant
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-400">
+              Ask me anything - general questions, help, or casual conversation
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Chat Container */}
@@ -169,11 +388,38 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
                   : "bg-gray-800/80 text-gray-100 border border-gray-700/50"
               )}>
                 <p className="text-xs sm:text-sm leading-relaxed">{msg.content}</p>
+                
+                {/* Suggestions */}
+                {msg.suggestions && msg.suggestions.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs text-gray-400 font-medium">Suggested actions:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {msg.suggestions.map((suggestion, index) => (
+                        <Button
+                          key={index}
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 hover:text-white px-2 py-1 h-auto"
+                          onClick={() => handleQuickAction(suggestion.action)}
+                          disabled={isTyping}
+                        >
+                          {suggestion.title}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <p className={cn(
                   "text-xs mt-1 sm:mt-2 opacity-70",
                   msg.type === 'user' ? "text-blue-100" : "text-gray-400"
                 )}>
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {msg.mode && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-gray-700/50 rounded text-xs">
+                      {msg.mode === 'assistant' ? '🧠' : '💬'}
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -257,33 +503,83 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
           
           {/* Quick Actions */}
           <div className="flex flex-wrap justify-center mt-3 sm:mt-4 gap-1 sm:gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white transition-colors px-2 sm:px-3 py-1 text-xs"
-              onClick={() => handleQuickAction("Show me my project progress")}
-              disabled={isTyping}
-            >
-              Project Progress
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white transition-colors px-2 sm:px-3 py-1 text-xs"
-              onClick={() => handleQuickAction("What tasks need attention?")}
-              disabled={isTyping}
-            >
-              Pending Tasks
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white transition-colors px-2 sm:px-3 py-1 text-xs"
-              onClick={() => handleQuickAction("Create a new brand")}
-              disabled={isTyping}
-            >
-              New Brand
-            </Button>
+            {assistantMode === 'assistant' ? (
+              // Business Intelligence Quick Actions
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-400 hover:text-blue-300 transition-colors px-2 sm:px-3 py-1 text-xs flex items-center gap-1"
+                  onClick={() => handleQuickAction("Analyze my project portfolio and provide strategic insights")}
+                  disabled={isTyping}
+                >
+                  <TrendingUp className="w-3 h-3" />
+                  Portfolio Analysis
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-400 hover:text-blue-300 transition-colors px-2 sm:px-3 py-1 text-xs flex items-center gap-1"
+                  onClick={() => handleQuickAction("Analyze team performance and collaboration patterns")}
+                  disabled={isTyping}
+                >
+                  <Users className="w-3 h-3" />
+                  Team Performance
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-400 hover:text-blue-300 transition-colors px-2 sm:px-3 py-1 text-xs flex items-center gap-1"
+                  onClick={() => handleQuickAction("Provide business strategy recommendations")}
+                  disabled={isTyping}
+                >
+                  <Target className="w-3 h-3" />
+                  Strategy
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-400 hover:text-blue-300 transition-colors px-2 sm:px-3 py-1 text-xs flex items-center gap-1"
+                  onClick={() => handleQuickAction("Identify potential risks and mitigation strategies")}
+                  disabled={isTyping}
+                >
+                  <AlertTriangle className="w-3 h-3" />
+                  Risk Assessment
+                </Button>
+              </>
+            ) : (
+              // General Chat Quick Actions
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-green-400 hover:text-green-300 transition-colors px-2 sm:px-3 py-1 text-xs"
+                  onClick={() => handleQuickAction("Help me understand how to use Nexus effectively")}
+                  disabled={isTyping}
+                >
+                  Help & Support
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-green-400 hover:text-green-300 transition-colors px-2 sm:px-3 py-1 text-xs"
+                  onClick={() => handleQuickAction("Let's brainstorm some creative ideas")}
+                  disabled={isTyping}
+                >
+                  <Lightbulb className="w-3 h-3 mr-1" />
+                  Brainstorm
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-green-400 hover:text-green-300 transition-colors px-2 sm:px-3 py-1 text-xs"
+                  onClick={() => handleQuickAction("Tell me something interesting")}
+                  disabled={isTyping}
+                >
+                  Learn Something
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

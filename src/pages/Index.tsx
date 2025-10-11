@@ -788,6 +788,29 @@ export default function Index() {
           <div className="mb-6 sm:mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             <NovaChatInterface 
               userName={getUserDisplayName(profile)}
+              workspaceContext={{
+                projects: filteredProjects.map(p => ({
+                  id: p.id,
+                  name: p.name,
+                  description: p.description || '',
+                  status: p.status,
+                  priority: p.priority
+                })),
+                tasks: [], // TODO: Add tasks from ViewableTasks component
+                teamMembers: teamMembers.map(m => ({
+                  id: m.id,
+                  name: m.name,
+                  role: m.role,
+                  status: m.status
+                })),
+                notes: [], // TODO: Add notes from BuiltInNotes component
+                currentUser: {
+                  name: getUserDisplayName(profile),
+                  email: profile?.email || ''
+                },
+                businessStage: 'startup', // TODO: Add business stage selection
+                industry: 'technology' // TODO: Add industry selection
+              }}
               onSendMessage={(message) => console.log("Nova AI Message:", message)}
             />
           </div>

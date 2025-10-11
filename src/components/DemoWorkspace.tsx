@@ -189,6 +189,34 @@ export default function DemoWorkspace() {
           <div className="mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             <NovaChatInterface 
               userName="Demo User"
+              workspaceContext={{
+                projects: [
+                  { id: '1', name: 'E-commerce Platform', description: 'Build a modern e-commerce solution', status: 'In Progress', priority: 'high' },
+                  { id: '2', name: 'Mobile App', description: 'iOS and Android application development', status: 'Planning', priority: 'medium' },
+                  { id: '3', name: 'Marketing Campaign', description: 'Q1 marketing strategy and execution', status: 'Completed', priority: 'high' }
+                ],
+                tasks: [
+                  { id: '1', title: 'Design user interface', description: 'Create mockups for main pages', status: 'In Progress', assignee: 'Sarah Chen', projectId: '1' },
+                  { id: '2', title: 'Set up database', description: 'Configure PostgreSQL database', status: 'Completed', assignee: 'Mike Johnson', projectId: '1' },
+                  { id: '3', title: 'Write API documentation', description: 'Document all endpoints', status: 'Pending', assignee: 'Alex Rodriguez', projectId: '1' }
+                ],
+                teamMembers: mockTeamMembers.map(m => ({
+                  id: m.id,
+                  name: m.name,
+                  role: m.role,
+                  status: m.status
+                })),
+                notes: [
+                  { id: '1', title: 'Project Requirements', content: 'Key features and specifications', projectId: '1' },
+                  { id: '2', title: 'Meeting Notes', content: 'Weekly team sync notes', projectId: '2' }
+                ],
+                currentUser: {
+                  name: 'Demo User',
+                  email: 'demo@nexus.ai'
+                },
+                businessStage: 'growth',
+                industry: 'technology'
+              }}
               onSendMessage={(message) => console.log("Demo Nova AI Message:", message)}
             />
           </div>
