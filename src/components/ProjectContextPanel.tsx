@@ -4,8 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calendar, Users, Target, Clock, TrendingUp, UserPlus, X, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Calendar, Users, Target, Clock, TrendingUp, UserPlus, X, Loader2, AlertCircle, CheckCircle, Edit3, Save } from "lucide-react";
 import { TeamMemberList } from "./TeamMemberAvatar";
 import { 
   type TeamMember, 
@@ -24,11 +27,26 @@ interface ProjectContextPanelProps {
     description: string;
     status: string;
     priority: "low" | "medium" | "high";
+    // Enhanced business details
+    location?: string;
+    website?: string;
+    industry?: string;
+    products?: string;
+    targetAudience?: string;
+    businessStage?: string;
+    revenue?: string;
+    employees?: string;
+    founded?: string;
+    contactEmail?: string;
+    phone?: string;
+    socialMedia?: string;
+    additionalNotes?: string;
   };
   teamMembers?: TeamMember[];
   allTeamMembers?: TeamMember[];
   invitations?: any[];
   onInviteMember?: (invitation: any) => void;
+  onUpdateProject?: (project: any) => void;
 }
 
 export default function ProjectContextPanel({ 
@@ -36,7 +54,8 @@ export default function ProjectContextPanel({
   teamMembers = [], 
   allTeamMembers = [], 
   invitations = [], 
-  onInviteMember 
+  onInviteMember,
+  onUpdateProject
 }: ProjectContextPanelProps) {
   const [isInviting, setIsInviting] = useState(false);
   const [invitationForm, setInvitationForm] = useState<InvitationFormData>({
@@ -48,6 +67,8 @@ export default function ProjectContextPanel({
   const [formErrors, setFormErrors] = useState<string[]>([]);
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
   const [invitationSuccess, setInvitationSuccess] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProject, setEditedProject] = useState(project);
 
   // Start with empty stats for new users - data will be populated as users create content
   const mockStats = {
@@ -144,6 +165,18 @@ export default function ProjectContextPanel({
     }
   };
 
+  const handleSaveEdit = () => {
+    if (onUpdateProject) {
+      onUpdateProject(editedProject);
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedProject(project);
+    setIsEditing(false);
+  };
+
   return (
     <div className="space-y-4">
       {/* Project Header */}
@@ -151,6 +184,14 @@ export default function ProjectContextPanel({
         <div className="flex items-start justify-between mb-3">
           <h3 className="text-lg font-semibold text-card-foreground">{project.name}</h3>
           <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {isEditing ? <X className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
+            </Button>
             <Badge className={priorityColors[project.priority]}>
               {project.priority}
             </Badge>
@@ -162,7 +203,199 @@ export default function ProjectContextPanel({
         <p className="text-sm text-muted-foreground leading-relaxed">
           {project.description}
         </p>
+        
+        {/* Business Details */}
+        {(project.industry || project.location || project.website || project.businessStage) && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <h4 className="text-sm font-medium text-card-foreground mb-3">Business Information</h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              {project.industry && (
+                <div>
+                  <span className="text-muted-foreground">Industry:</span>
+                  <span className="ml-2 text-card-foreground">{project.industry}</span>
+                </div>
+              )}
+              {project.location && (
+                <div>
+                  <span className="text-muted-foreground">Location:</span>
+                  <span className="ml-2 text-card-foreground">{project.location}</span>
+                </div>
+              )}
+              {project.website && (
+                <div>
+                  <span className="text-muted-foreground">Website:</span>
+                  <a href={project.website} target="_blank" rel="noopener noreferrer" className="ml-2 text-primary hover:underline">
+                    {project.website}
+                  </a>
+                </div>
+              )}
+              {project.businessStage && (
+                <div>
+                  <span className="text-muted-foreground">Stage:</span>
+                  <span className="ml-2 text-card-foreground capitalize">{project.businessStage}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </Card>
+
+      {/* Edit Business Form */}
+      {isEditing && (
+        <Card className="p-4 bg-chatgpt-card border-border">
+          <h4 className="text-lg font-semibold text-card-foreground mb-4">Edit Business Information</h4>
+          <div className="space-y-4">
+            {/* Basic Information */}
+            <div className="space-y-3">
+              <h5 className="text-sm font-medium text-card-foreground">Basic Information</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="edit-name" className="text-xs">Business Name</Label>
+                  <Input
+                    id="edit-name"
+                    value={editedProject.name}
+                    onChange={(e) => setEditedProject({ ...editedProject, name: e.target.value })}
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-industry" className="text-xs">Industry</Label>
+                  <Input
+                    id="edit-industry"
+                    value={editedProject.industry || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, industry: e.target.value })}
+                    placeholder="e.g., Technology, Healthcare"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-description" className="text-xs">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editedProject.description}
+                  onChange={(e) => setEditedProject({ ...editedProject, description: e.target.value })}
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Business Details */}
+            <div className="space-y-3">
+              <h5 className="text-sm font-medium text-card-foreground">Business Details</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="edit-location" className="text-xs">Location</Label>
+                  <Input
+                    id="edit-location"
+                    value={editedProject.location || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, location: e.target.value })}
+                    placeholder="e.g., San Francisco, CA"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-website" className="text-xs">Website</Label>
+                  <Input
+                    id="edit-website"
+                    value={editedProject.website || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, website: e.target.value })}
+                    placeholder="https://yourbusiness.com"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-business-stage" className="text-xs">Business Stage</Label>
+                  <Select
+                    value={editedProject.businessStage || ''}
+                    onValueChange={(value) => setEditedProject({ ...editedProject, businessStage: value })}
+                  >
+                    <SelectTrigger className="bg-background border-border text-foreground">
+                      <SelectValue placeholder="Select stage" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="idea">Idea Stage</SelectItem>
+                      <SelectItem value="startup">Startup</SelectItem>
+                      <SelectItem value="growth">Growth Stage</SelectItem>
+                      <SelectItem value="established">Established</SelectItem>
+                      <SelectItem value="expansion">Expansion</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-founded" className="text-xs">Founded Year</Label>
+                  <Input
+                    id="edit-founded"
+                    value={editedProject.founded || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, founded: e.target.value })}
+                    placeholder="2024"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Products & Contact */}
+            <div className="space-y-3">
+              <h5 className="text-sm font-medium text-card-foreground">Additional Information</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="edit-products" className="text-xs">Products/Services</Label>
+                  <Textarea
+                    id="edit-products"
+                    value={editedProject.products || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, products: e.target.value })}
+                    placeholder="Describe your products or services"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-contact-email" className="text-xs">Contact Email</Label>
+                  <Input
+                    id="edit-contact-email"
+                    value={editedProject.contactEmail || ''}
+                    onChange={(e) => setEditedProject({ ...editedProject, contactEmail: e.target.value })}
+                    placeholder="contact@yourbusiness.com"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-notes" className="text-xs">Additional Notes</Label>
+                <Textarea
+                  id="edit-notes"
+                  value={editedProject.additionalNotes || ''}
+                  onChange={(e) => setEditedProject({ ...editedProject, additionalNotes: e.target.value })}
+                  placeholder="Any additional information about your business"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-3">
+              <Button
+                onClick={handleSaveEdit}
+                size="sm"
+                className="flex-1"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Changes
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCancelEdit}
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 gap-3">

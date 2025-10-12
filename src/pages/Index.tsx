@@ -35,6 +35,20 @@ interface Project {
   description: string;
   status: string;
   priority: "low" | "medium" | "high";
+  // Enhanced business details
+  location?: string;
+  website?: string;
+  industry?: string;
+  products?: string;
+  targetAudience?: string;
+  businessStage?: string;
+  revenue?: string;
+  employees?: string;
+  founded?: string;
+  contactEmail?: string;
+  phone?: string;
+  socialMedia?: string;
+  additionalNotes?: string;
 }
 
 // Mock data removed - users start with empty workspace
@@ -416,13 +430,13 @@ export default function Index() {
 
     // Update the mindmap nodes to include the new sub-project
     const updatedNodes = dynamicMindmapNodes.map(node => {
-      if (node.projectId === parentProjectId) {
-        return {
-          ...node,
-          subProjects: [...(node.subProjects || []), newSubProject]
-        };
-      }
-      return node;
+        if (node.projectId === parentProjectId) {
+          return {
+            ...node,
+            subProjects: [...(node.subProjects || []), newSubProject]
+          };
+        }
+        return node;
     });
     
     setDynamicMindmapNodes(updatedNodes);
@@ -446,15 +460,15 @@ export default function Index() {
 
     // Update the mindmap nodes to include the new leg
     const updatedNodes = dynamicMindmapNodes.map(node => ({
-      ...node,
-      subProjects: node.subProjects?.map(subProject => 
-        subProject.id === parentSubProjectId 
-          ? {
-              ...subProject,
-              legs: [...(subProject.legs || []), newLeg]
-            }
-          : subProject
-      )
+        ...node,
+        subProjects: node.subProjects?.map(subProject => 
+          subProject.id === parentSubProjectId 
+            ? {
+                ...subProject,
+                legs: [...(subProject.legs || []), newLeg]
+              }
+            : subProject
+        )
     }));
     
     setDynamicMindmapNodes(updatedNodes);
@@ -507,7 +521,7 @@ export default function Index() {
         }
       } finally {
         if (mounted) {
-          setIsLoading(false);
+      setIsLoading(false);
         }
       }
     };
@@ -576,7 +590,21 @@ export default function Index() {
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
-    priority: "medium" as "low" | "medium" | "high"
+    priority: "medium" as "low" | "medium" | "high",
+    // Enhanced business details
+    location: "",
+    website: "",
+    industry: "",
+    products: "",
+    targetAudience: "",
+    businessStage: "",
+    revenue: "",
+    employees: "",
+    founded: "",
+    contactEmail: "",
+    phone: "",
+    socialMedia: "",
+    additionalNotes: ""
   });
 
   const handleOpenProject = (projectId: string) => {
@@ -626,19 +654,64 @@ export default function Index() {
       name: newProject.name,
       description: newProject.description,
       status: "Planning",
-      priority: newProject.priority
+      priority: newProject.priority,
+      // Enhanced business details
+      location: newProject.location || undefined,
+      website: newProject.website || undefined,
+      industry: newProject.industry || undefined,
+      products: newProject.products || undefined,
+      targetAudience: newProject.targetAudience || undefined,
+      businessStage: newProject.businessStage || undefined,
+      revenue: newProject.revenue || undefined,
+      employees: newProject.employees || undefined,
+      founded: newProject.founded || undefined,
+      contactEmail: newProject.contactEmail || undefined,
+      phone: newProject.phone || undefined,
+      socialMedia: newProject.socialMedia || undefined,
+      additionalNotes: newProject.additionalNotes || undefined
     };
     
     const newProjects = [...projects, project];
     setProjects(newProjects);
     setFilteredProjects(newProjects);
-    setNewProject({ name: "", description: "", priority: "medium" });
+    
+    // Reset form with all fields
+    setNewProject({ 
+      name: "", 
+      description: "", 
+      priority: "medium",
+      location: "",
+      website: "",
+      industry: "",
+      products: "",
+      targetAudience: "",
+      businessStage: "",
+      revenue: "",
+      employees: "",
+      founded: "",
+      contactEmail: "",
+      phone: "",
+      socialMedia: "",
+      additionalNotes: ""
+    });
     setIsNewProjectOpen(false);
   };
 
   const handleQuickSwitcherSelect = (projectId: string) => {
     handleOpenProject(projectId);
     setIsQuickSwitcherOpen(false);
+  };
+
+  const handleUpdateProject = (updatedProject: Project) => {
+    const updatedProjects = projects.map(p => 
+      p.id === updatedProject.id ? updatedProject : p
+    );
+    setProjects(updatedProjects);
+    setFilteredProjects(updatedProjects);
+    setActiveProject(updatedProject);
+    
+    // Save to localStorage
+    localStorage.setItem('userProjects', JSON.stringify(updatedProjects));
   };
 
   // Debug function to clear localStorage (can be called from console)
@@ -693,16 +766,16 @@ export default function Index() {
     <div className="flex h-screen bg-gradient-subtle overflow-hidden">
       {/* Sidebar */}
       <div className="hidden lg:block">
-        <Sidebar 
-          onNewProject={() => setIsNewProjectOpen(true)}
+      <Sidebar 
+        onNewProject={() => setIsNewProjectOpen(true)}
           onDashboard={() => setShowDashboard(true)}
           onGetStarted={() => setIsNewProjectOpen(true)}
-          projects={projects}
-          onSearch={handleSearch}
-          onFilter={handleFilter}
-          isLoading={isLoading}
+        projects={projects}
+        onSearch={handleSearch}
+        onFilter={handleFilter}
+        isLoading={isLoading}
           hasEverCreatedProject={hasEverCreatedProject}
-        />
+      />
       </div>
 
       {/* Main Content */}
@@ -829,16 +902,16 @@ export default function Index() {
             />
           ) : (
             <>
-              {/* Header */}
+          {/* Header */}
               <div className="mb-4 sm:mb-6 md:mb-8 animate-fade-in">
                 <div className="flex items-start justify-between">
                   <div>
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-foreground">
                       Welcome back, {getUserFirstName(profile)}
-                    </h1>
+            </h1>
                     <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
-                      Your project ecosystem at a glance
-                    </p>
+              Your project ecosystem at a glance
+            </p>
                   </div>
                   <Button
                     variant="outline"
@@ -851,7 +924,7 @@ export default function Index() {
                     <span className="hidden sm:inline">Logout</span>
                   </Button>
                 </div>
-              </div>
+          </div>
 
           {/* Nova AI Chat Interface */}
           <div className="mb-6 sm:mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
@@ -863,7 +936,21 @@ export default function Index() {
                   name: p.name,
                   description: p.description || '',
                   status: p.status,
-                  priority: p.priority
+                  priority: p.priority,
+                  // Enhanced business details for Nova AI
+                  location: p.location,
+                  website: p.website,
+                  industry: p.industry,
+                  products: p.products,
+                  targetAudience: p.targetAudience,
+                  businessStage: p.businessStage,
+                  revenue: p.revenue,
+                  employees: p.employees,
+                  founded: p.founded,
+                  contactEmail: p.contactEmail,
+                  phone: p.phone,
+                  socialMedia: p.socialMedia,
+                  additionalNotes: p.additionalNotes
                 })),
                 tasks: [], // TODO: Add tasks from ViewableTasks component
                 teamMembers: teamMembers.map(m => ({
@@ -951,6 +1038,7 @@ export default function Index() {
                   <ProjectContextPanel 
                     project={activeProject} 
                     teamMembers={teamMembers.filter(member => member.projects.includes(activeProject.id))}
+                    onUpdateProject={handleUpdateProject}
                   />
                 </div>
               ) : (
@@ -1001,41 +1089,214 @@ export default function Index() {
 
       {/* New Brand Dialog */}
       <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
-        <DialogContent className="bg-card border-border">
+        <DialogContent className="bg-card border-border max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Your First Brand</DialogTitle>
+            <DialogTitle>Create Your Business</DialogTitle>
             <DialogDescription>
-              Start building your next big brand
+              Tell us about your business to help Nova AI provide better assistance
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
+          <div className="space-y-6 pt-4">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Brand Name</Label>
+                  <Label htmlFor="name">Business Name *</Label>
               <Input
                 id="name"
                 value={newProject.name}
                 onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                placeholder="e.g., My Brand"
-                className="bg-secondary border-border mt-1"
+                    placeholder="e.g., My Business"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
               />
             </div>
             <div>
-              <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="industry">Industry</Label>
+                  <Input
+                    id="industry"
+                    value={newProject.industry}
+                    onChange={(e) => setNewProject({ ...newProject, industry: e.target.value })}
+                    placeholder="e.g., Technology, Healthcare, Retail"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="description">Business Description</Label>
               <Textarea
                 id="description"
                 value={newProject.description}
                 onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                placeholder="Brief overview of your brand..."
-                className="bg-secondary border-border mt-1"
+                  placeholder="Brief overview of your business, what you do, and your mission..."
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  rows={3}
               />
             </div>
+            </div>
+
+            {/* Business Details */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Business Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={newProject.location}
+                    onChange={(e) => setNewProject({ ...newProject, location: e.target.value })}
+                    placeholder="e.g., San Francisco, CA"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="businessStage">Business Stage</Label>
+                  <Select
+                    value={newProject.businessStage}
+                    onValueChange={(value) => setNewProject({ ...newProject, businessStage: value })}
+                  >
+                    <SelectTrigger className="bg-background border-border text-foreground mt-1">
+                      <SelectValue placeholder="Select stage" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="idea">Idea Stage</SelectItem>
+                      <SelectItem value="startup">Startup</SelectItem>
+                      <SelectItem value="growth">Growth Stage</SelectItem>
+                      <SelectItem value="established">Established</SelectItem>
+                      <SelectItem value="expansion">Expansion</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    value={newProject.website}
+                    onChange={(e) => setNewProject({ ...newProject, website: e.target.value })}
+                    placeholder="https://yourbusiness.com"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="founded">Founded Year</Label>
+                  <Input
+                    id="founded"
+                    value={newProject.founded}
+                    onChange={(e) => setNewProject({ ...newProject, founded: e.target.value })}
+                    placeholder="2024"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Products & Services */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Products & Services</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="products">Products/Services</Label>
+                  <Textarea
+                    id="products"
+                    value={newProject.products}
+                    onChange={(e) => setNewProject({ ...newProject, products: e.target.value })}
+                    placeholder="Describe your main products or services..."
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="targetAudience">Target Audience</Label>
+                  <Textarea
+                    id="targetAudience"
+                    value={newProject.targetAudience}
+                    onChange={(e) => setNewProject({ ...newProject, targetAudience: e.target.value })}
+                    placeholder="Who are your ideal customers? Demographics, interests, needs..."
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="contactEmail">Email</Label>
+                  <Input
+                    id="contactEmail"
+                    value={newProject.contactEmail}
+                    onChange={(e) => setNewProject({ ...newProject, contactEmail: e.target.value })}
+                    placeholder="contact@yourbusiness.com"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={newProject.phone}
+                    onChange={(e) => setNewProject({ ...newProject, phone: e.target.value })}
+                    placeholder="+1 (555) 123-4567"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="socialMedia">Social Media</Label>
+                  <Input
+                    id="socialMedia"
+                    value={newProject.socialMedia}
+                    onChange={(e) => setNewProject({ ...newProject, socialMedia: e.target.value })}
+                    placeholder="@yourbusiness, LinkedIn, etc."
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="employees">Team Size</Label>
+                  <Input
+                    id="employees"
+                    value={newProject.employees}
+                    onChange={(e) => setNewProject({ ...newProject, employees: e.target.value })}
+                    placeholder="e.g., 1-10, 11-50, 51-200"
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Additional Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="revenue">Revenue Range</Label>
+                  <Select
+                    value={newProject.revenue}
+                    onValueChange={(value) => setNewProject({ ...newProject, revenue: value })}
+                  >
+                    <SelectTrigger className="bg-background border-border text-foreground mt-1">
+                      <SelectValue placeholder="Select range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pre-revenue">Pre-revenue</SelectItem>
+                      <SelectItem value="0-10k">$0 - $10K</SelectItem>
+                      <SelectItem value="10k-50k">$10K - $50K</SelectItem>
+                      <SelectItem value="50k-100k">$50K - $100K</SelectItem>
+                      <SelectItem value="100k-500k">$100K - $500K</SelectItem>
+                      <SelectItem value="500k-1m">$500K - $1M</SelectItem>
+                      <SelectItem value="1m+">$1M+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="priority">Priority Level</Label>
               <Select
                 value={newProject.priority}
                 onValueChange={(value) => setNewProject({ ...newProject, priority: value as "low" | "medium" | "high" })}
               >
-                <SelectTrigger className="bg-secondary border-border mt-1">
+                    <SelectTrigger className="bg-background border-border text-foreground mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1045,12 +1306,36 @@ export default function Index() {
                 </SelectContent>
               </Select>
             </div>
+              </div>
+              <div>
+                <Label htmlFor="additionalNotes">Additional Notes</Label>
+                <Textarea
+                  id="additionalNotes"
+                  value={newProject.additionalNotes}
+                  onChange={(e) => setNewProject({ ...newProject, additionalNotes: e.target.value })}
+                  placeholder="Any additional information about your business, goals, challenges, or specific areas where you need assistance..."
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground mt-1"
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
             <Button 
               onClick={handleCreateProject} 
-              className="w-full gradient-primary text-white shadow-primary"
-            >
-              Create Brand
+                className="flex-1 gradient-primary text-white shadow-primary"
+                disabled={!newProject.name.trim()}
+              >
+                Create Business
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsNewProjectOpen(false)}
+                className="px-8"
+              >
+                Cancel
             </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
