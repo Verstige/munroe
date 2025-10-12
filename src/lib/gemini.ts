@@ -151,7 +151,15 @@ Respond with deep business insights, strategic advice, and actionable recommenda
     return text || 'I need more context to provide business insights.';
   } catch (error) {
     console.error('❌ Business Assistant API Error:', error);
-    return 'I apologize, but I\'m having trouble analyzing your business data right now. Please try again later.';
+    console.error('Error details:', {
+      message: error.message,
+      hasApiKey: !!API_KEY,
+      model: MODEL_NAME,
+      userMessage: userMessage.substring(0, 100),
+      workspaceProjects: workspaceContext.projects.length,
+      workspaceTeam: workspaceContext.teamMembers.length
+    });
+    return `I apologize, but I'm having trouble analyzing your business data right now. Error: ${error.message}. Please try again later.`;
   }
 }
 
@@ -216,7 +224,14 @@ Be friendly, helpful, and engaging. Keep responses conversational and natural.`;
     return text || 'I\'m here to help! What would you like to talk about?';
   } catch (error) {
     console.error('❌ General Chat API Error:', error);
-    return 'I apologize, but I\'m having trouble processing your request right now. Please try again later.';
+    console.error('Error details:', {
+      message: error.message,
+      hasApiKey: !!API_KEY,
+      model: MODEL_NAME,
+      userMessage: userMessage.substring(0, 100),
+      conversationHistory: conversationHistory.length
+    });
+    return `I apologize, but I'm having trouble processing your request right now. Error: ${error.message}. Please try again later.`;
   }
 }
 

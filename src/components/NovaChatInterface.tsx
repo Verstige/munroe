@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generateBusinessAssistantResponse, generateGeneralChatResponse, generateSmartSuggestions, type AssistantMode, type WorkspaceContext, type ConversationMemory } from "@/lib/gemini";
+import { debugEnvironment } from "@/lib/debug-env";
 
 interface ChatMessage {
   id: string;
@@ -58,6 +59,13 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
       ]);
     }
   }, [userName]);
+
+  // Debug environment on component mount
+  useEffect(() => {
+    console.log('🔍 Nova AI Component Mounted for user:', userName);
+    const envStatus = debugEnvironment();
+    console.log('Environment status:', envStatus);
+  }, []);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -190,9 +198,17 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
       return { response, suggestions };
     } catch (error) {
       console.error('AI Response Error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        userName: userName,
+        assistantMode: assistantMode,
+        workspaceContext: workspaceContext,
+        hasApiKey: !!import.meta.env.VITE_GEMINI_API_KEY
+      });
       setIsTyping(false);
       return { 
-        response: 'I apologize, but I encountered an error processing your request. Please try again.',
+        response: `I apologize, but I encountered an error processing your request. Error: ${error.message}. Please try again.`,
         suggestions: []
       };
     }
