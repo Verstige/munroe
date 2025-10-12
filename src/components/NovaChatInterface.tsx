@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2 } from "lucide-react";
+import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generateBusinessAssistantResponse, generateGeneralChatResponse, generateSmartSuggestions, type AssistantMode, type WorkspaceContext, type ConversationMemory } from "@/lib/gemini";
 import { debugEnvironment } from "@/lib/debug-env";
@@ -273,6 +273,7 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation();
       handleSubmit(e);
     }
   };
@@ -478,14 +479,19 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
 
         {/* Chat Input */}
         <div className="border-t border-gray-700/50 p-3 sm:p-4">
-          <form onSubmit={handleSubmit} className="relative">
+          <form onSubmit={handleSubmit} className="relative" onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }}>
             <div className="relative bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 rounded-xl overflow-hidden">
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask anything..."
-                className="w-full h-10 sm:h-12 pl-10 sm:pl-12 pr-20 sm:pr-24 bg-transparent border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none text-sm sm:text-base"
+                className="w-full h-10 sm:h-12 pl-10 sm:pl-12 pr-24 sm:pr-28 bg-transparent border-0 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none text-sm sm:text-base"
                 disabled={isTyping}
               />
               
@@ -507,20 +513,39 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
                   <Mic className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 hover:text-white transition-colors" />
                 </Button>
                 
+                {/* Enter/Send Button */}
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="sm"
+                  className="p-1.5 sm:p-2 bg-blue-500/20 hover:bg-blue-500/30 transition-all duration-200 rounded-lg"
+                  disabled={!message.trim() || isTyping}
+                  title="Send message (Enter)"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (message.trim()) {
+                      handleSubmit(e);
+                    }
+                  }}
+                >
+                  <Send className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400 transition-colors" />
+                </Button>
+                
                 <div className={`relative ${isRecording ? 'animate-pulse' : ''}`}>
                   <Button
-                    type="submit"
+                    type="button"
                     variant="ghost"
                     size="sm"
                     className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                       isRecording 
                         ? 'bg-green-500/20 hover:bg-green-500/30' 
-                        : 'bg-blue-500/20 hover:bg-blue-500/30'
+                        : 'bg-gray-500/20 hover:bg-gray-500/30'
                     }`}
-                    disabled={!message.trim() || isTyping}
+                    disabled={isTyping}
                   >
                     <Volume2 className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
-                      isRecording ? 'text-green-400' : 'text-blue-400'
+                      isRecording ? 'text-green-400' : 'text-gray-400'
                     }`} />
                   </Button>
                   
