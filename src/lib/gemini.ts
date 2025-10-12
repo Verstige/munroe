@@ -10,11 +10,7 @@ const getGenAI = () => {
     apiKey = process.env.VITE_GEMINI_API_KEY;
   }
   
-  // Fallback: hardcoded for development (temporary)
-  if (!apiKey) {
-    console.warn('⚠️ Using hardcoded API key as fallback');
-    apiKey = 'AIzaSyBJXRO2wNi35NgDftgu-JUXqe-uIhZ2qhA';
-  }
+  // No hardcoded fallback - environment variables should be properly configured
   
   // Enhanced debugging
   console.log('🔍 Environment variable check:', {
@@ -22,7 +18,7 @@ const getGenAI = () => {
     allEnvVars: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')),
     hasGeminiKey: !!apiKey,
     importMetaEnv: Object.keys(import.meta.env),
-    envSource: apiKey === 'AIzaSyBJXRO2wNi35NgDftgu-JUXqe-uIhZ2qhA' ? 'hardcoded' : 'environment'
+    envSource: apiKey ? 'environment' : 'none'
   });
   
   if (!apiKey) {
