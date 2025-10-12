@@ -214,7 +214,7 @@ export default function BuiltInNotes({ projectId, currentUser = "Current User" }
           <select
             value={visibilityFilter}
             onChange={(e) => setVisibilityFilter(e.target.value as typeof visibilityFilter)}
-            className="px-3 py-1 border rounded-md text-sm"
+            className="px-3 py-1 border border-border rounded-md text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="all">All</option>
             <option value="public">Public</option>
@@ -406,7 +406,7 @@ export default function BuiltInNotes({ projectId, currentUser = "Current User" }
                   ...prev, 
                   visibility: e.target.value as BuiltInNote["visibility"]
                 } : null)}
-                className="px-3 py-2 border rounded-md"
+                className="px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="private">Private</option>
                 <option value="team">Team</option>
