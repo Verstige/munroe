@@ -28,13 +28,27 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
     {
       id: '1',
       type: 'ai',
-      content: `Hello ${userName}! I'm Nova, your intelligent project companion. I can help you with project management, task tracking, time analysis, and much more. What would you like to know?`,
+      content: `Hello! I'm Nova, your intelligent project companion. I can help you with project management, task tracking, time analysis, and much more. What would you like to know?`,
       timestamp: new Date()
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Update initial message when userName becomes available
+  useEffect(() => {
+    if (userName && userName !== "User" && messages.length === 1) {
+      setMessages([
+        {
+          id: '1',
+          type: 'ai',
+          content: `Hello ${userName}! I'm Nova, your intelligent project companion. I can help you with project management, task tracking, time analysis, and much more. What would you like to know?`,
+          timestamp: new Date()
+        }
+      ]);
+    }
+  }, [userName]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

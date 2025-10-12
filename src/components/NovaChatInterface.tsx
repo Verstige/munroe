@@ -35,7 +35,7 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
     {
       id: '1',
       type: 'ai',
-      content: `Hello ${userName}! I'm Nova, your intelligent companion. I have two modes: Chat Mode for general conversation and Assistant Mode for deep business insights. What would you like to explore?`,
+      content: `Hello! I'm Nova, your intelligent companion. I have two modes: Chat Mode for general conversation and Assistant Mode for deep business insights. What would you like to explore?`,
       timestamp: new Date(),
       mode: 'chat'
     }
@@ -43,6 +43,21 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Update initial message when userName becomes available
+  useEffect(() => {
+    if (userName && userName !== "User" && messages.length === 1) {
+      setMessages([
+        {
+          id: '1',
+          type: 'ai',
+          content: `Hello ${userName}! I'm Nova, your intelligent companion. I have two modes: Chat Mode for general conversation and Assistant Mode for deep business insights. What would you like to explore?`,
+          timestamp: new Date(),
+          mode: 'chat'
+        }
+      ]);
+    }
+  }, [userName]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -259,21 +274,22 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   };
 
   const clearConversation = () => {
-    // Reset to initial state
+    // Reset to initial state with current userName
+    const currentUserName = userName || "User";
     setMessages([
       {
         id: '1',
         type: 'ai',
-        content: `Hello ${userName}! I'm Nova, your intelligent companion. I have two modes: Chat Mode for general conversation and Assistant Mode for deep business insights. What would you like to explore?`,
+        content: `Hello ${currentUserName}! I'm Nova, your intelligent companion. I have two modes: Chat Mode for general conversation and Assistant Mode for deep business insights. What would you like to explore?`,
         timestamp: new Date(),
         mode: 'chat'
       }
     ]);
     setConversationMemory([]);
-    
+
     // Clear localStorage
-    localStorage.removeItem(`nova-conversation-${userName}`);
-    localStorage.removeItem(`nova-memory-${userName}`);
+    localStorage.removeItem(`nova-conversation-${currentUserName}`);
+    localStorage.removeItem(`nova-memory-${currentUserName}`);
   };
 
   return (
