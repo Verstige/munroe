@@ -43,7 +43,9 @@ import {
   Webhook,
   CheckCircle,
   AlertCircle,
-  Info
+  Info,
+  Minus,
+  Maximize
 } from 'lucide-react';
 
 import { 
@@ -56,110 +58,110 @@ import {
 
 // Custom Node Components
 const AgentActionNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-blue-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-blue-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <Bot className="w-4 h-4 text-blue-500" />
-      <div className="font-bold text-sm">Agent Action</div>
+      <div className="font-bold text-sm text-foreground">Agent Action</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
 const APICallNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-green-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-green-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <Zap className="w-4 h-4 text-green-500" />
-      <div className="font-bold text-sm">API Call</div>
+      <div className="font-bold text-sm text-foreground">API Call</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
 const ConditionNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-yellow-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-yellow-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <GitBranch className="w-4 h-4 text-yellow-500" />
-      <div className="font-bold text-sm">Condition</div>
+      <div className="font-bold text-sm text-foreground">Condition</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
 const FunctionNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-purple-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-purple-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <Code className="w-4 h-4 text-purple-500" />
-      <div className="font-bold text-sm">Function</div>
+      <div className="font-bold text-sm text-foreground">Function</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
 const TriggerNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-orange-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-orange-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <Webhook className="w-4 h-4 text-orange-500" />
-      <div className="font-bold text-sm">Trigger</div>
+      <div className="font-bold text-sm text-foreground">Trigger</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
 const EndNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-red-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-red-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <CheckCircle className="w-4 h-4 text-red-500" />
-      <div className="font-bold text-sm">End</div>
+      <div className="font-bold text-sm text-foreground">End</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
 const DelayNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-indigo-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-indigo-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <Clock className="w-4 h-4 text-indigo-500" />
-      <div className="font-bold text-sm">Delay</div>
+      <div className="font-bold text-sm text-foreground">Delay</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
 const MergeNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-teal-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-teal-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <Merge className="w-4 h-4 text-teal-500" />
-      <div className="font-bold text-sm">Merge</div>
+      <div className="font-bold text-sm text-foreground">Merge</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
 const SplitNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-2 shadow-md rounded-md bg-white border-2 min-w-[200px] ${
-    selected ? 'border-pink-500' : 'border-gray-300'
+  <div className={`px-4 py-2 shadow-md rounded-md bg-chatgpt-card border-2 min-w-[200px] ${
+    selected ? 'border-pink-500' : 'border-border'
   }`}>
     <div className="flex items-center gap-2">
       <Split className="w-4 h-4 text-pink-500" />
-      <div className="font-bold text-sm">Split</div>
+      <div className="font-bold text-sm text-foreground">Split</div>
     </div>
-    <div className="text-xs text-gray-500 mt-1">{data.label}</div>
+    <div className="text-xs text-muted-foreground mt-1">{data.label}</div>
   </div>
 );
 
@@ -337,23 +339,25 @@ function WorkflowBuilderContent({ workflow, onSave, onExecute }: WorkflowBuilder
   }, [workflow?.id, onExecute]);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-80 bg-chatgpt-card border-r border-border flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold">Workflow Builder</h2>
+        <div className="p-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-foreground">Workflow Builder</h2>
           <div className="mt-2 space-y-2">
             <Input
               value={workflowName}
               onChange={(e) => setWorkflowName(e.target.value)}
               placeholder="Workflow name"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground"
             />
             <Textarea
               value={workflowDescription}
               onChange={(e) => setWorkflowDescription(e.target.value)}
               placeholder="Description"
               rows={2}
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
           <div className="flex gap-2 mt-3">
@@ -369,22 +373,22 @@ function WorkflowBuilderContent({ workflow, onSave, onExecute }: WorkflowBuilder
         </div>
 
         {/* Node Templates */}
-        <div className="flex-1 p-4 overflow-y-auto">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Add Nodes</h3>
+        <div className="flex-1 p-4 overflow-y-auto scrollbar-hide">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">Add Nodes</h3>
           <div className="space-y-2">
             {NODE_TEMPLATES.map((template) => (
               <div
                 key={template.type}
-                className="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                className="p-3 border border-border rounded-lg cursor-pointer hover:bg-background/50 transition-colors"
                 onClick={() => addNode(template.type)}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg bg-${template.color}-100 flex items-center justify-center`}>
+                  <div className={`w-8 h-8 rounded-lg bg-${template.color}-500/20 flex items-center justify-center`}>
                     {template.icon}
                   </div>
                   <div>
-                    <div className="font-medium text-sm">{template.label}</div>
-                    <div className="text-xs text-gray-500">{template.description}</div>
+                    <div className="font-medium text-sm text-foreground">{template.label}</div>
+                    <div className="text-xs text-muted-foreground">{template.description}</div>
                   </div>
                 </div>
               </div>
@@ -394,8 +398,8 @@ function WorkflowBuilderContent({ workflow, onSave, onExecute }: WorkflowBuilder
 
         {/* Node Configuration */}
         {selectedNode && (
-          <div className="p-4 border-t border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Configure Node</h3>
+          <div className="p-4 border-t border-border">
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">Configure Node</h3>
             <div className="space-y-2">
               <Input
                 value={selectedNode.data.label}
@@ -411,6 +415,7 @@ function WorkflowBuilderContent({ workflow, onSave, onExecute }: WorkflowBuilder
                   ));
                 }}
                 placeholder="Node label"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               <Textarea
                 value={selectedNode.data.description || ''}
@@ -427,6 +432,7 @@ function WorkflowBuilderContent({ workflow, onSave, onExecute }: WorkflowBuilder
                 }}
                 placeholder="Node description"
                 rows={2}
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
@@ -434,7 +440,7 @@ function WorkflowBuilderContent({ workflow, onSave, onExecute }: WorkflowBuilder
       </div>
 
       {/* Main Canvas */}
-      <div className="flex-1">
+      <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -445,12 +451,48 @@ function WorkflowBuilderContent({ workflow, onSave, onExecute }: WorkflowBuilder
           onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
           fitView
-          attributionPosition="bottom-left"
+          style={{ background: 'transparent' }}
         >
-          <Controls />
-          <MiniMap />
-          <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+          <Background 
+            variant={BackgroundVariant.Dots} 
+            gap={12} 
+            size={1} 
+            color="rgba(255, 255, 255, 0.1)"
+          />
         </ReactFlow>
+
+        {/* Custom Zoom Controls - Top Left */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <div className="bg-background/90 backdrop-blur-sm rounded-lg shadow-lg border border-border p-1 flex flex-col gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => reactFlowInstance?.zoomIn()}
+              className="h-8 w-8 p-0 hover:bg-background/50"
+              title="Zoom In"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => reactFlowInstance?.zoomOut()}
+              className="h-8 w-8 p-0 hover:bg-background/50"
+              title="Zoom Out"
+            >
+              <Minus className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => reactFlowInstance?.fitView()}
+              className="h-8 w-8 p-0 hover:bg-background/50"
+              title="Fit View"
+            >
+              <Maximize className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

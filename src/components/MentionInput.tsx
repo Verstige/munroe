@@ -7,6 +7,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import TeamMemberAvatar from "./TeamMemberAvatar";
 import { type TeamMember } from "@/lib/collaboration";
 import { cn } from "@/lib/utils";
+import { Mic, MicOff } from "lucide-react";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { toast } from "@/hooks/use-toast";
 
 interface MentionInputProps {
   value: string;
@@ -33,6 +36,15 @@ const MentionInput = forwardRef<HTMLTextAreaElement, MentionInputProps>(({
   disabled = false,
   className
 }, ref) => {
+  const {
+    transcript,
+    isListening,
+    isSupported,
+    error,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useSpeechRecognition();
   const [mentionPosition, setMentionPosition] = useState<MentionPosition | null>(null);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const [isMentionOpen, setIsMentionOpen] = useState(false);
@@ -48,6 +60,33 @@ const MentionInput = forwardRef<HTMLTextAreaElement, MentionInputProps>(({
       }
     }
   }, [ref]);
+
+  // Handle speech recognition transcript updates
+  useEffect(() => {
+    if (transcript && isListening) {
+      onChange(value + (value ? ' ' : '') + transcript);
+      resetTranscript();
+    }
+  }, [transcript, isListening, value, onChange, resetTranscript]);
+
+  // Handle speech recognition errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Speech Recognition Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error]);
+
+  const handleMicrophoneToggle = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
 
   const findMentionPosition = (text: string, cursorPosition: number): MentionPosition | null => {
     // Look backwards from cursor position for @ symbol
@@ -250,8 +289,30 @@ const MentionInput = forwardRef<HTMLTextAreaElement, MentionInputProps>(({
         </PopoverContent>
       </Popover>
       
-      {/* Send Button */}
-      <div className="absolute bottom-2 right-2">
+      {/* Action Buttons */}
+      <div className="absolute bottom-2 right-2 flex gap-1">
+        {/* Microphone Button */}
+        {isSupported && (
+          <Button
+            size="sm"
+            onClick={handleMicrophoneToggle}
+            disabled={disabled}
+            className={`h-8 w-8 p-0 transition-all duration-200 ${
+              isListening 
+                ? 'bg-red-500 hover:bg-red-600 text-white' 
+                : 'bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground'
+            }`}
+            title={isListening ? "Stop recording" : "Start voice input"}
+          >
+            {isListening ? (
+              <MicOff className="w-4 h-4" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
+          </Button>
+        )}
+        
+        {/* Send Button */}
         <Button
           size="sm"
           onClick={onSend}

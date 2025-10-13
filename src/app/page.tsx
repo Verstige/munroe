@@ -6,6 +6,10 @@ import ChatInterface from "@/components/ChatInterface";
 import ProjectContextPanel from "@/components/ProjectContextPanel";
 import QuickSwitcher from "@/components/QuickSwitcher";
 import EmptyState from "@/components/EmptyState";
+import CRMDashboard from "@/components/CRM/CRMDashboard";
+import EmailDashboard from "@/components/Email/EmailDashboard";
+import SettingsDashboard from "@/components/Settings/SettingsDashboard";
+import ProfileDropdown from "@/components/ProfileDropdown";
 import { ProjectCardSkeleton, MindmapSkeleton, SidebarStatsSkeleton } from "@/components/LoadingSkeleton";
 import ActivityFeed from "@/components/ActivityFeed";
 import WorkspaceTabs, { type WorkspaceTab } from "@/components/WorkspaceTabs";
@@ -58,9 +62,45 @@ export default function Index() {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // All users start with empty workspace
-      setProjects([]);
-      setFilteredProjects([]);
+      // Add some mock projects to demonstrate the enhanced project map
+      const mockProjects = [
+        {
+          id: '1',
+          name: 'Website Redesign',
+          description: 'Complete redesign of the company website with modern UI/UX',
+          status: 'active',
+          priority: 'high' as const,
+          team_id: 'team-1',
+          created_by: 'user-1',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '2', 
+          name: 'Mobile App Development',
+          description: 'Build a new mobile application for iOS and Android',
+          status: 'planning',
+          priority: 'medium' as const,
+          team_id: 'team-1',
+          created_by: 'user-1',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: '3',
+          name: 'Marketing Campaign',
+          description: 'Launch a comprehensive marketing campaign for Q1',
+          status: 'active',
+          priority: 'high' as const,
+          team_id: 'team-1',
+          created_by: 'user-1',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      setProjects(mockProjects);
+      setFilteredProjects(mockProjects);
       setIsLoading(false);
     };
 
@@ -134,33 +174,7 @@ export default function Index() {
     console.log('Project invitation created:', invitation);
   };
 
-  const handleSearch = (query: string) => {
-    if (!query.trim()) {
-      setFilteredProjects(projects);
-      return;
-    }
 
-    const filtered = projects.filter(project =>
-      project.name.toLowerCase().includes(query.toLowerCase()) ||
-      project.description.toLowerCase().includes(query.toLowerCase()) ||
-      project.status.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredProjects(filtered);
-  };
-
-  const handleFilter = (filter: { status?: string; priority?: string }) => {
-    let filtered = projects;
-
-    if (filter.status) {
-      filtered = filtered.filter(project => project.status === filter.status);
-    }
-
-    if (filter.priority) {
-      filtered = filtered.filter(project => project.priority === filter.priority);
-    }
-
-    setFilteredProjects(filtered);
-  };
 
   const handleCreateProject = () => {
     if (!newProject.name.trim()) return;
@@ -185,16 +199,49 @@ export default function Index() {
     setIsQuickSwitcherOpen(false);
   };
 
+  // New handler functions for sidebar buttons
+  const handleProjectMap = () => {
+    setCurrentTab('mindmap');
+  };
+
+  const handleNotes = () => {
+    setCurrentTab('notes');
+  };
+
+  const handleTasks = () => {
+    setCurrentTab('tasks');
+  };
+
+  const handleTeam = () => {
+    setCurrentTab('team');
+  };
+
+  const handleTimer = () => {
+    setCurrentTab('timer');
+  };
+
   return (
     <div className="flex h-screen bg-gradient-subtle overflow-hidden">
       {/* Sidebar */}
       <Sidebar 
         onNewProject={() => setIsNewProjectOpen(true)}
+        onDashboard={() => console.log('Navigate to Dashboard')}
+        onGetStarted={() => setIsNewProjectOpen(true)}
+        onConnections={() => {
+          setCurrentTab('crm');
+        }}
+        onEmail={() => {
+          setCurrentTab('email');
+        }}
+        onProjectMap={handleProjectMap}
+        onNotes={handleNotes}
+        onTasks={handleTasks}
+        onTeam={handleTeam}
+        onTimer={handleTimer}
+        onNavigateToTab={(tab) => setCurrentTab(tab as WorkspaceTab)}
         projects={projects}
-        onSearch={handleSearch}
-        onFilter={handleFilter}
         isLoading={isLoading}
-        userRole={currentUserRole}
+        hasEverCreatedProject={projects.length > 0}
       />
 
       {/* Main Content */}
@@ -242,8 +289,14 @@ export default function Index() {
               notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
               tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
               teamContent={<TeamManagement />}
+              timerContent={<div className="text-center py-8"><p className="text-muted-foreground">Timer functionality coming soon</p></div>}
+              crmContent={<CRMDashboard />}
+              emailContent={<EmailDashboard />}
               taskNotifications={0}
               teamNotifications={0}
+              timerNotifications={0}
+              crmNotifications={0}
+              emailNotifications={0}
             />
           </div>
 

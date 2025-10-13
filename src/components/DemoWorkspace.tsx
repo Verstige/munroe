@@ -166,8 +166,6 @@ export default function DemoWorkspace() {
         <Sidebar 
           onNewProject={() => {}} // Disabled in demo
           projects={projects}
-          onSearch={() => {}} // Disabled in demo
-          onFilter={() => {}} // Disabled in demo
           isLoading={false}
         />
       </div>

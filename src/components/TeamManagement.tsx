@@ -34,7 +34,6 @@ import {
   type TeamInvitation, 
   type InvitationFormData,
   type TeamMember,
-  mockInvitations,
   validateInvitationForm,
   createInvitation,
   simulateEmailInvitation,
@@ -123,7 +122,7 @@ export default function TeamManagement() {
       }));
       setInvitations(parsedInvitations);
     } else {
-      setInvitations(mockInvitations);
+      setInvitations([]); // Start with empty invitations
     }
   }, []);
 
@@ -407,7 +406,7 @@ export default function TeamManagement() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value as typeof roleFilter)}
-            className="px-3 py-2 border rounded-md text-sm"
+            className="px-3 py-2 border border-border rounded-md text-sm bg-background text-foreground focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           >
             <option value="all">All Roles</option>
             <option value="owner">Owner</option>
@@ -419,7 +418,7 @@ export default function TeamManagement() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-            className="px-3 py-2 border rounded-md text-sm"
+            className="px-3 py-2 border border-border rounded-md text-sm bg-background text-foreground focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -691,7 +690,7 @@ export default function TeamManagement() {
             <div>
               <label className="text-sm font-medium mb-1 block">Role *</label>
               <select 
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 value={invitationForm.role}
                 onChange={(e) => handleFormChange("role", e.target.value as "admin" | "member" | "viewer")}
               >
@@ -758,7 +757,7 @@ export default function TeamManagement() {
             <Input defaultValue={editingMember.name} />
             <Input defaultValue={editingMember.email} type="email" />
             <Input defaultValue={editingMember.phone || ""} />
-            <select defaultValue={editingMember.role} className="w-full px-3 py-2 border rounded-md">
+            <select defaultValue={editingMember.role} className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
               <option value="member">Member</option>
               <option value="admin">Admin</option>
               <option value="viewer">Viewer</option>

@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import DashboardDirectory from "@/components/DashboardDirectory";
-import AdvancedMindmap from "@/components/AdvancedMindmap";
+import EnhancedProjectMap from "@/components/EnhancedProjectMap";
 import ProjectCard from "@/components/ProjectCard";
 import ChatInterface from "@/components/ChatInterface";
 import ProjectContextPanel from "@/components/ProjectContextPanel";
+import EnhancedProjectOverview from "@/components/EnhancedProjectOverview";
 import QuickSwitcher from "@/components/QuickSwitcher";
 import EmptyState from "@/components/EmptyState";
+import CRMDashboard from "@/components/CRM/CRMDashboard";
+import EmailDashboard from "@/components/Email/EmailDashboard";
+import SettingsDashboard from "@/components/Settings/SettingsDashboard";
+import ProfileDropdown from "@/components/ProfileDropdown";
 import { ProjectCardSkeleton, MindmapSkeleton, SidebarStatsSkeleton } from "@/components/LoadingSkeleton";
 import ActivityFeed from "@/components/ActivityFeed";
 import WorkspaceTabs, { type WorkspaceTab } from "@/components/WorkspaceTabs";
@@ -27,7 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Target, Menu, X, LogOut } from "lucide-react";
+import { Search, Target, Menu, X, LogOut, Plus } from "lucide-react";
 
 interface Project {
   id: string;
@@ -359,6 +364,7 @@ export default function Index() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [selectedProjectFromMap, setSelectedProjectFromMap] = useState<Project | null>(null);
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
   const [isQuickSwitcherOpen, setIsQuickSwitcherOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -505,8 +511,12 @@ export default function Index() {
           // Check if user has ever created a project (for first-time users)
           const hasCreatedProject = localStorage.getItem('hasEverCreatedProject');
           if (mounted) {
-            setProjects([]);
-            setFilteredProjects([]);
+            // Load projects from localStorage - no mock data
+            const savedProjects = localStorage.getItem('userProjects');
+            const projects = savedProjects ? JSON.parse(savedProjects) : [];
+            
+            setProjects(projects);
+            setFilteredProjects(projects);
             setDynamicMindmapNodes([]);
             setHasEverCreatedProject(hasCreatedProject === 'true');
           }
@@ -614,37 +624,20 @@ export default function Index() {
     }
   };
 
+  const handleProjectMapSelect = (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      setSelectedProjectFromMap(project);
+      setActiveProject(project); // Also set as active project
+    }
+  };
+
+
   const handleCloseProject = () => {
     setActiveProject(null);
   };
 
-  const handleSearch = (query: string) => {
-    if (!query.trim()) {
-      setFilteredProjects(projects);
-      return;
-    }
 
-    const filtered = projects.filter(project =>
-      project.name.toLowerCase().includes(query.toLowerCase()) ||
-      project.description.toLowerCase().includes(query.toLowerCase()) ||
-      project.status.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredProjects(filtered);
-  };
-
-  const handleFilter = (filter: { status?: string; priority?: string }) => {
-    let filtered = projects;
-
-    if (filter.status) {
-      filtered = filtered.filter(project => project.status === filter.status);
-    }
-
-    if (filter.priority) {
-      filtered = filtered.filter(project => project.priority === filter.priority);
-    }
-
-    setFilteredProjects(filtered);
-  };
 
   const handleCreateProject = () => {
     if (!newProject.name.trim()) return;
@@ -714,6 +707,42 @@ export default function Index() {
     localStorage.setItem('userProjects', JSON.stringify(updatedProjects));
   };
 
+  const handleDeleteProject = (projectId: string) => {
+    const updatedProjects = projects.filter(p => p.id !== projectId);
+    setProjects(updatedProjects);
+    setFilteredProjects(updatedProjects);
+    
+    // Clear active project if it was deleted
+    if (activeProject?.id === projectId) {
+      setActiveProject(null);
+      setSelectedProjectFromMap(null);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('userProjects', JSON.stringify(updatedProjects));
+  };
+
+  // New handler functions for sidebar buttons
+  const handleProjectMap = () => {
+    setCurrentTab('mindmap');
+  };
+
+  const handleNotes = () => {
+    setCurrentTab('notes');
+  };
+
+  const handleTasks = () => {
+    setCurrentTab('tasks');
+  };
+
+  const handleTeam = () => {
+    setCurrentTab('team');
+  };
+
+  const handleTimer = () => {
+    setCurrentTab('timer');
+  };
+
   // Debug function to clear localStorage (can be called from console)
   const clearUserData = () => {
     localStorage.removeItem('userProjects');
@@ -740,23 +769,6 @@ export default function Index() {
     console.log('localStorage activeProjectId:', localStorage.getItem('activeProjectId'));
   };
 
-  const handleLogout = async () => {
-    try {
-      const { error } = await signOut();
-      if (error) {
-        console.error('Logout error:', error);
-      } else {
-        // Clear local storage on logout
-        localStorage.removeItem('userProjects');
-        localStorage.removeItem('userMindmapNodes');
-        localStorage.removeItem('activeProjectId');
-        localStorage.removeItem('hasEverCreatedProject');
-        console.log('Logged out successfully');
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
 
   // Make debug functions available globally for troubleshooting
   (window as any).clearUserData = clearUserData;
@@ -768,42 +780,46 @@ export default function Index() {
       <div className="hidden lg:block">
       <Sidebar 
         onNewProject={() => setIsNewProjectOpen(true)}
-          onDashboard={() => setShowDashboard(true)}
-          onGetStarted={() => setIsNewProjectOpen(true)}
+        onDashboard={() => setShowDashboard(true)}
+        onGetStarted={() => setIsNewProjectOpen(true)}
+        onConnections={() => {
+          setCurrentTab('crm');
+        }}
+        onEmail={() => {
+          setCurrentTab('email');
+        }}
+        onProjectMap={handleProjectMap}
+        onNotes={handleNotes}
+        onTasks={handleTasks}
+        onTeam={handleTeam}
+        onTimer={handleTimer}
+        onNavigateToTab={(tab) => setCurrentTab(tab as WorkspaceTab)}
         projects={projects}
-        onSearch={handleSearch}
-        onFilter={handleFilter}
         isLoading={isLoading}
-          hasEverCreatedProject={hasEverCreatedProject}
+        hasEverCreatedProject={hasEverCreatedProject}
       />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto bg-gradient-subtle scrollbar-none">
-        {/* Mobile Header */}
-        <div className="lg:hidden bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
-          <div className="flex items-center justify-between p-4">
+        {/* Main Dashboard Content */}
+        <>
+            {/* Mobile Header */}
+            <div className="lg:hidden bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
+          <div className="flex items-center justify-between p-3 sm:p-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Target className="w-4 h-4 text-white" />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <Target className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
               </div>
-              <span className="font-semibold text-foreground">Nexus</span>
+              <span className="font-semibold text-foreground text-sm sm:text-base">Nexus</span>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="p-2 text-muted-foreground hover:text-foreground"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
+              <ProfileDropdown />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2"
+                className="p-2 touch-manipulation active:scale-95"
               >
                 {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
@@ -830,7 +846,7 @@ export default function Index() {
                       setCurrentTab("mindmap");
                       setIsMobileMenuOpen(false);
                     }}
-                    className={currentTab === "mindmap" ? "bg-blue-500/10 border-blue-500/20" : ""}
+                    className={`touch-manipulation active:scale-95 ${currentTab === "mindmap" ? "bg-blue-500/10 border-blue-500/20" : ""}`}
                   >
                     Mindmap
                   </Button>
@@ -841,7 +857,7 @@ export default function Index() {
                       setCurrentTab("notes");
                       setIsMobileMenuOpen(false);
                     }}
-                    className={currentTab === "notes" ? "bg-blue-500/10 border-blue-500/20" : ""}
+                    className={`touch-manipulation active:scale-95 ${currentTab === "notes" ? "bg-blue-500/10 border-blue-500/20" : ""}`}
                   >
                     Notes
                   </Button>
@@ -852,7 +868,7 @@ export default function Index() {
                       setCurrentTab("tasks");
                       setIsMobileMenuOpen(false);
                     }}
-                    className={currentTab === "tasks" ? "bg-blue-500/10 border-blue-500/20" : ""}
+                    className={`touch-manipulation active:scale-95 ${currentTab === "tasks" ? "bg-blue-500/10 border-blue-500/20" : ""}`}
                   >
                     Tasks
                   </Button>
@@ -863,7 +879,7 @@ export default function Index() {
                       setCurrentTab("team");
                       setIsMobileMenuOpen(false);
                     }}
-                    className={currentTab === "team" ? "bg-blue-500/10 border-blue-500/20" : ""}
+                    className={`touch-manipulation active:scale-95 ${currentTab === "team" ? "bg-blue-500/10 border-blue-500/20" : ""}`}
                   >
                     Team
                   </Button>
@@ -892,6 +908,82 @@ export default function Index() {
             </div>
           )}
         </div>
+
+        {/* Professional Hero Section */}
+        <div className="relative bg-gradient-to-br from-background via-background/95 to-background/90 border-b border-border/50">
+          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+          <div className="relative px-4 sm:px-6 py-8 sm:py-12 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center">
+                {/* Main Heading */}
+                <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6">
+                  <span className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
+                    Your Business
+                  </span>
+                  <br />
+                  <span className="text-foreground">
+                    Intelligence Hub
+                  </span>
+                </h1>
+                
+                {/* Subtitle */}
+                <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4">
+                  Streamline operations, manage projects, and unlock insights with our comprehensive AI-powered business suite. 
+                  Everything you need to scale your business, all in one place.
+                </p>
+                
+                {/* Stats Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-6 sm:mb-8 px-4">
+                  <div className="bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 sm:p-6">
+                    <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-2">
+                      {projects.length}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      Total Projects
+                    </div>
+                  </div>
+                  <div className="bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 sm:p-6">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">
+                      {projects.filter(p => p.status === "Active").length}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      Active Projects
+                    </div>
+                  </div>
+                  <div className="bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 sm:p-6">
+                    <div className="text-2xl sm:text-3xl font-bold text-purple-400 mb-2">
+                      {projects.filter(p => p.priority === "high").length}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      High Priority
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Quick Actions */}
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
+                  <Button 
+                    size="lg" 
+                    className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 sm:px-8 py-3 rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-300"
+                    onClick={() => setIsNewProjectOpen(true)}
+                  >
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Start New Project
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="w-full sm:w-auto border-border/50 hover:bg-background/50 px-6 sm:px-8 py-3 rounded-xl transition-all duration-300"
+                    onClick={() => setCurrentTab('mindmap')}
+                  >
+                    <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    View Project Map
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         
         <div className="p-3 sm:p-4 md:p-6 lg:p-8">
           {/* Show welcome screen only for truly new users (never created a project) */}
@@ -906,23 +998,8 @@ export default function Index() {
               <div className="mb-4 sm:mb-6 md:mb-8 animate-fade-in">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-foreground">
-                      Welcome back, {getUserFirstName(profile)}
-            </h1>
-                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
-              Your project ecosystem at a glance
-            </p>
+                    {/* Profile dropdown removed */}
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="text-muted-foreground hover:text-foreground border-muted-foreground/20 hover:border-muted-foreground/40"
-                    title="Logout"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Logout</span>
-                  </Button>
                 </div>
           </div>
 
@@ -971,6 +1048,7 @@ export default function Index() {
             />
           </div>
 
+
           {/* Workspace Tabs */}
           <WorkspaceTabs
             activeTab={currentTab}
@@ -978,22 +1056,18 @@ export default function Index() {
             userRole={currentUserRole}
             mindmapContent={
               isLoading ? (
-              <MindmapSkeleton />
-            ) : projects.length > 0 ? (
-                <AdvancedMindmap
-                  nodes={dynamicMindmapNodes}
-                edges={mindmapEdges}
-                onOpenProject={handleOpenProject}
-                activeProjectId={activeProject?.id}
-                  onAddNewProject={handleAddNewProject}
-                  onAddNewSubProject={handleAddNewSubProject}
-                  onAddNewLeg={handleAddNewLeg}
-              />
-            ) : (
-              <EmptyState 
-                type="no-projects" 
-                onAction={() => setIsNewProjectOpen(true)}
-              />
+                <MindmapSkeleton />
+              ) : projects.length > 0 ? (
+                <EnhancedProjectMap
+                  onProjectSelect={handleProjectMapSelect}
+                  selectedProjectId={selectedProjectFromMap?.id}
+                  projects={projects}
+                />
+              ) : (
+                <EmptyState 
+                  type="no-projects" 
+                  onAction={() => setIsNewProjectOpen(true)}
+                />
               )
             }
             notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
@@ -1018,46 +1092,36 @@ export default function Index() {
                 }))}
               />
             }
+            crmContent={<CRMDashboard />}
+            emailContent={<EmailDashboard />}
             taskNotifications={0}
             teamNotifications={0}
             timerNotifications={0}
+            crmNotifications={0}
+            emailNotifications={0}
           />
 
-          {/* Project Overview Panel - above activity feed */}
+          {/* Enhanced Project Overview Panel */}
           <div className="mt-8 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <div className="max-w-4xl mx-auto">
-              {activeProject ? (
-                <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/20 shadow-glass">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-                    <h2 className="text-xl font-bold text-primary">Business Ecosystem Overview</h2>
+            <div className="max-w-6xl mx-auto">
+              <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/20 shadow-glass">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
+                  <h2 className="text-xl font-bold text-primary">Business Ecosystem Overview</h2>
+                  {selectedProjectFromMap && (
                     <Badge variant="outline" className="ml-auto">
-                      {activeProject.name}
+                      {selectedProjectFromMap.name}
                     </Badge>
+                  )}
                 </div>
-                  <ProjectContextPanel 
-                    project={activeProject} 
-                    teamMembers={teamMembers.filter(member => member.projects.includes(activeProject.id))}
-                    onUpdateProject={handleUpdateProject}
-                  />
-                </div>
-              ) : (
-                <div className="bg-gradient-to-r from-muted/30 to-muted/20 rounded-2xl p-8 border border-border/50 shadow-glass text-center">
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <Target className="w-6 h-6 text-muted-foreground" />
-                    <h2 className="text-xl font-semibold text-muted-foreground">No Project Selected</h2>
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    Click on a project in the mindmap to view its details and overview
-                  </p>
-                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                    <span>Select a project to see its progress, team members, and key metrics</span>
+                <EnhancedProjectOverview 
+                  selectedProject={selectedProjectFromMap} 
+                  onUpdateProject={handleUpdateProject}
+                  onDeleteProject={handleDeleteProject}
+                />
               </div>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
 
           {/* Resources Section - below the project overview */}
           <div className="mt-8 animate-fade-in" style={{ animationDelay: "0.35s" }}>
@@ -1083,9 +1147,7 @@ export default function Index() {
 
             </>
           )}
-        </div>
       </div>
-
 
       {/* New Brand Dialog */}
       <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
@@ -1348,16 +1410,18 @@ export default function Index() {
         onSelectProject={handleQuickSwitcherSelect}
       />
 
-      {/* Dashboard Directory */}
-      {showDashboard && (
-        <DashboardDirectory
-          onSelectTab={(tab) => {
-            setCurrentTab(tab as WorkspaceTab);
-            setShowDashboard(false);
-          }}
-          onClose={() => setShowDashboard(false)}
-        />
-      )}
+            {/* Dashboard Directory */}
+            {showDashboard && (
+              <DashboardDirectory
+                onSelectTab={(tab) => {
+                  setCurrentTab(tab as WorkspaceTab);
+                  setShowDashboard(false);
+                }}
+                onClose={() => setShowDashboard(false)}
+              />
+            )}
+        </>
+      </div>
     </div>
   );
 }

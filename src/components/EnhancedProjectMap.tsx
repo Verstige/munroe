@@ -8,7 +8,6 @@ import ReactFlow, {
   useEdgesState,
   Controls,
   Background,
-  MiniMap,
   BackgroundVariant,
   NodeTypes,
   EdgeTypes,
@@ -34,6 +33,8 @@ import {
   Users, 
   Users2,
   Plus,
+  Minus,
+  Maximize,
   Edit,
   Trash2,
   Calendar,
@@ -49,58 +50,60 @@ import {
   Save,
   Download,
   Upload,
-  Eye,
-  EyeOff,
   MessageSquare,
   Bell,
   Share2,
-  MoreHorizontal
+  MoreHorizontal,
+  Minimize2,
+  X,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 
 // Custom Node Components
 const ProjectNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-3 shadow-lg rounded-lg bg-white border-2 min-w-[200px] max-w-[250px] ${
-    selected ? 'border-blue-500' : 'border-gray-300'
+  <div className={`px-4 py-3 shadow-lg rounded-lg bg-background border-2 min-w-[200px] max-w-[250px] ${
+    selected ? 'border-primary' : 'border-border'
   }`}>
     <Handle type="target" position={Position.Top} className="w-3 h-3" />
     <div className="flex items-center gap-2 mb-2">
-      <Target className="w-4 h-4 text-blue-500" />
-      <div className="font-bold text-sm text-gray-800">{data.title}</div>
+      <Target className="w-4 h-4 text-primary" />
+      <div className="font-bold text-sm text-foreground">{data.title}</div>
       <Badge className={`text-xs ${
-        data.status === 'active' ? 'bg-green-100 text-green-800' :
-        data.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-        data.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
-        'bg-gray-100 text-gray-800'
+        data.status === 'active' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+        data.status === 'completed' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+        data.status === 'paused' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
+        'bg-muted text-muted-foreground border-border'
       }`}>
         {data.status}
       </Badge>
     </div>
     
-    <div className="text-xs text-gray-600 mb-2 line-clamp-2">
+    <div className="text-xs text-muted-foreground mb-2 line-clamp-2">
       {data.description}
     </div>
     
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
-        <span>Progress</span>
-        <span>{data.progress}%</span>
+        <span className="text-muted-foreground">Progress</span>
+        <span className="text-foreground">{data.progress}%</span>
       </div>
       <Progress value={data.progress} className="h-1" />
     </div>
     
     <div className="flex items-center justify-between mt-2">
-      <Badge variant="outline" className="text-xs">
+      <Badge variant="outline" className="text-xs border-border text-muted-foreground">
         {data.category}
       </Badge>
       {data.team && data.team.length > 0 && (
         <div className="flex -space-x-1">
           {data.team.slice(0, 3).map((member: any, idx: number) => (
-            <div key={idx} className="w-5 h-5 rounded-full bg-gray-300 border-2 border-white text-xs flex items-center justify-center">
+            <div key={idx} className="w-5 h-5 rounded-full bg-primary/20 border-2 border-background text-xs flex items-center justify-center text-primary">
               {member.name?.charAt(0) || '?'}
             </div>
           ))}
           {data.team.length > 3 && (
-            <div className="w-5 h-5 rounded-full bg-gray-400 border-2 border-white text-xs flex items-center justify-center text-white">
+            <div className="w-5 h-5 rounded-full bg-muted border-2 border-background text-xs flex items-center justify-center text-muted-foreground">
               +{data.team.length - 3}
             </div>
           )}
@@ -112,31 +115,31 @@ const ProjectNode = ({ data, selected }: { data: any; selected: boolean }) => (
 );
 
 const TaskNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-3 py-2 shadow-md rounded-lg bg-white border-2 min-w-[160px] ${
-    selected ? 'border-green-500' : 'border-gray-300'
+  <div className={`px-3 py-2 shadow-md rounded-lg bg-background border-2 min-w-[160px] ${
+    selected ? 'border-green-500' : 'border-border'
   }`}>
     <Handle type="target" position={Position.Top} className="w-3 h-3" />
     <div className="flex items-center gap-2 mb-1">
       <CheckSquare className="w-4 h-4 text-green-500" />
-      <div className="font-semibold text-sm text-gray-800">{data.title}</div>
+      <div className="font-semibold text-sm text-foreground">{data.title}</div>
       <div className={`w-2 h-2 rounded-full ${
         data.priority === 'critical' ? 'bg-red-500' :
         data.priority === 'high' ? 'bg-orange-500' :
         data.priority === 'medium' ? 'bg-yellow-500' :
-        'bg-gray-400'
+        'bg-muted-foreground'
       }`} />
     </div>
     
-    <div className="text-xs text-gray-600 mb-2 line-clamp-2">
+    <div className="text-xs text-muted-foreground mb-2 line-clamp-2">
       {data.description}
     </div>
     
     <div className="flex items-center justify-between">
-      <Badge variant="outline" className="text-xs">
+      <Badge variant="outline" className="text-xs border-border text-muted-foreground">
         {data.status}
       </Badge>
       {data.deadline && (
-        <div className="flex items-center gap-1 text-xs text-gray-500">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="w-3 h-3" />
           {new Date(data.deadline).toLocaleDateString()}
         </div>
@@ -147,28 +150,28 @@ const TaskNode = ({ data, selected }: { data: any; selected: boolean }) => (
 );
 
 const MilestoneNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-3 py-2 shadow-md rounded-lg bg-white border-2 min-w-[160px] ${
-    selected ? 'border-purple-500' : 'border-gray-300'
+  <div className={`px-3 py-2 shadow-md rounded-lg bg-background border-2 min-w-[160px] ${
+    selected ? 'border-purple-500' : 'border-border'
   }`}>
     <Handle type="target" position={Position.Top} className="w-3 h-3" />
     <div className="flex items-center gap-2 mb-1">
       <Flag className="w-4 h-4 text-purple-500" />
-      <div className="font-semibold text-sm text-gray-800">{data.title}</div>
+      <div className="font-semibold text-sm text-foreground">{data.title}</div>
       {data.completed && <CheckCircle className="w-4 h-4 text-green-500" />}
     </div>
     
-    <div className="text-xs text-gray-600 mb-2">
+    <div className="text-xs text-muted-foreground mb-2">
       {data.description}
     </div>
     
     <div className="flex items-center justify-between">
       <Badge className={`text-xs ${
-        data.completed ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'
+        data.completed ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-purple-500/20 text-purple-400 border-purple-500/30'
       }`}>
         {data.completed ? 'Completed' : 'Pending'}
       </Badge>
       {data.deadline && (
-        <div className="flex items-center gap-1 text-xs text-gray-500">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="w-3 h-3" />
           {new Date(data.deadline).toLocaleDateString()}
         </div>
@@ -179,27 +182,27 @@ const MilestoneNode = ({ data, selected }: { data: any; selected: boolean }) => 
 );
 
 const ResourceNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-3 py-2 shadow-md rounded-lg bg-white border-2 min-w-[160px] ${
-    selected ? 'border-orange-500' : 'border-gray-300'
+  <div className={`px-3 py-2 shadow-md rounded-lg bg-background border-2 min-w-[160px] ${
+    selected ? 'border-orange-500' : 'border-border'
   }`}>
     <Handle type="target" position={Position.Top} className="w-3 h-3" />
     <div className="flex items-center gap-2 mb-1">
       <Users className="w-4 h-4 text-orange-500" />
-      <div className="font-semibold text-sm text-gray-800">{data.title}</div>
+      <div className="font-semibold text-sm text-foreground">{data.title}</div>
       <div className={`w-2 h-2 rounded-full ${
         data.available ? 'bg-green-500' : 'bg-red-500'
       }`} />
     </div>
     
-    <div className="text-xs text-gray-600 mb-2">
+    <div className="text-xs text-muted-foreground mb-2">
       {data.role}
     </div>
     
     <div className="flex items-center justify-between">
-      <Badge variant="outline" className="text-xs">
+      <Badge variant="outline" className="text-xs border-border text-muted-foreground">
         {data.skills?.join(', ')}
       </Badge>
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-muted-foreground">
         {data.workload || 0}% busy
       </div>
     </div>
@@ -208,24 +211,24 @@ const ResourceNode = ({ data, selected }: { data: any; selected: boolean }) => (
 );
 
 const TeamNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-3 py-2 shadow-md rounded-lg bg-white border-2 min-w-[160px] ${
-    selected ? 'border-indigo-500' : 'border-gray-300'
+  <div className={`px-3 py-2 shadow-md rounded-lg bg-background border-2 min-w-[160px] ${
+    selected ? 'border-indigo-500' : 'border-border'
   }`}>
     <Handle type="target" position={Position.Top} className="w-3 h-3" />
     <div className="flex items-center gap-2 mb-1">
       <Users2 className="w-4 h-4 text-indigo-500" />
-      <div className="font-semibold text-sm text-gray-800">{data.title}</div>
+      <div className="font-semibold text-sm text-foreground">{data.title}</div>
     </div>
     
-    <div className="text-xs text-gray-600 mb-2">
+    <div className="text-xs text-muted-foreground mb-2">
       {data.department}
     </div>
     
     <div className="flex items-center justify-between">
-      <Badge variant="outline" className="text-xs">
+      <Badge variant="outline" className="text-xs border-border text-muted-foreground">
         {data.members?.length || 0} members
       </Badge>
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-muted-foreground">
         {data.projects || 0} projects
       </div>
     </div>
@@ -304,31 +307,44 @@ function EnhancedProjectMapContent({
   const [viewMode, setViewMode] = useState<'overview' | 'timeline' | 'resources' | 'kanban'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [showMiniMap, setShowMiniMap] = useState(true);
+  const [isEcosystemMinimized, setIsEcosystemMinimized] = useState(false);
+  const [isEcosystemClosed, setIsEcosystemClosed] = useState(false);
 
-  // Initialize with existing projects
+  // Initialize with existing projects and enhanced sample data
   useEffect(() => {
     if (projects.length > 0) {
-      const initialNodes: Node[] = projects.map((project, index) => ({
-        id: project.id,
-        type: 'project',
-        position: { 
-          x: 100 + (index % 3) * 300, 
-          y: 100 + Math.floor(index / 3) * 200 
-        },
-        data: {
-          title: project.name,
-          description: project.description,
-          status: project.status,
-          priority: project.priority,
-          category: 'business',
-          progress: Math.floor(Math.random() * 100),
-          team: [],
-          tags: []
-        }
-      }));
+      const initialNodes: Node[] = [];
+      
+      // Add project nodes
+      projects.forEach((project, index) => {
+        initialNodes.push({
+          id: project.id,
+          type: 'project',
+          position: { 
+            x: 100 + (index % 3) * 300, 
+            y: 100 + Math.floor(index / 3) * 200 
+          },
+          data: {
+            title: project.name,
+            description: project.description,
+            status: project.status,
+            priority: project.priority,
+            category: 'business',
+            progress: 0, // Start with 0% progress
+            team: [],
+            tags: []
+          }
+        });
+        
+        // TODO: Add tasks, milestones, and resources via API calls
+      });
       
       setNodes(initialNodes);
+      setEdges([]); // Start with no connections
+    } else {
+      // No projects, clear everything
+      setNodes([]);
+      setEdges([]);
     }
   }, [projects]);
 
@@ -337,7 +353,7 @@ function EnhancedProjectMapContent({
       ...params,
       type: 'smoothstep',
       animated: true,
-      style: { stroke: '#3b82f6', strokeWidth: 2 }
+      style: { stroke: '#60a5fa', strokeWidth: 2 }
     }, eds)),
     [setEdges]
   );
@@ -370,11 +386,109 @@ function EnhancedProjectMapContent({
     onProjectSelect?.(node.id);
   }, [onProjectSelect]);
 
+  // Enhanced status synchronization between related elements
+  const syncRelatedElements = useCallback((updatedNode: Node) => {
+    setNodes(nds => nds.map(n => {
+      // If this is a task completion, check for milestone completion
+      if (updatedNode.type === 'task' && updatedNode.data.status === 'completed') {
+        // Find connected milestones and update their progress
+        const connectedMilestones = nds.filter(node => 
+          node.type === 'milestone' && 
+          edges.some(edge => 
+            (edge.source === updatedNode.id && edge.target === node.id) ||
+            (edge.target === updatedNode.id && edge.source === node.id)
+          )
+        );
+        
+        if (connectedMilestones.length > 0) {
+          connectedMilestones.forEach(milestone => {
+            // Count completed tasks connected to this milestone
+            const connectedTasks = nds.filter(taskNode => 
+              taskNode.type === 'task' &&
+              taskNode.data.status === 'completed' &&
+              edges.some(edge => 
+                (edge.source === taskNode.id && edge.target === milestone.id) ||
+                (edge.target === taskNode.id && edge.source === milestone.id)
+              )
+            );
+            
+            const totalConnectedTasks = nds.filter(taskNode => 
+              taskNode.type === 'task' &&
+              edges.some(edge => 
+                (edge.source === taskNode.id && edge.target === milestone.id) ||
+                (edge.target === taskNode.id && edge.source === milestone.id)
+              )
+            ).length;
+            
+            // Auto-complete milestone if all connected tasks are done
+            if (totalConnectedTasks > 0 && connectedTasks.length === totalConnectedTasks) {
+              return {
+                ...milestone,
+                data: {
+                  ...milestone.data,
+                  completed: true,
+                  progress: 100
+                }
+              };
+            }
+          });
+        }
+      }
+      
+      // If this is a milestone completion, update connected project progress
+      if (updatedNode.type === 'milestone' && updatedNode.data.completed) {
+        const connectedProjects = nds.filter(node => 
+          node.type === 'project' &&
+          edges.some(edge => 
+            (edge.source === updatedNode.id && edge.target === node.id) ||
+            (edge.target === updatedNode.id && edge.source === node.id)
+          )
+        );
+        
+        connectedProjects.forEach(project => {
+          const connectedMilestones = nds.filter(milestoneNode => 
+            milestoneNode.type === 'milestone' &&
+            edges.some(edge => 
+              (edge.source === milestoneNode.id && edge.target === project.id) ||
+              (edge.target === milestoneNode.id && edge.source === project.id)
+            )
+          );
+          
+          const completedMilestones = connectedMilestones.filter(m => m.data.completed);
+          const progress = connectedMilestones.length > 0 ? 
+            Math.round((completedMilestones.length / connectedMilestones.length) * 100) : 
+            project.data.progress;
+            
+          return {
+            ...project,
+            data: {
+              ...project.data,
+              progress: Math.max(project.data.progress, progress)
+            }
+          };
+        });
+      }
+      
+      return n;
+    }));
+  }, [edges, setNodes]);
+
   const updateNodeData = useCallback((nodeId: string, newData: any) => {
-    setNodes(nds => nds.map(n => 
-      n.id === nodeId ? { ...n, data: { ...n.data, ...newData } } : n
-    ));
-  }, [setNodes]);
+    setNodes(nds => {
+      const updatedNodes = nds.map(n => 
+        n.id === nodeId ? { ...n, data: { ...n.data, ...newData } } : n
+      );
+      
+      // Find the updated node and sync related elements
+      const updatedNode = updatedNodes.find(n => n.id === nodeId);
+      if (updatedNode) {
+        // Use setTimeout to ensure state updates are processed
+        setTimeout(() => syncRelatedElements(updatedNode), 0);
+      }
+      
+      return updatedNodes;
+    });
+  }, [setNodes, syncRelatedElements]);
 
   const deleteNode = useCallback((nodeId: string) => {
     setNodes(nds => nds.filter(n => n.id !== nodeId));
@@ -416,22 +530,35 @@ function EnhancedProjectMapContent({
     setNodes(layoutedNodes);
   }, [nodes, edges, getLayoutedElements, setNodes]);
 
+  // Simple fallback for debugging
+  if (projects.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-96 bg-chatgpt-card rounded-3xl shadow-glass border border-border">
+        <div className="text-center">
+          <Target className="w-12 h-12 text-primary mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">Enhanced Project Map</h3>
+          <p className="text-muted-foreground">Drag project types from the sidebar to get started</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex flex-col lg:flex-row h-[500px] sm:h-[600px] lg:h-[600px] bg-chatgpt-card rounded-2xl sm:rounded-3xl shadow-glass border border-border">
       {/* Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-full lg:w-80 bg-background/80 backdrop-blur-sm border-r-0 lg:border-r border-b lg:border-b-0 border-border flex flex-col max-h-[200px] sm:max-h-[250px] lg:max-h-none overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold mb-3">Project Map</h2>
+        <div className="p-4 border-b border-border">
+          <h2 className="text-lg font-semibold mb-3 text-foreground">Project Map</h2>
           
           {/* Search */}
           <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search projects..."
-              className="pl-9"
+              className="pl-9 bg-background/50 border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
           
@@ -451,22 +578,22 @@ function EnhancedProjectMapContent({
         </div>
 
         {/* Node Templates */}
-        <div className="flex-1 p-4 overflow-y-auto">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Add Elements</h3>
+        <div className="flex-1 p-4 overflow-y-auto scrollbar-hide">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">Add Elements</h3>
           <div className="space-y-2">
             {PROJECT_NODE_TEMPLATES.map((template) => (
               <div
                 key={template.type}
-                className="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                className="p-3 border border-border rounded-lg cursor-pointer hover:bg-background/50 transition-colors"
                 onClick={() => addNode(template.type)}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg bg-${template.color}-100 flex items-center justify-center`}>
+                  <div className={`w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary`}>
                     {template.icon}
                   </div>
                   <div>
-                    <div className="font-medium text-sm">{template.label}</div>
-                    <div className="text-xs text-gray-500">{template.description}</div>
+                    <div className="font-medium text-sm text-foreground">{template.label}</div>
+                    <div className="text-xs text-muted-foreground">{template.description}</div>
                   </div>
                 </div>
               </div>
@@ -475,17 +602,17 @@ function EnhancedProjectMapContent({
         </div>
 
         {/* Actions */}
-        <div className="p-4 border-t border-gray-200 space-y-2">
-          <Button onClick={onLayout} variant="outline" className="w-full">
+        <div className="p-4 border-t border-border space-y-2">
+          <Button onClick={onLayout} variant="outline" className="w-full border-border hover:bg-background/50">
             <Zap className="w-4 h-4 mr-2" />
             Auto Layout
           </Button>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="flex-1">
+            <Button size="sm" variant="outline" className="flex-1 border-border hover:bg-background/50">
               <Save className="w-4 h-4 mr-1" />
               Save
             </Button>
-            <Button size="sm" variant="outline" className="flex-1">
+            <Button size="sm" variant="outline" className="flex-1 border-border hover:bg-background/50">
               <Download className="w-4 h-4 mr-1" />
               Export
             </Button>
@@ -494,7 +621,7 @@ function EnhancedProjectMapContent({
       </div>
 
       {/* Main Canvas */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative min-h-[300px] sm:min-h-[400px] lg:min-h-0">
         <ReactFlow
           nodes={filteredNodes}
           edges={edges}
@@ -505,12 +632,50 @@ function EnhancedProjectMapContent({
           onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
           fitView
-          attributionPosition="bottom-left"
+          fitViewOptions={{ padding: 0.1 }}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+          style={{ background: 'transparent' }}
         >
-          <Controls />
-          {showMiniMap && <MiniMap />}
-          <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+          <Background 
+            variant={BackgroundVariant.Dots} 
+            gap={12} 
+            size={1} 
+            color="rgba(255, 255, 255, 0.1)"
+          />
         </ReactFlow>
+
+        {/* Custom Zoom Controls - Top Left */}
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 flex flex-col gap-1 sm:gap-2 z-10">
+          <div className="bg-background/90 backdrop-blur-sm rounded-lg shadow-lg border border-border p-1 flex flex-col gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => reactFlowInstance?.zoomIn()}
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-background/50 touch-manipulation"
+              title="Zoom In"
+            >
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => reactFlowInstance?.zoomOut()}
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-background/50 touch-manipulation"
+              title="Zoom Out"
+            >
+              <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => reactFlowInstance?.fitView()}
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-background/50 touch-manipulation"
+              title="Fit View"
+            >
+              <Maximize className="w-3 h-3 sm:w-4 sm:h-4" />
+            </Button>
+          </div>
+        </div>
 
         {/* View Mode Toggle */}
         <div className="absolute top-4 right-4 flex gap-2">
@@ -518,6 +683,7 @@ function EnhancedProjectMapContent({
             size="sm"
             variant={viewMode === 'overview' ? 'default' : 'outline'}
             onClick={() => setViewMode('overview')}
+            className="border-border hover:bg-background/50"
           >
             Overview
           </Button>
@@ -525,6 +691,7 @@ function EnhancedProjectMapContent({
             size="sm"
             variant={viewMode === 'timeline' ? 'default' : 'outline'}
             onClick={() => setViewMode('timeline')}
+            className="border-border hover:bg-background/50"
           >
             Timeline
           </Button>
@@ -532,27 +699,139 @@ function EnhancedProjectMapContent({
             size="sm"
             variant={viewMode === 'resources' ? 'default' : 'outline'}
             onClick={() => setViewMode('resources')}
+            className="border-border hover:bg-background/50"
           >
             Resources
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowMiniMap(!showMiniMap)}
-          >
-            {showMiniMap ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          </Button>
         </div>
 
-        {/* Stats */}
-        <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3">
-          <div className="text-sm font-medium text-gray-700 mb-1">Project Overview</div>
-          <div className="flex gap-4 text-xs text-gray-600">
-            <span>{filteredNodes.length} projects</span>
-            <span>{edges.length} connections</span>
-            <span>{filteredNodes.filter(n => n.data.status === 'active').length} active</span>
+        {/* Enhanced Business Ecosystem Overview */}
+        {!isEcosystemClosed && (
+          <div className={`absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-auto bg-background/90 backdrop-blur-sm rounded-lg shadow-lg border border-border max-w-sm transition-all duration-300 z-10 ${
+            isEcosystemMinimized ? 'p-2' : 'p-3 sm:p-4'
+          }`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="text-sm font-medium text-foreground">
+                  {selectedNode ? `${selectedNode.data.title} - Ecosystem` : 'Business Ecosystem'}
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsEcosystemMinimized(!isEcosystemMinimized)}
+                  className="h-6 w-6 p-0 hover:bg-background/50"
+                >
+                  {isEcosystemMinimized ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsEcosystemClosed(true)}
+                  className="h-6 w-6 p-0 hover:bg-background/50"
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+            
+            {!isEcosystemMinimized && (
+              <>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Projects</span>
+                      <span className="text-foreground font-medium">{filteredNodes.filter(n => n.type === 'project').length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Tasks</span>
+                      <span className="text-foreground font-medium">{filteredNodes.filter(n => n.type === 'task').length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Milestones</span>
+                      <span className="text-foreground font-medium">{filteredNodes.filter(n => n.type === 'milestone').length}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Resources</span>
+                      <span className="text-foreground font-medium">{filteredNodes.filter(n => n.type === 'resource').length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Teams</span>
+                      <span className="text-foreground font-medium">{filteredNodes.filter(n => n.type === 'team').length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Connections</span>
+                      <span className="text-foreground font-medium">{edges.length}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-3 pt-3 border-t border-border">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Active Workflow</span>
+                    <div className="flex items-center gap-1">
+                      <div className={`w-2 h-2 rounded-full ${
+                        filteredNodes.filter(n => n.data.status === 'active').length > 0 ? 'bg-green-500' : 'bg-gray-500'
+                      }`}></div>
+                      <span className="text-foreground font-medium">
+                        {filteredNodes.filter(n => n.data.status === 'active').length} active
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {filteredNodes.filter(n => n.type === 'task' && n.data.status === 'completed').length} of {filteredNodes.filter(n => n.type === 'task').length} tasks completed
+                  </div>
+                  
+                  {filteredNodes.filter(n => n.type === 'milestone' && n.data.completed).length > 0 && (
+                    <div className="mt-1 text-xs text-green-400">
+                      {filteredNodes.filter(n => n.type === 'milestone' && n.data.completed).length} milestones achieved
+                    </div>
+                  )}
+                  
+                  {selectedNode && (
+                    <div className="mt-2 p-2 bg-primary/10 rounded border border-primary/20">
+                      <div className="text-xs font-medium text-primary mb-1">Selected: {selectedNode.data.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Type: {selectedNode.type} | Status: {selectedNode.data.status}
+                        {selectedNode.data.progress !== undefined && ` | Progress: ${selectedNode.data.progress}%`}
+                      </div>
+                      {selectedNode.type === 'project' && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Connected: {edges.filter(e => e.source === selectedNode.id || e.target === selectedNode.id).length} elements
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-2 text-xs text-muted-foreground italic">
+                  ✨ Enhanced drag-and-drop workflow with real-time status synchronization
+                </div>
+              </>
+            )}
           </div>
-        </div>
+        )}
+        
+        {/* Reopen button when closed */}
+        {isEcosystemClosed && (
+          <div className="absolute bottom-4 left-4">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsEcosystemClosed(false)}
+              className="bg-background/90 backdrop-blur-sm border-border hover:bg-background/50"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Show Ecosystem
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Node Configuration Dialog */}

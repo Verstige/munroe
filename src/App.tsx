@@ -10,7 +10,11 @@ import Index from "./pages/Index";
 import NotFound from "./app/not-found";
 import DemoWorkspace from "./components/DemoWorkspace";
 import NexusDashboard from "./components/NexusDashboard";
+import EnhancedNexusDashboard from "./components/EnhancedNexusDashboard";
 import NexusDemo from "./components/NexusDemo";
+import CRMDashboard from "./components/CRM/CRMDashboard";
+import EmailDashboard from "./components/Email/EmailDashboard";
+import SettingsDashboard from "./components/Settings/SettingsDashboard";
 
 const queryClient = new QueryClient();
 
@@ -35,9 +39,24 @@ const App = () => (
             } />
             <Route path="/nexus" element={
               <ProtectedRoute>
-                <NexusDashboard />
+                <EnhancedNexusDashboard />
               </ProtectedRoute>
             } />
+            <Route path="/crm" element={
+              <ProtectedRoute>
+                <CRMDashboard />
+              </ProtectedRoute>
+            } />
+        <Route path="/email" element={
+          <ProtectedRoute>
+            <EmailDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <SettingsDashboard />
+          </ProtectedRoute>
+        } />
             <Route path="/demo" element={<DemoWorkspace />} />
             <Route path="/nexus-demo" element={<NexusDemo />} />
             <Route path="/home" element={<LandingPage />} />

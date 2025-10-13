@@ -5,6 +5,8 @@ import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users,
 import { cn } from "@/lib/utils";
 import { generateBusinessAssistantResponse, generateGeneralChatResponse, generateSmartSuggestions, type AssistantMode, type WorkspaceContext, type ConversationMemory } from "@/lib/gemini";
 import { debugEnvironment } from "@/lib/debug-env";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { toast } from "@/hooks/use-toast";
 
 interface ChatMessage {
   id: string;
@@ -31,6 +33,17 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [assistantMode, setAssistantMode] = useState<AssistantMode>('chat');
+  
+  // Speech recognition
+  const {
+    transcript,
+    isListening,
+    isSupported,
+    error,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useSpeechRecognition();
   const [conversationMemory, setConversationMemory] = useState<ConversationMemory[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -44,6 +57,25 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  // Handle speech recognition transcript updates
+  useEffect(() => {
+    if (transcript && isListening) {
+      setMessage(message + (message ? ' ' : '') + transcript);
+      resetTranscript();
+    }
+  }, [transcript, isListening, message, resetTranscript]);
+
+  // Handle speech recognition errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Speech Recognition Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error]);
 
   // Update initial message when userName becomes available
   useEffect(() => {
@@ -267,7 +299,13 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   };
 
   const toggleRecording = () => {
-    setIsRecording(!isRecording);
+    if (isListening) {
+      stopListening();
+      setIsRecording(false);
+    } else {
+      startListening();
+      setIsRecording(true);
+    }
   };
 
   const handleQuickAction = async (quickMessage: string) => {
@@ -490,16 +528,25 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
               
               {/* Right side icons */}
               <div className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1 sm:gap-2">
-                <Button
-                  type="button"
-                  onClick={toggleRecording}
-                  variant="ghost"
-                  size="sm"
-                  className="p-1.5 sm:p-2 hover:bg-gray-700/50 transition-colors"
-                  disabled={isTyping}
-                >
-                  <Mic className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 hover:text-white transition-colors" />
-                </Button>
+                {isSupported && (
+                  <Button
+                    type="button"
+                    onClick={toggleRecording}
+                    variant="ghost"
+                    size="sm"
+                    className={`p-1.5 sm:p-2 transition-all duration-200 ${
+                      isListening 
+                        ? 'bg-red-500/20 hover:bg-red-500/30' 
+                        : 'hover:bg-gray-700/50'
+                    }`}
+                    disabled={isTyping}
+                    title={isListening ? "Stop recording" : "Start voice input"}
+                  >
+                    <Mic className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
+                      isListening ? 'text-red-400' : 'text-gray-400 hover:text-white'
+                    }`} />
+                  </Button>
+                )}
                 
                 {/* Enter/Send Button */}
                 <Button

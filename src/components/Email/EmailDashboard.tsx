@@ -1,0 +1,1010 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Mail, 
+  Search, 
+  Plus, 
+  Inbox, 
+  Send, 
+  Trash, 
+  Star, 
+  Archive, 
+  Brain,
+  MessageSquare,
+  Sparkles,
+  Zap,
+  Clock,
+  User,
+  AlertCircle,
+  CheckCircle,
+  TrendingUp,
+  Target,
+  Lightbulb,
+  Tag as TagIcon,
+  ArrowRight,
+  Copy,
+  Edit3,
+  X,
+  Send as SendIcon
+} from 'lucide-react';
+
+// Types
+interface Email {
+  id: string;
+  from: string;
+  to: string;
+  subject: string;
+  content: string;
+  timestamp: string;
+  isRead: boolean;
+  isStarred: boolean;
+  isImportant: boolean;
+  folder: string;
+  tags: string[];
+}
+
+interface Folder {
+  id: string;
+  name: string;
+  count: number;
+  icon: React.ReactNode;
+}
+
+export default function EmailDashboard() {
+  const [emails, setEmails] = useState<Email[]>([]);
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState('inbox');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'emails' | 'ai-assistant'>('emails');
+  
+  // AI Analysis States
+  const [emailAnalysis, setEmailAnalysis] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
+  // Compose States - Simplified
+  const [isComposing, setIsComposing] = useState(false);
+  const [composeData, setComposeData] = useState({
+    to: '',
+    subject: '',
+    content: ''
+  });
+  
+  // AI Compose Helper States
+  const [aiHelperPrompt, setAiHelperPrompt] = useState('');
+  const [isGeneratingAIResponse, setIsGeneratingAIResponse] = useState(false);
+  const [aiGeneratedContent, setAiGeneratedContent] = useState('');
+  const [showAIHelper, setShowAIHelper] = useState(false);
+  
+  // AI Draft States
+  const [aiDrafts, setAiDrafts] = useState<any[]>([]);
+  const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
+
+  // Initialize empty data - replace with actual API calls
+  const folders: Folder[] = [
+    { id: 'inbox', name: 'Inbox', count: 0, icon: <Inbox className="w-4 h-4" /> },
+    { id: 'sent', name: 'Sent', count: 0, icon: <Send className="w-4 h-4" /> },
+    { id: 'drafts', name: 'Drafts', count: 0, icon: <Mail className="w-4 h-4" /> },
+    { id: 'starred', name: 'Starred', count: 0, icon: <Star className="w-4 h-4" /> },
+    { id: 'archive', name: 'Archive', count: 0, icon: <Archive className="w-4 h-4" /> },
+    { id: 'trash', name: 'Trash', count: 0, icon: <Trash className="w-4 h-4" /> }
+  ];
+
+  useEffect(() => {
+    // TODO: Replace with actual API calls to load emails
+    setEmails([]);
+  }, []);
+
+  const filteredEmails = emails.filter(email => {
+    const matchesFolder = email.folder === selectedFolder;
+    const matchesSearch = email.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         email.from.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         email.content.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFolder && matchesSearch;
+  });
+
+  const handleEmailSelect = (email: Email) => {
+    setSelectedEmail(email);
+  };
+
+  const handleAnalyzeEmail = async (email: Email) => {
+    setIsAnalyzing(true);
+    
+    // Simulate AI analysis
+    setTimeout(() => {
+      setEmailAnalysis({
+        sentiment: 'positive',
+        priority: 'medium',
+        intent: 'proposal',
+        category: 'business',
+        confidence: 85,
+        keyPoints: [
+          'AI integration services proposal',
+          'Collaboration opportunity',
+          'Meeting request for next week',
+          'Team has relevant experience'
+        ],
+        entities: {
+          people: ['John Smith'],
+          companies: ['TechCorp'],
+          dates: ['next week'],
+          amounts: [],
+          topics: ['AI integration', 'collaboration', 'meeting']
+        },
+        suggestedActions: [
+          'Review the proposal details',
+          'Schedule a meeting',
+          'Prepare questions about their services',
+          'Check calendar availability'
+        ],
+        urgencyScore: 6,
+        responseTone: 'professional'
+      });
+      setIsAnalyzing(false);
+    }, 1500);
+  };
+
+  const handleComposeEmail = () => {
+    console.log('Compose button clicked'); // Debug log
+    setIsComposing(true);
+    setComposeData({
+      to: selectedEmail?.from || '',
+      subject: selectedEmail ? `Re: ${selectedEmail.subject}` : '',
+      content: ''
+    });
+  };
+
+  const handleSendEmail = () => {
+    // Simulate sending email
+    const newEmail: Email = {
+      id: Date.now().toString(),
+      from: 'you@company.com',
+      to: composeData.to,
+      subject: composeData.subject,
+      content: composeData.content,
+      timestamp: new Date().toISOString(),
+      isRead: true,
+      isStarred: false,
+      isImportant: false,
+      folder: 'sent',
+      tags: []
+    };
+    
+    setEmails(prev => [newEmail, ...prev]);
+    setIsComposing(false);
+    setComposeData({ to: '', subject: '', content: '' });
+  };
+
+  const handleGenerateAIDrafts = async (email: Email) => {
+    setIsGeneratingDrafts(true);
+    
+    // Simulate AI draft generation
+    setTimeout(() => {
+      const drafts = [
+        {
+          id: '1',
+          tone: 'Professional',
+          subject: `Re: ${email.subject}`,
+          content: `Dear ${email.from.split('@')[0]},\n\nThank you for reaching out regarding ${email.subject.toLowerCase()}. I appreciate your interest and the detailed information you've provided.\n\nI would be happy to discuss this further and explore potential collaboration opportunities. Let me review the details you've shared and I'll get back to you with specific questions and next steps.\n\nI'm available for a call next week if that would be helpful. Please let me know your availability.\n\nBest regards,\n[Your Name]`,
+          confidence: 92,
+          reasoning: 'Professional tone appropriate for business proposal with clear next steps'
+        },
+        {
+          id: '2',
+          tone: 'Friendly',
+          subject: `Re: ${email.subject}`,
+          content: `Hi ${email.from.split('@')[0]}!\n\nThanks so much for reaching out! I'm excited about the possibility of working together on this project. Your proposal sounds really interesting and I think there could be great synergy between our teams.\n\nI'd love to learn more about your approach and discuss how we can make this collaboration successful. Would you be available for a quick call sometime next week? I'm pretty flexible with timing.\n\nLooking forward to hearing from you!\n\nBest,\n[Your Name]`,
+          confidence: 88,
+          reasoning: 'Friendly tone to build rapport while maintaining professionalism'
+        },
+        {
+          id: '3',
+          tone: 'Formal',
+          subject: `Re: ${email.subject}`,
+          content: `Dear ${email.from.split('@')[0]},\n\nI acknowledge receipt of your correspondence dated ${new Date(email.timestamp).toLocaleDateString()} regarding the aforementioned subject.\n\nAfter careful consideration of your proposal, I find merit in exploring this opportunity further. I shall review the documentation provided and consult with relevant stakeholders.\n\nI will provide a detailed response within five business days. Should you require any clarification in the interim, please do not hesitate to contact me.\n\nRespectfully,\n[Your Name]`,
+          confidence: 95,
+          reasoning: 'Highly formal tone for official business correspondence'
+        }
+      ];
+      
+      setAiDrafts(drafts);
+      setIsGeneratingDrafts(false);
+    }, 2000);
+  };
+
+  const handleUseDraft = (draft: any) => {
+    setComposeData({
+      to: selectedEmail?.from || '',
+      subject: draft.subject,
+      content: draft.content
+    });
+    setIsComposing(true);
+  };
+
+  const handleCopyDraft = (draft: any) => {
+    navigator.clipboard.writeText(draft.content);
+  };
+
+  const handleGenerateAIResponse = async () => {
+    if (!aiHelperPrompt.trim()) return;
+    
+    setIsGeneratingAIResponse(true);
+    setAiGeneratedContent('');
+    
+    // Simulate AI response generation
+    setTimeout(() => {
+      const responses = {
+        'formal business': `Dear ${composeData.to.split('@')[0] || 'Recipient'},
+
+I hope this email finds you well. I am writing to you regarding ${aiHelperPrompt.toLowerCase()}.
+
+After careful consideration, I believe this matter requires our immediate attention. I would like to propose a meeting to discuss the details and explore potential solutions.
+
+I am available for a call at your convenience. Please let me know your availability for the upcoming week.
+
+I look forward to your response.
+
+Best regards,
+[Your Name]`,
+
+        'friendly casual': `Hi ${composeData.to.split('@')[0] || 'there'}!
+
+Hope you're doing great! I wanted to reach out about ${aiHelperPrompt.toLowerCase()}.
+
+I think this could be really exciting and I'd love to chat with you about it. Are you free for a quick call sometime this week? I'm pretty flexible with timing.
+
+Let me know what works for you!
+
+Best,
+[Your Name]`,
+
+        'follow up': `Hi ${composeData.to.split('@')[0] || 'there'},
+
+I hope you're well! I wanted to follow up on ${aiHelperPrompt.toLowerCase()}.
+
+I know you're probably busy, but I wanted to check in and see if you had any questions or if there's anything I can help clarify.
+
+Please let me know if you need any additional information.
+
+Thanks!
+[Your Name]`,
+
+        'thank you': `Dear ${composeData.to.split('@')[0] || 'Recipient'},
+
+Thank you so much for ${aiHelperPrompt.toLowerCase()}. I really appreciate your time and effort.
+
+This means a lot to me and I'm grateful for your support. Please let me know if there's anything I can do to return the favor.
+
+Best regards,
+[Your Name]`,
+
+        'default': `Hi ${composeData.to.split('@')[0] || 'there'},
+
+I hope this email finds you well. I'm reaching out regarding ${aiHelperPrompt.toLowerCase()}.
+
+I'd love to discuss this further and hear your thoughts. Would you be available for a brief conversation sometime this week?
+
+Looking forward to hearing from you.
+
+Best,
+[Your Name]`
+      };
+
+      // Determine response type based on prompt
+      let responseType = 'default';
+      const prompt = aiHelperPrompt.toLowerCase();
+      
+      if (prompt.includes('formal') || prompt.includes('business') || prompt.includes('professional')) {
+        responseType = 'formal business';
+      } else if (prompt.includes('friendly') || prompt.includes('casual') || prompt.includes('informal')) {
+        responseType = 'friendly casual';
+      } else if (prompt.includes('follow up') || prompt.includes('follow-up') || prompt.includes('checking')) {
+        responseType = 'follow up';
+      } else if (prompt.includes('thank') || prompt.includes('appreciate') || prompt.includes('grateful')) {
+        responseType = 'thank you';
+      }
+
+      setAiGeneratedContent(responses[responseType as keyof typeof responses]);
+      setIsGeneratingAIResponse(false);
+    }, 2000);
+  };
+
+  const handleUseAIContent = () => {
+    setComposeData(prev => ({
+      ...prev,
+      content: aiGeneratedContent
+    }));
+    setAiGeneratedContent('');
+    setAiHelperPrompt('');
+    setShowAIHelper(false);
+  };
+
+  const handleCopyAIContent = () => {
+    navigator.clipboard.writeText(aiGeneratedContent);
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 24) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (diffInHours < 168) { // 7 days
+      return date.toLocaleDateString([], { weekday: 'short' });
+    } else {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+  };
+
+  // If composing, show simple compose interface
+  if (isComposing) {
+    return (
+      <div className="h-screen bg-background flex flex-col">
+        {/* Header */}
+        <div className="bg-chatgpt-card border-b border-border p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsComposing(false)}
+              className="h-8 w-8 p-0"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Edit3 className="w-5 h-5" />
+              {selectedEmail ? 'Reply to Email' : 'Compose New Email'}
+            </h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsComposing(false)}
+              className="border-border text-foreground hover:bg-background/50"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendEmail}
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={!composeData.to || !composeData.subject || !composeData.content}
+            >
+              <SendIcon className="w-4 h-4 mr-2" />
+              Send
+            </Button>
+          </div>
+        </div>
+
+        {/* Compose Form */}
+        <div className="flex-1 p-6 overflow-y-auto">
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* AI Helper Section */}
+            <Card className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/20">
+              <CardHeader>
+                <CardTitle className="text-foreground flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-purple-500" />
+                  AI Email Assistant
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!showAIHelper ? (
+                  <div className="text-center">
+                    <Sparkles className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Need Help Writing Your Email?</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Describe what you want to say and AI will help you write a professional email.
+                    </p>
+                    <Button 
+                      onClick={() => setShowAIHelper(true)}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      <Brain className="w-4 h-4 mr-2" />
+                      Get AI Help
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-2 block">
+                        What do you want to say in your email?
+                      </label>
+                      <Textarea
+                        value={aiHelperPrompt}
+                        onChange={(e) => setAiHelperPrompt(e.target.value)}
+                        placeholder="e.g., 'I want to schedule a meeting about the project proposal' or 'I need to thank them for their help'"
+                        rows={3}
+                        className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        onClick={handleGenerateAIResponse}
+                        disabled={!aiHelperPrompt.trim() || isGeneratingAIResponse}
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        {isGeneratingAIResponse ? (
+                          <>
+                            <Brain className="w-4 h-4 mr-2 animate-pulse" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Generate Email
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setShowAIHelper(false)}
+                        className="border-border text-foreground hover:bg-background/50"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+
+                    {/* AI Generated Content */}
+                    {aiGeneratedContent && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <span className="text-sm font-medium text-foreground">AI Generated Content:</span>
+                        </div>
+                        <div className="p-4 bg-background/50 rounded-lg border border-border">
+                          <div className="whitespace-pre-wrap text-sm text-foreground">
+                            {aiGeneratedContent}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            onClick={handleUseAIContent}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Edit3 className="w-4 h-4 mr-2" />
+                            Use This Content
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={handleCopyAIContent}
+                            className="border-border text-foreground hover:bg-background/50"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 gap-6">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">To:</label>
+                <Input
+                  value={composeData.to}
+                  onChange={(e) => setComposeData(prev => ({ ...prev, to: e.target.value }))}
+                  placeholder="recipient@example.com"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Subject:</label>
+                <Input
+                  value={composeData.subject}
+                  onChange={(e) => setComposeData(prev => ({ ...prev, subject: e.target.value }))}
+                  placeholder="Email subject"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Message:</label>
+                <Textarea
+                  value={composeData.content}
+                  onChange={(e) => setComposeData(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="Type your message here..."
+                  rows={15}
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main email dashboard
+  return (
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <div className="w-64 bg-chatgpt-card border-r border-border flex flex-col">
+        {/* Header */}
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+              <Mail className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Email</h1>
+              <p className="text-sm text-muted-foreground">AI-Powered</p>
+            </div>
+          </div>
+          <Button 
+            className="w-full bg-blue-600 hover:bg-blue-700"
+            onClick={handleComposeEmail}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Compose
+          </Button>
+        </div>
+
+        {/* Folders */}
+        <div className="flex-1 p-4 space-y-1">
+          {folders.map((folder) => (
+            <button
+              key={folder.id}
+              onClick={() => setSelectedFolder(folder.id)}
+              className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
+                selectedFolder === folder.id
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                  : 'hover:bg-background/50 text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {folder.icon}
+                <span className="font-medium">{folder.name}</span>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                {folder.count}
+              </Badge>
+            </button>
+          ))}
+        </div>
+
+        {/* Account Status */}
+        <div className="p-4 border-t border-border">
+          <div className="p-2 bg-background/50 rounded-lg border border-border">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-xs font-medium text-foreground">Gmail Connected</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Last sync: 2 min ago</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-chatgpt-card border-b border-border p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search emails..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-background border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'emails' | 'ai-assistant')}>
+            <TabsList className="bg-background border border-border">
+              <TabsTrigger value="emails" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <Mail className="w-4 h-4 mr-2" />
+                Emails
+              </TabsTrigger>
+              <TabsTrigger value="ai-assistant" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <Brain className="w-4 h-4 mr-2" />
+                AI Assistant
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 flex">
+          {/* Email List */}
+          <div className="w-1/3 border-r border-border bg-background">
+            <div className="h-full overflow-y-auto">
+              {filteredEmails.map((email) => (
+                <div
+                  key={email.id}
+                  onClick={() => handleEmailSelect(email)}
+                  className={`p-4 border-b border-border cursor-pointer transition-colors ${
+                    selectedEmail?.id === email.id
+                      ? 'bg-blue-500/10 border-blue-500/30'
+                      : 'hover:bg-background/50'
+                  } ${!email.isRead ? 'bg-blue-500/5' : ''}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      {email.isStarred ? (
+                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                      ) : (
+                        <Star className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {email.from}
+                        </p>
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimestamp(email.timestamp)}
+                        </span>
+                      </div>
+                      <p className="text-sm font-semibold text-foreground mb-1 truncate">
+                        {email.subject}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {email.content}
+                      </p>
+                      {email.tags.length > 0 && (
+                        <div className="flex gap-1 mt-2">
+                          {email.tags.slice(0, 2).map((tag) => (
+                            <Badge key={tag} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Email Content / AI Assistant */}
+          <div className="flex-1 flex">
+            {activeTab === 'emails' ? (
+              /* Email Content */
+              <div className="flex-1 p-6">
+                {selectedEmail ? (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-foreground">{selectedEmail.subject}</h2>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm">
+                          <Mail className="w-4 h-4 mr-2" />
+                          Reply
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleAnalyzeEmail(selectedEmail)}
+                        >
+                          <Brain className="w-4 h-4 mr-2" />
+                          AI Analysis
+                        </Button>
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => handleGenerateAIDrafts(selectedEmail)}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          AI Drafts
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4" />
+                          <span>From: {selectedEmail.from}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          <span>{new Date(selectedEmail.timestamp).toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="prose max-w-none">
+                        <div className="whitespace-pre-wrap text-foreground leading-relaxed">
+                          {selectedEmail.content}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AI Drafts Section */}
+                    {aiDrafts.length > 0 && (
+                      <div className="mt-8 border-t border-border pt-6">
+                        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                          <Sparkles className="w-5 h-5 text-purple-500" />
+                          AI-Generated Response Drafts
+                        </h3>
+                        <div className="space-y-4">
+                          {aiDrafts.map((draft) => (
+                            <Card key={draft.id} className="bg-chatgpt-card border-border">
+                              <CardHeader>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                      {draft.tone}
+                                    </Badge>
+                                    <div className="flex items-center gap-1">
+                                      <TrendingUp className="w-4 h-4 text-green-500" />
+                                      <span className="text-sm font-medium text-green-500">
+                                        {draft.confidence}%
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleCopyDraft(draft)}
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      <Copy className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => handleUseDraft(draft)}
+                                      className="h-8 bg-blue-600 hover:bg-blue-700"
+                                    >
+                                      <Edit3 className="w-4 h-4 mr-1" />
+                                      Use
+                                    </Button>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{draft.reasoning}</p>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-sm font-medium text-foreground">Subject:</label>
+                                    <div className="p-2 bg-background/50 rounded border border-border text-sm text-foreground">
+                                      {draft.subject}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-foreground">Content:</label>
+                                    <div className="p-3 bg-background/50 rounded border border-border">
+                                      <div className="whitespace-pre-wrap text-sm text-foreground">
+                                        {draft.content}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Generate AI Drafts Button */}
+                    {aiDrafts.length === 0 && !isGeneratingDrafts && (
+                      <div className="mt-8 border-t border-border pt-6">
+                        <div className="text-center">
+                          <Sparkles className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold text-foreground mb-2">Generate AI Response Drafts</h3>
+                          <p className="text-muted-foreground mb-4">
+                            Get AI-powered response suggestions with different tones
+                          </p>
+                          <Button 
+                            onClick={() => handleGenerateAIDrafts(selectedEmail)}
+                            className="bg-purple-600 hover:bg-purple-700"
+                          >
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Generate AI Drafts
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Loading State */}
+                    {isGeneratingDrafts && (
+                      <div className="mt-8 border-t border-border pt-6">
+                        <Card className="bg-chatgpt-card border-border">
+                          <CardContent className="p-8">
+                            <div className="text-center">
+                              <Sparkles className="w-12 h-12 text-purple-500 animate-pulse mx-auto mb-4" />
+                              <h3 className="text-lg font-semibold text-foreground mb-2">Generating AI Drafts...</h3>
+                              <p className="text-muted-foreground">AI is creating response suggestions for you</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <Mail className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">No Email Selected</h3>
+                      <p className="text-muted-foreground">Choose an email from the list to view its content.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* AI Assistant Tab */
+              <div className="flex-1 p-6 overflow-y-auto">
+                <div className="max-w-4xl mx-auto space-y-6">
+                  <div className="text-center mb-8">
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                      <Brain className="w-8 h-8 text-blue-500" />
+                      <h1 className="text-3xl font-bold text-foreground">AI Email Assistant</h1>
+                      <Sparkles className="w-8 h-8 text-purple-500" />
+                    </div>
+                    <p className="text-muted-foreground">
+                      Select an email to get AI-powered insights, analysis, and response suggestions.
+                    </p>
+                  </div>
+
+                  {selectedEmail ? (
+                    <div className="space-y-6">
+                      {/* AI Analysis */}
+                      {isAnalyzing ? (
+                        <Card className="bg-chatgpt-card border-border shadow-sm">
+                          <CardContent className="p-8">
+                            <div className="text-center">
+                              <Brain className="w-12 h-12 text-blue-500 animate-pulse mx-auto mb-4" />
+                              <h3 className="text-lg font-semibold text-foreground mb-2">Analyzing Email...</h3>
+                              <p className="text-muted-foreground">AI is processing your email content</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ) : emailAnalysis ? (
+                        <Card className="bg-chatgpt-card border-border shadow-sm">
+                          <CardHeader>
+                            <CardTitle className="text-foreground flex items-center gap-2">
+                              <Brain className="w-5 h-5" />
+                              AI Email Analysis
+                              <Badge className="ml-auto bg-green-100 text-green-800 border-green-200">
+                                {emailAnalysis.confidence}% Confidence
+                              </Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            {/* Analysis Metrics */}
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-sm font-medium text-foreground">Sentiment</span>
+                                </div>
+                                <Badge className="bg-green-100 text-green-800 border-green-200">
+                                  {emailAnalysis.sentiment}
+                                </Badge>
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <AlertCircle className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-sm font-medium text-foreground">Priority</span>
+                                </div>
+                                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                  {emailAnalysis.priority}
+                                </Badge>
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Target className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-sm font-medium text-foreground">Intent</span>
+                                </div>
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                  {emailAnalysis.intent}
+                                </Badge>
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <TagIcon className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-sm font-medium text-foreground">Category</span>
+                                </div>
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                  {emailAnalysis.category}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            {/* Key Points */}
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Lightbulb className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-sm font-medium text-foreground">Key Points</span>
+                              </div>
+                              <div className="space-y-2">
+                                {emailAnalysis.keyPoints.map((point: string, index: number) => (
+                                  <div key={index} className="flex items-start gap-2">
+                                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                    <span className="text-sm text-foreground">{point}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Suggested Actions */}
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-sm font-medium text-foreground">Suggested Actions</span>
+                              </div>
+                              <div className="space-y-2">
+                                {emailAnalysis.suggestedActions.map((action: string, index: number) => (
+                                  <div key={index} className="flex items-start gap-2">
+                                    <ArrowRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                                    <span className="text-sm text-foreground">{action}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <Card className="bg-chatgpt-card border-border shadow-sm">
+                          <CardContent className="p-8">
+                            <div className="text-center">
+                              <Brain className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                              <h3 className="text-lg font-semibold text-foreground mb-2">Ready for AI Analysis</h3>
+                              <p className="text-muted-foreground mb-4">
+                                Click "AI Analysis" to get insights about this email
+                              </p>
+                              <Button 
+                                onClick={() => handleAnalyzeEmail(selectedEmail)}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                <Zap className="w-4 h-4 mr-2" />
+                                Analyze Email
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  ) : (
+                    <Card className="bg-chatgpt-card border-border shadow-sm">
+                      <CardContent className="p-12">
+                        <div className="text-center">
+                          <MessageSquare className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-xl font-semibold text-foreground mb-2">Select an Email</h3>
+                          <p className="text-muted-foreground mb-6">
+                            Choose an email from the list to access AI-powered analysis and response generation.
+                          </p>
+                          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <Zap className="w-4 h-4" />
+                              <span>Sentiment Analysis</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Brain className="w-4 h-4" />
+                              <span>Intent Detection</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <MessageSquare className="w-4 h-4" />
+                              <span>Smart Drafts</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

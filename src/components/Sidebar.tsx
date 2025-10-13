@@ -1,10 +1,9 @@
-import { LayoutDashboard, Plus, Settings, Sparkles, Search, Filter, Bot, Workflow } from "lucide-react";
+import { LayoutDashboard, Plus, Settings, Sparkles, Search, Bot, Users, Mail, Network, Database, Zap, Map, StickyNote, CheckSquare, Clock, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import ThemeToggle from "./ThemeToggle";
 import { SidebarStatsSkeleton } from "./LoadingSkeleton";
+import PlatformSearch from "./PlatformSearch";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +11,14 @@ interface SidebarProps {
   onNewProject: () => void;
   onDashboard?: () => void;
   onGetStarted?: () => void;
+  onConnections?: () => void;
+  onEmail?: () => void;
+  onProjectMap?: () => void;
+  onNotes?: () => void;
+  onTasks?: () => void;
+  onTeam?: () => void;
+  onTimer?: () => void;
+  onNavigateToTab?: (tab: string) => void;
   projects?: Array<{
     id: string;
     name: string;
@@ -19,8 +26,6 @@ interface SidebarProps {
     status: string;
     priority: "low" | "medium" | "high";
   }>;
-  onSearch?: (query: string) => void;
-  onFilter?: (filter: { status?: string; priority?: string }) => void;
   isLoading?: boolean;
   hasEverCreatedProject?: boolean;
 }
@@ -28,194 +33,315 @@ interface SidebarProps {
 export default function Sidebar({ 
   onNewProject, 
   onDashboard, 
-  onGetStarted, 
-  projects = [], 
-  onSearch, 
-  onFilter, 
-  isLoading = false, 
-  hasEverCreatedProject = false 
+  onGetStarted,
+  onConnections,
+  onEmail,
+  onProjectMap,
+  onNotes,
+  onTasks,
+  onTeam,
+  onTimer,
+  onNavigateToTab,
+  projects = [],
+  isLoading = false,
+  hasEverCreatedProject = false
 }: SidebarProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const navigate = useNavigate();
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isAIBusinessSuiteMinimized, setIsAIBusinessSuiteMinimized] = useState(false);
+  const [isBusinessToolsMinimized, setIsBusinessToolsMinimized] = useState(false);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    onSearch?.(query);
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
   };
 
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status);
-    onFilter?.({ status: status === "all" ? undefined : status, priority: priorityFilter === "all" ? undefined : priorityFilter });
+  const toggleAIBusinessSuite = () => {
+    setIsAIBusinessSuiteMinimized(!isAIBusinessSuiteMinimized);
   };
 
-  const handlePriorityFilter = (priority: string) => {
-    setPriorityFilter(priority);
-    onFilter?.({ status: statusFilter === "all" ? undefined : statusFilter, priority: priority === "all" ? undefined : priority });
+  const toggleBusinessTools = () => {
+    setIsBusinessToolsMinimized(!isBusinessToolsMinimized);
   };
 
-  const clearFilters = () => {
-    setSearchQuery("");
-    setStatusFilter("all");
-    setPriorityFilter("all");
-    onSearch?.("");
-    onFilter?.({});
-  };
-
-  const hasActiveFilters = searchQuery || statusFilter !== "all" || priorityFilter !== "all";
   return (
-    <div className="w-64 h-screen bg-sidebar border-r border-sidebar-border p-6 flex flex-col">
-      {/* Logo */}
+    <div className={`${isMinimized ? 'w-16' : 'w-72'} h-screen bg-gradient-to-b from-sidebar to-sidebar/95 border-r border-sidebar-border ${isMinimized ? 'p-3' : 'p-6'} flex flex-col backdrop-blur-sm transition-all duration-300 ease-in-out`}>
+      {/* Enhanced Logo */}
       <div className="mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-primary">
-            <Sparkles className="w-6 h-6 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-sidebar-foreground">Nexus</h1>
-        </div>
-        <p className="text-sm text-sidebar-foreground/70 mt-2">
-          AI workspace for entrepreneurs
-        </p>
-      </div>
-
-      {/* Search */}
-      <div className="space-y-3 mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-9 bg-secondary border-border text-secondary-foreground placeholder:text-muted-foreground"
-          />
-        </div>
-        
-        {/* Filters */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-sidebar-foreground">Filters</span>
-            {hasActiveFilters && (
-              <Badge 
-                variant="secondary" 
-                className="ml-auto cursor-pointer hover:bg-secondary/80"
-                onClick={clearFilters}
-              >
-                Clear
-              </Badge>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`${isMinimized ? 'w-8 h-8' : 'w-12 h-12'} rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25 transition-all duration-300`}>
+              <Network className={`${isMinimized ? 'w-4 h-4' : 'w-7 h-7'} text-white transition-all duration-300`} />
+            </div>
+            {!isMinimized && (
+              <div className="transition-opacity duration-300">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Nexus AI</h1>
+                <p className="text-xs text-sidebar-foreground/60 font-medium">
+                  Business Intelligence Suite
+                </p>
+              </div>
             )}
           </div>
-          
-          <Select value={statusFilter} onValueChange={handleStatusFilter}>
-            <SelectTrigger className="bg-secondary border-border text-secondary-foreground">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="Planning">Planning</SelectItem>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
-              <SelectItem value="On Hold">On Hold</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select value={priorityFilter} onValueChange={handlePriorityFilter}>
-            <SelectTrigger className="bg-secondary border-border text-secondary-foreground">
-              <SelectValue placeholder="Priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Priority</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
-            </SelectContent>
-          </Select>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleMinimize}
+            className="h-8 w-8 p-0 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-foreground/10"
+          >
+            {isMinimized ? (
+              <ChevronRight className="w-4 h-4" />
+            ) : (
+              <ChevronLeft className="w-4 h-4" />
+            )}
+          </Button>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      {isLoading ? (
-        <SidebarStatsSkeleton />
-      ) : projects.length > 0 ? (
-        <div className="mb-6 p-3 bg-sidebar-accent rounded-lg">
-          <div className="text-sm font-medium text-sidebar-accent-foreground mb-2">Quick Stats</div>
-          <div className="grid grid-cols-2 gap-2 text-xs text-sidebar-accent-foreground/80">
-            <div>Total: {projects.length}</div>
-            <div>Active: {projects.filter(p => p.status === "Active").length}</div>
-            <div>High Priority: {projects.filter(p => p.priority === "high").length}</div>
-            <div>Planning: {projects.filter(p => p.status === "Planning").length}</div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Keyboard Shortcuts */}
-      <div className="mb-6 p-3 bg-sidebar-accent rounded-lg">
-        <div className="text-sm font-medium text-sidebar-accent-foreground mb-2">Shortcuts</div>
-        <div className="space-y-1 text-xs text-sidebar-accent-foreground/80">
-          <div className="flex items-center justify-between">
-            <span>Quick Switcher</span>
-            <kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">⌘K</kbd>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Close Project</span>
-            <kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">Esc</kbd>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 space-y-2">
-        <Button 
-          variant="secondary" 
-          className="w-full justify-start gap-3 bg-sidebar-accent hover:bg-sidebar-accent/80 text-sidebar-accent-foreground border-sidebar-border"
-          onClick={onDashboard}
-        >
-          <LayoutDashboard className="w-5 h-5" />
-          Dashboard
-        </Button>
+      {/* Enhanced Platform Search */}
+      {!isMinimized && (
+        <div className="space-y-4 mb-6">
+          <PlatformSearch className="w-full" onNavigateToTab={onNavigateToTab} />
         
-        {/* Nexus AI Business Suite */}
-        <div className="border-t border-sidebar-border pt-2 mt-2">
-          <div className="text-xs font-medium text-sidebar-foreground/60 mb-2 px-2">AI Business Suite</div>
+        {/* Main Navigation Buttons */}
+        <div className="space-y-2">
+          {/* My Account Button */}
           <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            onClick={() => navigate('/nexus')}
+            variant="outline" 
+            className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-green-500/10 hover:text-green-400 border-green-500/30 h-10`}
+            onClick={() => navigate('/settings')}
+            title={isMinimized ? "My Account" : undefined}
           >
-            <Bot className="w-5 h-5" />
-            Nexus AI
+            <Settings className="w-4 h-4" />
+            {!isMinimized && <span className="font-medium">My Account</span>}
+          </Button>
+
+          {hasEverCreatedProject && (
+            <Button 
+              variant="outline" 
+              className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-purple-500/10 hover:text-purple-400 border-purple-500/30 h-10`}
+              onClick={onGetStarted}
+              title={isMinimized ? "Get Started" : undefined}
+            >
+              <Sparkles className="w-4 h-4" />
+              {!isMinimized && <span className="font-medium">Get Started</span>}
+            </Button>
+          )}
+          
+          <Button 
+            variant="outline" 
+            className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-blue-500/10 hover:text-blue-400 border-blue-500/30 h-10`}
+            onClick={onNewProject}
+            title={isMinimized ? "New Project" : undefined}
+          >
+            <Plus className="w-4 h-4" />
+            {!isMinimized && <span className="font-medium">New Project</span>}
           </Button>
         </div>
+        
+        {/* AI Business Suite Section */}
+        <div className="space-y-3">
+          {!isMinimized && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4 text-blue-400" />
+                <span className="text-sm font-semibold text-sidebar-foreground">AI Business Suite</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleAIBusinessSuite}
+                className="h-6 w-6 p-0 hover:bg-blue-500/10"
+              >
+                <ChevronDown className={`w-3 h-3 text-blue-400 transition-transform duration-200 ${isAIBusinessSuiteMinimized ? 'rotate-[-90deg]' : ''}`} />
+              </Button>
+            </div>
+          )}
+          
+          {!isAIBusinessSuiteMinimized && (
+            <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-blue-500/10 hover:text-blue-400 border-blue-500/30 h-10`}
+                onClick={onDashboard}
+                title={isMinimized ? "App Library" : undefined}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                {!isMinimized && <span className="font-medium">App Library</span>}
+              </Button>
+              <Button 
+                variant="outline" 
+                className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-blue-500/10 hover:text-blue-400 border-blue-500/30 h-10`}
+                onClick={() => navigate('/nexus')}
+                title={isMinimized ? "Nexus Agents" : undefined}
+              >
+                <Bot className="w-4 h-4" />
+                {!isMinimized && <span className="font-medium">Nexus Agents</span>}
+              </Button>
+            </div>
+          )}
+            
+            {/* Business Tools within AI Business Suite */}
+            <div className="space-y-2 mt-4">
+              {!isMinimized && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-green-400" />
+                    <span className="text-sm font-semibold text-sidebar-foreground">Business Tools</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleBusinessTools}
+                    className="h-6 w-6 p-0 hover:bg-green-500/10"
+                  >
+                    <ChevronDown className={`w-3 h-3 text-green-400 transition-transform duration-200 ${isBusinessToolsMinimized ? 'rotate-[-90deg]' : ''}`} />
+                  </Button>
+                </div>
+              )}
+              
+              {!isBusinessToolsMinimized && (
+                <div className="space-y-2">
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-green-500/10 hover:text-green-400 border-green-500/30 h-10`}
+                    onClick={onConnections}
+                    title={isMinimized ? "Connections" : undefined}
+                  >
+                    <Users className="w-4 h-4" />
+                    {!isMinimized && <span className="font-medium">Connections</span>}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-green-500/10 hover:text-green-400 border-green-500/30 h-10`}
+                    onClick={onEmail}
+                    title={isMinimized ? "Email" : undefined}
+                  >
+                    <Mail className="w-4 h-4" />
+                    {!isMinimized && <span className="font-medium">Email</span>}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-green-500/10 hover:text-green-400 border-green-500/30 h-10`}
+                    onClick={onProjectMap}
+                    title={isMinimized ? "Project Map" : undefined}
+                  >
+                    <Map className="w-4 h-4" />
+                    {!isMinimized && <span className="font-medium">Project Map</span>}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-green-500/10 hover:text-green-400 border-green-500/30 h-10`}
+                    onClick={onNotes}
+                    title={isMinimized ? "Notes" : undefined}
+                  >
+                    <StickyNote className="w-4 h-4" />
+                    {!isMinimized && <span className="font-medium">Notes</span>}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-green-500/10 hover:text-green-400 border-green-500/30 h-10`}
+                    onClick={onTasks}
+                    title={isMinimized ? "Tasks" : undefined}
+                  >
+                    <CheckSquare className="w-4 h-4" />
+                    {!isMinimized && <span className="font-medium">Tasks</span>}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-green-500/10 hover:text-green-400 border-green-500/30 h-10`}
+                    onClick={onTeam}
+                    title={isMinimized ? "Team" : undefined}
+                  >
+                    <Users className="w-4 h-4" />
+                    {!isMinimized && <span className="font-medium">Team</span>}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:bg-green-500/10 hover:text-green-400 border-green-500/30 h-10`}
+                    onClick={onTimer}
+                    title={isMinimized ? "Timer" : undefined}
+                  >
+                    <Clock className="w-4 h-4" />
+                    {!isMinimized && <span className="font-medium">Timer</span>}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          onClick={onNewProject}
-        >
-          <Plus className="w-5 h-5" />
-          New Brand
-        </Button>
-        {hasEverCreatedProject && (
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm"
-            onClick={onGetStarted}
-          >
-            <Sparkles className="w-4 h-4" />
-            Get Started
-          </Button>
-        )}
+      {/* Enhanced Quick Stats */}
+      {!isMinimized && (
+        <>
+          {isLoading ? (
+            <SidebarStatsSkeleton />
+          ) : projects.length > 0 ? (
+            <div className="mb-6 p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/5 rounded-xl border border-blue-500/20 backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <Database className="w-4 h-4 text-blue-400" />
+                <div className="text-sm font-semibold text-sidebar-foreground">Quick Stats</div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="flex flex-col">
+                  <span className="text-sidebar-foreground/60">Total</span>
+                  <span className="font-semibold text-blue-400">{projects.length}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sidebar-foreground/60">Active</span>
+                  <span className="font-semibold text-green-400">{projects.filter(p => p.status === "Active").length}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sidebar-foreground/60">High Priority</span>
+                  <span className="font-semibold text-red-400">{projects.filter(p => p.priority === "high").length}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sidebar-foreground/60">Planning</span>
+                  <span className="font-semibold text-yellow-400">{projects.filter(p => p.status === "Planning").length}</span>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </>
+      )}
+
+      {/* Enhanced Keyboard Shortcuts */}
+      {!isMinimized && (
+        <div className="mb-6 p-4 bg-gradient-to-br from-purple-500/10 to-blue-500/5 rounded-xl border border-purple-500/20 backdrop-blur-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="w-4 h-4 text-purple-400" />
+            <div className="text-sm font-semibold text-sidebar-foreground">Shortcuts</div>
+          </div>
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-sidebar-foreground/70">Quick Switcher</span>
+              <kbd className="px-2 py-1 bg-background/50 border border-border/50 rounded text-xs font-mono">⌘K</kbd>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sidebar-foreground/70">Close Project</span>
+              <kbd className="px-2 py-1 bg-background/50 border border-border/50 rounded text-xs font-mono">Esc</kbd>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sidebar-foreground/70">New Project</span>
+              <kbd className="px-2 py-1 bg-background/50 border border-border/50 rounded text-xs font-mono">⌘N</kbd>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Navigation */}
+      <nav className="flex-1 space-y-4">
+        {/* Main Navigation - Empty for now */}
+        
+
+
       </nav>
 
-      {/* Settings */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" className="flex-1 justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-          <Settings className="w-5 h-5" />
-          Settings
-        </Button>
-        <ThemeToggle />
-      </div>
     </div>
   );
 }

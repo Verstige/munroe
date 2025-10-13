@@ -8,11 +8,13 @@ import {
   Users,
   Activity,
   Bell,
-  Timer
+  Timer,
+  UserPlus,
+  Mail
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type WorkspaceTab = "mindmap" | "notes" | "tasks" | "team" | "timer";
+export type WorkspaceTab = "mindmap" | "notes" | "tasks" | "team" | "timer" | "crm" | "email";
 
 interface WorkspaceTabsProps {
   activeTab: WorkspaceTab;
@@ -25,10 +27,14 @@ interface WorkspaceTabsProps {
   tasksContent: React.ReactNode;
   teamContent: React.ReactNode;
   timerContent: React.ReactNode;
+  crmContent: React.ReactNode;
+  emailContent: React.ReactNode;
   // Notification counts
   taskNotifications?: number;
   teamNotifications?: number;
   timerNotifications?: number;
+  crmNotifications?: number;
+  emailNotifications?: number;
 }
 
 const tabConfig = [
@@ -49,6 +55,18 @@ const tabConfig = [
     label: "Tasks",
     icon: CheckSquare,
     description: "Viewable tasks"
+  },
+  {
+    id: "crm" as WorkspaceTab,
+    label: "Connections",
+    icon: UserPlus,
+    description: "Customer relationship management"
+  },
+  {
+    id: "email" as WorkspaceTab,
+    label: "Email",
+    icon: Mail,
+    description: "Email management & Gmail integration"
   },
   {
     id: "team" as WorkspaceTab,
@@ -75,9 +93,13 @@ export default function WorkspaceTabs({
   tasksContent,
   teamContent,
   timerContent,
+  crmContent,
+  emailContent,
   taskNotifications = 0,
   teamNotifications = 0,
-  timerNotifications = 0
+  timerNotifications = 0,
+  crmNotifications = 0,
+  emailNotifications = 0
 }: WorkspaceTabsProps) {
   const canAccessTab = (tab: typeof tabConfig[0]) => {
     if (tab.requiresRole) {
@@ -97,6 +119,8 @@ export default function WorkspaceTabs({
       case "tasks": return taskNotifications;
       case "team": return teamNotifications;
       case "timer": return timerNotifications;
+      case "crm": return crmNotifications;
+      case "email": return emailNotifications;
       default: return 0;
     }
   };
@@ -104,9 +128,9 @@ export default function WorkspaceTabs({
   return (
     <div className={cn("w-full", className)}>
       {/* Custom Horizontal Tab Navigation */}
-      <div className="w-full mb-6 sm:mb-8">
-        <div className="flex items-center justify-center">
-          <div className="flex items-center gap-1 bg-muted/30 p-1 sm:p-1.5 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm overflow-x-auto scrollbar-hide">
+      <div className="w-full mb-4 sm:mb-6 lg:mb-8">
+        <div className="flex items-center justify-center px-2 sm:px-0">
+          <div className="flex items-center gap-1 bg-muted/30 p-1 sm:p-1.5 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm overflow-x-auto scrollbar-hide w-full sm:w-auto">
             {availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -119,7 +143,8 @@ export default function WorkspaceTabs({
                   className={cn(
                     "relative flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-300",
                     "hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
-                    "min-w-[100px] sm:min-w-[120px] justify-center group flex-shrink-0",
+                    "min-w-[80px] sm:min-w-[120px] justify-center group flex-shrink-0 touch-manipulation",
+                    "active:scale-95",
                     isActive 
                       ? "bg-background shadow-md border border-border text-foreground scale-105" 
                       : "text-muted-foreground hover:text-foreground hover:scale-102"
@@ -169,7 +194,7 @@ export default function WorkspaceTabs({
       </div>
 
       {/* Tab Content with Smooth Transitions */}
-      <div className="w-full min-h-[400px] sm:min-h-[600px]">
+      <div className="w-full min-h-[300px] sm:min-h-[400px] lg:min-h-[600px]">
         <div className={cn(
           "transition-all duration-300 ease-in-out",
           "opacity-100 transform translate-y-0"
@@ -201,6 +226,18 @@ export default function WorkspaceTabs({
           {activeTab === "timer" && (
             <div className="animate-fade-in">
               {timerContent}
+            </div>
+          )}
+          
+          {activeTab === "crm" && (
+            <div className="animate-fade-in">
+              {crmContent}
+            </div>
+          )}
+          
+          {activeTab === "email" && (
+            <div className="animate-fade-in">
+              {emailContent}
             </div>
           )}
         </div>
