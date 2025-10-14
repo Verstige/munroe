@@ -23,6 +23,63 @@ import {
   MessageSquare
 } from 'lucide-react';
 
+// Message renderer component for formatting text with markdown-like syntax
+const MessageRenderer: React.FC<{ content: string }> = ({ content }) => {
+  // Split content into paragraphs
+  const paragraphs = content.split('\n\n').filter(p => p.trim());
+  
+  const formatText = (text: string) => {
+    return text.split(/(\*\*.*?\*\*)/g).map((part, partIndex) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        // Bold text
+        const boldText = part.slice(2, -2);
+        return <strong key={partIndex} className="font-semibold text-white">{boldText}</strong>;
+      } else if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
+        // Italic text
+        const italicText = part.slice(1, -1);
+        return <em key={partIndex} className="italic text-gray-300">{italicText}</em>;
+      } else {
+        // Regular text
+        return <span key={partIndex}>{part}</span>;
+      }
+    });
+  };
+  
+  return (
+    <div className="space-y-3">
+      {paragraphs.map((paragraph, index) => {
+        const trimmedParagraph = paragraph.trim();
+        
+        // Check if it's a list item (starts with number or bullet)
+        if (/^\d+\.\s/.test(trimmedParagraph) || /^\*\s/.test(trimmedParagraph)) {
+          return (
+            <div key={index} className="leading-relaxed pl-2">
+              <div className="flex">
+                <span className="text-gray-400 mr-2 flex-shrink-0">
+                  {trimmedParagraph.match(/^\d+\./) ? 
+                    trimmedParagraph.match(/^\d+\./)?.[0] : 
+                    '•'
+                  }
+                </span>
+                <div className="flex-1">
+                  {formatText(trimmedParagraph.replace(/^(\d+\.|\*)\s/, ''))}
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        // Regular paragraph
+        return (
+          <div key={index} className="leading-relaxed">
+            {formatText(trimmedParagraph)}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 interface AgentProfile {
   id: string;
   name: string;
@@ -371,7 +428,9 @@ What would you like me to coordinate for you?`,
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-muted/50 text-foreground border border-border'
                     }`}>
-                      <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
+                      <div className="text-sm">
+                        <MessageRenderer content={message.content} />
+                      </div>
                     </div>
                     
                     {/* Suggestions */}

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2, Send, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generateBusinessAssistantResponse, generateGeneralChatResponse, generateSmartSuggestions, type AssistantMode, type WorkspaceContext, type ConversationMemory } from "@/lib/gemini";
@@ -8,6 +9,63 @@ import { debugEnvironment } from "@/lib/debug-env";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { toast } from "@/hooks/use-toast";
 import NovaTeamMode from "./NovaTeamMode";
+
+// Message renderer component for formatting text with markdown-like syntax
+const MessageRenderer: React.FC<{ content: string }> = ({ content }) => {
+  // Split content into paragraphs
+  const paragraphs = content.split('\n\n').filter(p => p.trim());
+  
+  const formatText = (text: string) => {
+    return text.split(/(\*\*.*?\*\*)/g).map((part, partIndex) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        // Bold text
+        const boldText = part.slice(2, -2);
+        return <strong key={partIndex} className="font-semibold text-white">{boldText}</strong>;
+      } else if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
+        // Italic text
+        const italicText = part.slice(1, -1);
+        return <em key={partIndex} className="italic text-gray-300">{italicText}</em>;
+      } else {
+        // Regular text
+        return <span key={partIndex}>{part}</span>;
+      }
+    });
+  };
+  
+  return (
+    <div className="space-y-3">
+      {paragraphs.map((paragraph, index) => {
+        const trimmedParagraph = paragraph.trim();
+        
+        // Check if it's a list item (starts with number or bullet)
+        if (/^\d+\.\s/.test(trimmedParagraph) || /^\*\s/.test(trimmedParagraph)) {
+          return (
+            <div key={index} className="leading-relaxed pl-2">
+              <div className="flex">
+                <span className="text-gray-400 mr-2 flex-shrink-0">
+                  {trimmedParagraph.match(/^\d+\./) ? 
+                    trimmedParagraph.match(/^\d+\./)?.[0] : 
+                    '•'
+                  }
+                </span>
+                <div className="flex-1">
+                  {formatText(trimmedParagraph.replace(/^(\d+\.|\*)\s/, ''))}
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        // Regular paragraph
+        return (
+          <div key={index} className="leading-relaxed">
+            {formatText(trimmedParagraph)}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 interface ChatMessage {
   id: string;
@@ -57,8 +115,9 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [shouldScroll, setShouldScroll] = useState(true);
 
   // Handle speech recognition transcript updates
   useEffect(() => {
@@ -101,10 +160,39 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
     console.log('Environment status:', envStatus);
   }, []);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Add scroll event listener to detect manual scrolling
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (scrollContainer) {
+      const handleScroll = () => {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
+        setShouldScroll(isNearBottom);
+      };
+
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  // Only scroll to bottom when new messages are added and scrolling is enabled
+  useEffect(() => {
+    if (messages.length > 0 && shouldScroll) {
+      // Use a small delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToBottom();
+      }, 50);
+    }
+  }, [messages.length, shouldScroll]);
+
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+  };
 
   // Load conversation history from localStorage
   useEffect(() => {
@@ -440,10 +528,11 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
       ) : (
         <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
         {/* Chat History */}
-        <div 
-          ref={chatContainerRef}
-          className="h-64 sm:h-80 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-none"
-        >
+        <ScrollArea ref={scrollAreaRef} className="h-64 sm:h-80">
+          <div 
+            ref={chatContainerRef}
+            className="p-4 sm:p-6 space-y-4"
+          >
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -473,7 +562,9 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
                   ? "bg-blue-500 text-white"
                   : "bg-gray-800/80 text-gray-100 border border-gray-700/50"
               )}>
-                <p className="text-xs sm:text-sm leading-relaxed">{msg.content}</p>
+                <div className="text-xs sm:text-sm">
+                  <MessageRenderer content={msg.content} />
+                </div>
                 
                 {/* Suggestions */}
                 {msg.suggestions && msg.suggestions.length > 0 && (
@@ -526,9 +617,8 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
               </div>
             </div>
           )}
-          
-          <div ref={messagesEndRef} />
-        </div>
+          </div>
+        </ScrollArea>
 
         {/* Chat Input - Hidden in Team Mode */}
         {assistantMode !== 'team' && (

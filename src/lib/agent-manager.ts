@@ -86,19 +86,31 @@ export class AgentManager {
   // Get all agents
   public async getAllAgents(): Promise<AIAgent[]> {
     try {
+      console.log('🔍 Loading all agents...');
+      
       const { data, error } = await supabase
         .from('ai_agents')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('📊 Load agents response:', { data, error });
 
+      if (error) {
+        console.error('❌ Error loading agents:', error);
+        throw error;
+      }
+
+      console.log('📝 Raw agent data from DB:', data);
+      
       const agents = data.map(this.mapDBToAgent);
+      console.log('🔄 Mapped agents:', agents);
+      
       agents.forEach(agent => this.agents.set(agent.id, agent));
       
+      console.log('✅ Successfully loaded', agents.length, 'agents');
       return agents;
     } catch (error) {
-      console.error('Error loading agents:', error);
+      console.error('💥 Error loading agents:', error);
       return [];
     }
   }
@@ -393,13 +405,49 @@ Focus on efficiency, forecasting, and actionable insights. Be analytical and pro
 
   private async saveAgent(agent: AIAgent): Promise<void> {
     try {
-      const { error } = await supabase
+      console.log('🔍 Attempting to save agent:', agent.name);
+      
+      const agentData = this.mapAgentToDB(agent);
+      console.log('📝 Mapped agent data:', agentData);
+      
+      // Get current user for created_by field
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('👤 Current user:', user ? user.id : 'No user');
+      
+      if (authError) {
+        console.error('❌ Auth error:', authError);
+        throw new Error(`Authentication error: ${authError.message}`);
+      }
+      
+      if (user) {
+        agentData.created_by = user.id;
+      } else {
+        console.warn('⚠️ No authenticated user found');
+        // For development, we'll allow creating agents without a user
+        agentData.created_by = null;
+      }
+      
+      // For now, we'll use a default team_id or make it nullable
+      // In a real implementation, you'd get this from the user's current team
+      agentData.team_id = null; // Make it nullable for now
+      
+      console.log('💾 Final agent data to save:', agentData);
+      
+      const { data, error } = await supabase
         .from('ai_agents')
-        .upsert(this.mapAgentToDB(agent));
+        .upsert(agentData)
+        .select();
 
-      if (error) throw error;
+      console.log('📊 Supabase response:', { data, error });
+
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw new Error(`Database error: ${error.message}`);
+      }
+      
+      console.log('✅ Agent saved successfully:', data);
     } catch (error) {
-      console.error('Error saving agent:', error);
+      console.error('💥 Error saving agent:', error);
       throw error;
     }
   }
@@ -477,7 +525,9 @@ Focus on efficiency, forecasting, and actionable insights. Be analytical and pro
       created_at: agent.createdAt.toISOString(),
       updated_at: agent.updatedAt.toISOString(),
       last_activity: agent.lastActivity.toISOString(),
-      metrics: JSON.stringify(agent.metrics)
+      metrics: JSON.stringify(agent.metrics),
+      created_by: null, // Will be set in saveAgent method
+      team_id: null // Will be set in saveAgent method
     };
   }
 

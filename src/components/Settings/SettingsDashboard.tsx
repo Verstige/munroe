@@ -24,7 +24,8 @@ import {
   ExternalLink,
   Settings as SettingsIcon,
   Save,
-  Edit
+  Edit,
+  ArrowRight
 } from 'lucide-react';
 import GmailIntegration from './GmailIntegration';
 
@@ -181,7 +182,18 @@ export default function SettingsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+          <div className="flex items-center gap-4 mb-2">
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={() => window.location.href = '/workspace'}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+              Back to Workspace
+            </Button>
+            <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+          </div>
           <p className="text-muted-foreground mt-1">Manage your account, preferences, and integrations</p>
         </div>
         <div className="flex items-center gap-3">

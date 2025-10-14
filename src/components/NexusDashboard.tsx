@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Bot, 
   Workflow, 
@@ -28,11 +27,14 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Info
+  Info,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 import AgentManager from './AgentManager';
 import WorkflowBuilder from './WorkflowBuilder';
+import WorkflowExecutionConsole from './WorkflowExecutionConsole';
 import { AIAgent, Workflow as WorkflowType, APIConnector } from '@/types/nexus';
 import { agentManager } from '@/lib/agent-manager';
 
@@ -47,6 +49,8 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
   const [connectors, setConnectors] = useState<APIConnector[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [workflowExecutions, setWorkflowExecutions] = useState<Map<string, any>>(new Map());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -69,50 +73,451 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
     }
   };
 
-  const tabs = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: <BarChart3 className="w-4 h-4" />,
-      badge: null
-    },
-    {
-      id: 'agents',
-      label: 'Active Agents',
-      icon: <Bot className="w-4 h-4" />,
-      badge: agents.filter(a => a.status === 'active').length
-    },
-    {
-      id: 'workflows',
-      label: 'Workflows',
-      icon: <Workflow className="w-4 h-4" />,
-      badge: workflows.length
-    },
-    {
-      id: 'templates',
-      label: 'Templates',
-      icon: <FileText className="w-4 h-4" />,
-      badge: null
-    },
-    {
-      id: 'integrations',
-      label: 'Integrations',
-      icon: <Plug className="w-4 h-4" />,
-      badge: connectors.length
-    },
-    {
-      id: 'reports',
-      label: 'Reports',
-      icon: <Activity className="w-4 h-4" />,
-      badge: null
-    },
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: <Settings className="w-4 h-4" />,
-      badge: null
+  const handleSaveWorkflow = async (workflow: WorkflowType) => {
+    try {
+      console.log('Saving workflow:', workflow);
+      
+      // Add to local workflows state
+      const existingIndex = workflows.findIndex(w => w.id === workflow.id);
+      if (existingIndex >= 0) {
+        const updatedWorkflows = [...workflows];
+        updatedWorkflows[existingIndex] = workflow;
+        setWorkflows(updatedWorkflows);
+      } else {
+        setWorkflows([...workflows, workflow]);
+      }
+      
+      // TODO: Save to database
+      // await workflowManager.saveWorkflow(workflow);
+      
+      console.log('Workflow saved successfully');
+    } catch (error) {
+      console.error('Error saving workflow:', error);
     }
-  ];
+  };
+
+  const handleExecuteWorkflow = async (workflowId: string) => {
+    try {
+      console.log('Executing workflow:', workflowId);
+      
+      const workflow = workflows.find(w => w.id === workflowId);
+      if (!workflow) {
+        console.error('Workflow not found:', workflowId);
+        return;
+      }
+
+      // Create execution context
+      const executionId = `exec_${Date.now()}`;
+      const execution = {
+        id: executionId,
+        workflowId,
+        workflowName: workflow.name,
+        status: 'running',
+        startTime: new Date(),
+        currentNode: null,
+        results: {},
+        errors: [],
+        logs: [
+          {
+            id: `log_${Date.now()}`,
+            timestamp: new Date(),
+            type: 'info',
+            message: `Starting workflow execution: ${workflow.name}`,
+            details: { workflowId, nodeCount: workflow.nodes.length }
+          }
+        ]
+      };
+
+      setWorkflowExecutions(prev => new Map(prev).set(executionId, execution));
+
+      // Execute workflow nodes
+      await executeWorkflowNodes(workflow, executionId);
+      
+    } catch (error) {
+      console.error('Error executing workflow:', error);
+    }
+  };
+
+  const executeWorkflowNodes = async (workflow: WorkflowType, executionId: string) => {
+    try {
+      const execution = workflowExecutions.get(executionId);
+      if (!execution) return;
+
+      // Find the start node (trigger node)
+      const startNode = workflow.nodes.find(node => node.type === 'trigger');
+      if (!startNode) {
+        throw new Error('No trigger node found in workflow');
+      }
+
+      // Execute nodes in sequence
+      await executeNode(startNode, workflow, executionId);
+      
+    } catch (error) {
+      console.error('Error executing workflow nodes:', error);
+      updateExecutionStatus(executionId, 'failed', { error: error.message });
+    }
+  };
+
+  const executeNode = async (node: any, workflow: WorkflowType, executionId: string) => {
+    try {
+      console.log(`Executing node: ${node.type} - ${node.data.label}`);
+      
+      // Add log entry for node start
+      addExecutionLog(executionId, {
+        id: `log_${Date.now()}_${Math.random()}`,
+        timestamp: new Date(),
+        type: 'info',
+        message: `Starting execution of ${node.type} node: ${node.data.label}`,
+        nodeId: node.id,
+        nodeType: node.type,
+        agentName: node.data.label.includes(':') ? node.data.label.split(':')[0].trim() : undefined
+      });
+      
+      updateExecutionStatus(executionId, 'running', { currentNode: node.id });
+      
+      let result: any = null;
+
+      switch (node.type) {
+        case 'trigger':
+          result = { triggered: true, timestamp: new Date() };
+          break;
+          
+        case 'agent-action':
+          result = await executeAgentAction(node, executionId);
+          break;
+          
+        case 'api-call':
+          result = await executeAPICall(node, executionId);
+          break;
+          
+        case 'condition':
+          result = await executeCondition(node, executionId);
+          break;
+          
+        case 'delay':
+          result = await executeDelay(node, executionId);
+          break;
+          
+        case 'function':
+          result = await executeFunction(node, executionId);
+          break;
+          
+        case 'merge':
+          result = await executeMerge(node, workflow, executionId);
+          break;
+          
+        case 'split':
+          result = await executeSplit(node, workflow, executionId);
+          break;
+          
+        case 'end':
+          result = { completed: true, timestamp: new Date() };
+          updateExecutionStatus(executionId, 'completed', { completed: true });
+          return;
+          
+        default:
+          throw new Error(`Unknown node type: ${node.type}`);
+      }
+
+      // Store result and add completion log
+      const currentExecution = workflowExecutions.get(executionId);
+      if (currentExecution) {
+        currentExecution.results[node.id] = result;
+        
+        // Add completion log
+        addExecutionLog(executionId, {
+          id: `log_${Date.now()}_${Math.random()}`,
+          timestamp: new Date(),
+          type: 'success',
+          message: `Completed ${node.type} node: ${node.data.label}`,
+          nodeId: node.id,
+          nodeType: node.type,
+          details: result
+        });
+        
+        setWorkflowExecutions(prev => new Map(prev).set(executionId, currentExecution));
+      }
+
+      // Find next nodes to execute
+      const nextNodes = getNextNodes(node.id, workflow);
+      
+      // Execute next nodes
+      for (const nextNode of nextNodes) {
+        await executeNode(nextNode, workflow, executionId);
+      }
+      
+    } catch (error) {
+      console.error(`Error executing node ${node.id}:`, error);
+      
+      // Add error log
+      addExecutionLog(executionId, {
+        id: `log_${Date.now()}_${Math.random()}`,
+        timestamp: new Date(),
+        type: 'error',
+        message: `Error in ${node.type} node: ${error.message}`,
+        nodeId: node.id,
+        nodeType: node.type,
+        details: { error: error.message, stack: error.stack }
+      });
+      
+      updateExecutionStatus(executionId, 'failed', { 
+        error: error.message, 
+        failedNode: node.id 
+      });
+    }
+  };
+
+  const executeAgentAction = async (node: any, executionId: string) => {
+    try {
+      const agentName = node.data.label.split(':')[0]?.trim();
+      const action = node.data.label.split(':')[1]?.trim() || 'Execute task';
+      
+      console.log(`Executing agent action: ${agentName} - ${action}`);
+      
+      // Add agent action start log
+      addExecutionLog(executionId, {
+        id: `log_${Date.now()}_${Math.random()}`,
+        timestamp: new Date(),
+        type: 'info',
+        message: `Calling AI agent ${agentName} to ${action}`,
+        nodeId: node.id,
+        nodeType: 'agent-action',
+        agentName: agentName,
+        details: { action }
+      });
+      
+      // Find the agent
+      const agent = agents.find(a => a.name.toLowerCase().includes(agentName.toLowerCase()));
+      if (!agent) {
+        throw new Error(`Agent not found: ${agentName}`);
+      }
+
+      // Simulate agent execution with realistic delay
+      await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+
+      const result = {
+        agentId: agent.id,
+        agentName: agent.name,
+        action: action,
+        status: 'completed',
+        result: `Agent ${agent.name} successfully executed: ${action}`,
+        timestamp: new Date(),
+        duration: `${(1500 + Math.random() * 1000).toFixed(0)}ms`
+      };
+
+      // Add agent action completion log
+      addExecutionLog(executionId, {
+        id: `log_${Date.now()}_${Math.random()}`,
+        timestamp: new Date(),
+        type: 'success',
+        message: `AI agent ${agentName} completed: ${action}`,
+        nodeId: node.id,
+        nodeType: 'agent-action',
+        agentName: agentName,
+        details: result
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Error executing agent action:', error);
+      throw error;
+    }
+  };
+
+  const executeAPICall = async (node: any, executionId: string) => {
+    try {
+      console.log(`Executing API call: ${node.data.label}`);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const result = {
+        endpoint: node.data.label,
+        status: 'success',
+        response: `API call to ${node.data.label} completed successfully`,
+        timestamp: new Date()
+      };
+
+      return result;
+    } catch (error) {
+      console.error('Error executing API call:', error);
+      throw error;
+    }
+  };
+
+  const executeCondition = async (node: any, executionId: string) => {
+    try {
+      console.log(`Evaluating condition: ${node.data.label}`);
+      
+      // Simple condition evaluation (in real implementation, this would be more sophisticated)
+      const condition = node.data.label;
+      let result = false;
+      
+      if (condition.includes('>')) {
+        const [left, right] = condition.split('>');
+        result = parseInt(left.trim()) > parseInt(right.trim().replace('?', '').trim());
+      } else if (condition.includes('Priority Level')) {
+        result = Math.random() > 0.5; // Random for demo
+      } else if (condition.includes('Payment Valid')) {
+        result = Math.random() > 0.3; // Random for demo
+      } else {
+        result = Math.random() > 0.5; // Default random
+      }
+      
+      return {
+        condition: condition,
+        result: result,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Error executing condition:', error);
+      throw error;
+    }
+  };
+
+  const executeDelay = async (node: any, executionId: string) => {
+    try {
+      console.log(`Executing delay: ${node.data.label}`);
+      
+      // Extract delay time (simplified)
+      const delayText = node.data.label;
+      let delayMs = 1000; // Default 1 second
+      
+      if (delayText.includes('1 Hour')) {
+        delayMs = 1000; // 1 second for demo (would be 3600000 in production)
+      } else if (delayText.includes('24 Hours')) {
+        delayMs = 2000; // 2 seconds for demo (would be 86400000 in production)
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+      
+      return {
+        delay: delayText,
+        completed: true,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Error executing delay:', error);
+      throw error;
+    }
+  };
+
+  const executeFunction = async (node: any, executionId: string) => {
+    try {
+      console.log(`Executing function: ${node.data.label}`);
+      
+      // Simulate function execution
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return {
+        function: node.data.label,
+        result: `Function ${node.data.label} executed successfully`,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Error executing function:', error);
+      throw error;
+    }
+  };
+
+  const executeMerge = async (node: any, workflow: WorkflowType, executionId: string) => {
+    try {
+      console.log(`Executing merge: ${node.data.label}`);
+      
+      // Collect results from all incoming paths
+      const incomingNodes = workflow.edges
+        .filter(edge => edge.target === node.id)
+        .map(edge => workflow.nodes.find(n => n.id === edge.source))
+        .filter(Boolean);
+      
+      const results = incomingNodes.map(incomingNode => ({
+        nodeId: incomingNode.id,
+        result: `Merged from ${incomingNode.data.label}`
+      }));
+      
+      return {
+        merge: node.data.label,
+        mergedResults: results,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Error executing merge:', error);
+      throw error;
+    }
+  };
+
+  const executeSplit = async (node: any, workflow: WorkflowType, executionId: string) => {
+    try {
+      console.log(`Executing split: ${node.data.label}`);
+      
+      // Find outgoing nodes
+      const outgoingEdges = workflow.edges.filter(edge => edge.source === node.id);
+      
+      return {
+        split: node.data.label,
+        paths: outgoingEdges.length,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      console.error('Error executing split:', error);
+      throw error;
+    }
+  };
+
+  const getNextNodes = (nodeId: string, workflow: WorkflowType) => {
+    const outgoingEdges = workflow.edges.filter(edge => edge.source === nodeId);
+    return outgoingEdges.map(edge => 
+      workflow.nodes.find(node => node.id === edge.target)
+    ).filter(Boolean);
+  };
+
+  const updateExecutionStatus = (executionId: string, status: string, data: any = {}) => {
+    const execution = workflowExecutions.get(executionId);
+    if (execution) {
+      execution.status = status;
+      execution.endTime = new Date();
+      Object.assign(execution, data);
+      setWorkflowExecutions(prev => new Map(prev).set(executionId, execution));
+    }
+  };
+
+  const addExecutionLog = (executionId: string, logEntry: any) => {
+    const execution = workflowExecutions.get(executionId);
+    if (execution) {
+      execution.logs = [...execution.logs, logEntry];
+      setWorkflowExecutions(prev => new Map(prev).set(executionId, execution));
+    }
+  };
+
+  const clearExecutions = () => {
+    setWorkflowExecutions(new Map());
+  };
+
+  const clearExecutionLogs = (executionId: string) => {
+    const execution = workflowExecutions.get(executionId);
+    if (execution) {
+      execution.logs = [];
+      setWorkflowExecutions(prev => new Map(prev).set(executionId, execution));
+    }
+  };
+
+  const stopExecution = (executionId: string) => {
+    const execution = workflowExecutions.get(executionId);
+    if (execution) {
+      execution.status = 'failed';
+      execution.endTime = new Date();
+      execution.errors.push('Execution stopped by user');
+      addExecutionLog(executionId, {
+        id: `log_${Date.now()}_${Math.random()}`,
+        timestamp: new Date(),
+        type: 'error',
+        message: 'Execution stopped by user',
+        details: { stoppedBy: 'user' }
+      });
+      setWorkflowExecutions(prev => new Map(prev).set(executionId, execution));
+    }
+  };
+
 
   const getOverviewMetrics = () => {
     const activeAgents = agents.filter(a => a.status === 'active').length;
@@ -178,46 +583,153 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
   const metrics = getOverviewMetrics();
   const recentActivity = getRecentActivity();
 
+  const navigationItems = [
+    {
+      id: 'overview',
+      label: 'Overview',
+      icon: <BarChart3 className="w-5 h-5" />,
+      badge: null
+    },
+    {
+      id: 'agents',
+      label: 'Active Agents',
+      icon: <Bot className="w-5 h-5" />,
+      badge: agents.filter(a => a.status === 'active').length
+    },
+    {
+      id: 'workflows',
+      label: 'Workflows',
+      icon: <Workflow className="w-5 h-5" />,
+      badge: workflows.length
+    },
+    {
+      id: 'console',
+      label: 'Live Console',
+      icon: <Activity className="w-5 h-5" />,
+      badge: workflowExecutions.size,
+      highlight: workflowExecutions.size > 0
+    },
+    {
+      id: 'templates',
+      label: 'Templates',
+      icon: <FileText className="w-5 h-5" />,
+      badge: null
+    },
+    {
+      id: 'integrations',
+      label: 'Integrations',
+      icon: <Plug className="w-5 h-5" />,
+      badge: connectors.length
+    },
+    {
+      id: 'reports',
+      label: 'Reports',
+      icon: <BarChart3 className="w-5 h-5" />,
+      badge: null
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: <Settings className="w-5 h-5" />,
+      badge: null
+    }
+  ];
+
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Nexus AI Business Suite</h1>
-          <p className="text-muted-foreground">
-            Your autonomous AI business platform powered by Gemini
-          </p>
+    <div className={`flex h-screen bg-background ${className}`}>
+      {/* Sidebar Navigation */}
+      <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-card border-r border-border transition-all duration-300 flex flex-col`}>
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Nexus AI</h2>
+                <p className="text-xs text-muted-foreground">Business Suite</p>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2"
+            >
+              {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Search className="w-4 h-4 mr-2" />
-            Quick Search
-          </Button>
-          <Button size="sm">
+
+        {/* Navigation Items */}
+        <div className="flex-1 p-2 space-y-1">
+          {navigationItems.map((item) => (
+            <Button
+              key={item.id}
+              variant={activeTab === item.id ? 'default' : 'ghost'}
+              className={`w-full justify-start h-12 ${sidebarCollapsed ? 'px-2' : 'px-3'} ${
+                item.highlight ? 'border-l-4 border-l-blue-500' : ''
+              }`}
+              onClick={() => setActiveTab(item.id)}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className={`${item.highlight ? 'text-blue-500' : ''}`}>
+                  {item.icon}
+                </div>
+                {!sidebarCollapsed && (
+                  <>
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {item.badge !== null && item.badge > 0 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </>
+                )}
+              </div>
+            </Button>
+          ))}
+        </div>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-border">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => setActiveTab('agents')}
+          >
             <Plus className="w-4 h-4 mr-2" />
-            Create
+            {!sidebarCollapsed && 'Create Agent'}
           </Button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
-          {tabs.map((tab) => (
-            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-2">
-              {tab.icon}
-              {tab.label}
-              {tab.badge !== null && (
-                <Badge variant="secondary" className="ml-1 text-xs">
-                  {tab.badge}
-                </Badge>
-              )}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Content Header */}
+        <div className="p-6 border-b border-border bg-background">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                {navigationItems.find(item => item.id === activeTab)?.label || 'Nexus AI'}
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                {activeTab === 'overview' && 'Manage your AI agents, workflows, and business automation'}
+                {activeTab === 'agents' && 'Create and manage your AI agents'}
+                {activeTab === 'workflows' && 'Build and execute automated workflows'}
+                {activeTab === 'console' && 'Monitor workflow executions in real-time'}
+                {activeTab === 'templates' && 'Browse pre-built workflow templates'}
+                {activeTab === 'integrations' && 'Connect external services and APIs'}
+                {activeTab === 'reports' && 'View analytics and performance reports'}
+                {activeTab === 'settings' && 'Configure your Nexus AI platform'}
+              </p>
+            </div>
+          </div>
+        </div>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-6">
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
           {/* Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
@@ -313,12 +825,19 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex flex-col items-start gap-2"
-                  onClick={() => setActiveTab('integrations')}
+                  onClick={() => setActiveTab('console')}
                 >
-                  <Plug className="w-6 h-6 text-purple-500" />
+                  <Activity className="w-6 h-6 text-orange-500" />
                   <div className="text-left">
-                    <div className="font-medium">Connect API</div>
-                    <div className="text-sm text-muted-foreground">Link external services</div>
+                    <div className="font-medium">Live Console</div>
+                    <div className="text-sm text-muted-foreground">
+                      Monitor workflow executions
+                      {workflowExecutions.size > 0 && (
+                        <span className="ml-1 text-blue-500 font-semibold">
+                          ({workflowExecutions.size} active)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </Button>
               </div>
@@ -384,23 +903,113 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+            </div>
+          )}
 
-        {/* Agents Tab */}
-        <TabsContent value="agents">
-          <AgentManager 
-            onAgentSelect={setSelectedAgent}
-            selectedAgentId={selectedAgent?.id}
-          />
-        </TabsContent>
+          {/* Agents Tab */}
+          {activeTab === 'agents' && (
+            <div className="space-y-6">
+              <AgentManager 
+                onAgentSelect={setSelectedAgent}
+                selectedAgentId={selectedAgent?.id}
+              />
+            </div>
+          )}
 
-        {/* Workflows Tab */}
-        <TabsContent value="workflows">
-          <WorkflowBuilder />
-        </TabsContent>
+          {/* Workflows Tab */}
+          {activeTab === 'workflows' && (
+            <div className="space-y-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Workflow className="w-6 h-6 text-green-500" />
+                Workflow Builder
+              </h2>
+              <p className="text-muted-foreground">
+                Create and customize your own workflows with drag-and-drop nodes
+              </p>
+            </div>
+            <Button
+              onClick={() => setActiveTab('console')}
+              variant="outline"
+              className="border-blue-500 text-blue-500 hover:bg-blue-50"
+            >
+              <Activity className="w-4 h-4 mr-2" />
+              View Live Console
+            </Button>
+          </div>
 
-        {/* Templates Tab */}
-        <TabsContent value="templates" className="space-y-6">
+          <WorkflowBuilder 
+            onSave={handleSaveWorkflow}
+            onExecute={handleExecuteWorkflow}
+              />
+            </div>
+          )}
+
+          {/* Live Console Tab */}
+          {activeTab === 'console' && (
+            <div className="space-y-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Activity className="w-6 h-6 text-blue-500" />
+                Live Workflow Console
+              </h2>
+              <p className="text-muted-foreground">
+                Monitor and debug workflow executions in real-time
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  // Create and run a demo workflow
+                  const demoWorkflow = {
+                    id: `demo_workflow_${Date.now()}`,
+                    name: 'Live Demo Workflow',
+                    description: 'A demo workflow to showcase live execution',
+                    nodes: [
+                      { id: 'trigger-1', type: 'trigger', position: { x: 100, y: 100 }, data: { label: 'Demo Trigger' }, config: {} },
+                      { id: 'agent-1', type: 'agent-action', position: { x: 300, y: 100 }, data: { label: 'Vega: Analyze Demo Data' }, config: {} },
+                      { id: 'condition-1', type: 'condition', position: { x: 500, y: 100 }, data: { label: 'Demo Condition > 50?' }, config: {} },
+                      { id: 'agent-2', type: 'agent-action', position: { x: 700, y: 100 }, data: { label: 'Aurora: Send Demo Notification' }, config: {} },
+                      { id: 'end-1', type: 'end', position: { x: 900, y: 100 }, data: { label: 'Demo Complete' }, config: {} }
+                    ],
+                    edges: [
+                      { id: 'e1', source: 'trigger-1', target: 'agent-1', type: 'default' },
+                      { id: 'e2', source: 'agent-1', target: 'condition-1', type: 'default' },
+                      { id: 'e3', source: 'condition-1', target: 'agent-2', type: 'default' },
+                      { id: 'e4', source: 'agent-2', target: 'end-1', type: 'default' }
+                    ],
+                    triggers: [],
+                    status: 'draft',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    createdBy: 'current-user',
+                    executions: []
+                  };
+                  setWorkflows(prev => [...prev, demoWorkflow]);
+                  handleExecuteWorkflow(demoWorkflow.id);
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Run Live Demo
+              </Button>
+            </div>
+          </div>
+
+          <WorkflowExecutionConsole
+            executions={workflowExecutions}
+            onClearExecutions={clearExecutions}
+            onClearLogs={clearExecutionLogs}
+            onStopExecution={stopExecution}
+            />
+            </div>
+          )}
+
+          {/* Templates Tab */}
+          {activeTab === 'templates' && (
+            <div className="space-y-6">
           <div className="text-center py-12">
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Template Library</h3>
@@ -409,10 +1018,12 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
             </p>
             <Button>Browse Templates</Button>
           </div>
-        </TabsContent>
+            </div>
+          )}
 
-        {/* Integrations Tab */}
-        <TabsContent value="integrations" className="space-y-6">
+          {/* Integrations Tab */}
+          {activeTab === 'integrations' && (
+            <div className="space-y-6">
           <div className="text-center py-12">
             <Plug className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">API Integrations</h3>
@@ -421,10 +1032,12 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
             </p>
             <Button>Connect Service</Button>
           </div>
-        </TabsContent>
+            </div>
+          )}
 
-        {/* Reports Tab */}
-        <TabsContent value="reports" className="space-y-6">
+          {/* Reports Tab */}
+          {activeTab === 'reports' && (
+            <div className="space-y-6">
           <div className="text-center py-12">
             <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Analytics & Reports</h3>
@@ -433,10 +1046,12 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
             </p>
             <Button>Generate Report</Button>
           </div>
-        </TabsContent>
+            </div>
+          )}
 
-        {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <div className="space-y-6">
           <div className="text-center py-12">
             <Settings className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Settings</h3>
@@ -445,8 +1060,10 @@ export default function NexusDashboard({ className }: NexusDashboardProps) {
             </p>
             <Button>Open Settings</Button>
           </div>
-        </TabsContent>
-      </Tabs>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

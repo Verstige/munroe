@@ -247,22 +247,25 @@ export default function Index() {
       {/* Main Content */}
       <div className="flex-1 overflow-auto bg-gradient-subtle">
         <div className="p-4 md:p-8">
-          {/* Show welcome screen for new users */}
-          {!isDemoUser && projects.length === 0 && !isLoading ? (
-            <NewUserWelcome 
-              onCreateProject={() => setIsNewProjectOpen(true)}
-              onViewDemo={() => window.location.href = '/demo'}
-            />
-          ) : (
+          {/* Show welcome screen for all users */}
+          <NewUserWelcome 
+            onCreateProject={() => setIsNewProjectOpen(true)}
+            onViewDemo={() => window.location.href = '/demo'}
+            isNewUser={projects.length === 0}
+            userName={getUserFirstName(profile)}
+          />
+          
+          {/* Main Workspace Content - only show if user has projects or after welcome */}
+          {projects.length > 0 && (
             <>
               {/* Header */}
-          <div className="mb-6 md:mb-8 animate-fade-in text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
-              Welcome back, {getUserFirstName(profile)}
-            </h1>
-            <p className="text-base md:text-lg text-muted-foreground mb-4">
-              Your project ecosystem at a glance
-            </p>
+              <div className="mb-6 md:mb-8 animate-fade-in text-center">
+                <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
+                  Your Project Ecosystem
+                </h1>
+                <p className="text-base md:text-lg text-muted-foreground mb-4">
+                  Manage and scale your business projects
+                </p>
             
             
             {/* Workspace Tabs */}
@@ -369,7 +372,7 @@ export default function Index() {
         )}
         
         {/* Right Panel Content */}
-        {currentView === "shared" && !activeProject && (
+        {!activeProject && (
           <div className="w-[200px] overflow-y-auto">
             <ActivityFeed 
               activities={activityFeed}
@@ -377,12 +380,6 @@ export default function Index() {
               maxHeight="calc(100vh - 200px)"
               showFilters={false}
             />
-          </div>
-        )}
-        
-        {currentView === "personal" && !activeProject && (
-          <div className="w-[200px] overflow-y-auto">
-            <PersonalNotes />
           </div>
         )}
         

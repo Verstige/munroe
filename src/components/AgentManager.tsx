@@ -122,6 +122,25 @@ export default function AgentManager({ onAgentSelect, selectedAgentId }: AgentMa
 
   const handleCreateAgent = async () => {
     try {
+      // Validate required fields
+      if (!formData.name.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Agent name is required",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!formData.description.trim()) {
+        toast({
+          title: "Validation Error", 
+          description: "Agent description is required",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const model: AIModel = {
         provider: MODEL_OPTIONS.find(m => m.value === formData.model)?.provider as any || 'gemini',
         model: formData.model,
@@ -147,9 +166,24 @@ export default function AgentManager({ onAgentSelect, selectedAgentId }: AgentMa
       });
     } catch (error) {
       console.error('Error creating agent:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to create agent";
+      if (error instanceof Error) {
+        if (error.message.includes('VITE_GEMINI_API_KEY')) {
+          errorMessage = "Gemini API key not configured. Please check your environment variables.";
+        } else if (error.message.includes('auth')) {
+          errorMessage = "Authentication error. Please sign in again.";
+        } else if (error.message.includes('database')) {
+          errorMessage = "Database error. Please try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to create agent",
+        description: errorMessage,
         variant: "destructive"
       });
     }

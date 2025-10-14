@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Bot, 
   Workflow, 
@@ -40,11 +39,14 @@ import {
   MessageSquare,
   UserCheck,
   Megaphone,
-  Wrench
+  Wrench,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 import AgentManager from './AgentManager';
 import WorkflowBuilder from './WorkflowBuilder';
+import WorkflowExecutionConsole from './WorkflowExecutionConsole';
 import IntegratedAIAgents from './IntegratedAIAgents';
 import { AIAgent, Workflow as WorkflowType, APIConnector } from '@/types/nexus';
 import { agentManager } from '@/lib/agent-manager';
@@ -246,6 +248,8 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
   const [connectors, setConnectors] = useState<APIConnector[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [workflowExecutions, setWorkflowExecutions] = useState<Map<string, any>>(new Map());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -268,56 +272,394 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
     }
   };
 
-  const tabs = [
+  const navigationItems = [
     {
       id: 'overview',
       label: 'Overview',
-      icon: <BarChart3 className="w-4 h-4" />,
+      icon: <BarChart3 className="w-5 h-5" />,
       badge: null
     },
     {
       id: 'agents',
       label: 'Active Agents',
-      icon: <Bot className="w-4 h-4" />,
+      icon: <Bot className="w-5 h-5" />,
       badge: agents.filter(a => a.status === 'active').length
     },
     {
       id: 'integrated',
       label: 'Integrated AI',
-      icon: <Brain className="w-4 h-4" />,
+      icon: <Brain className="w-5 h-5" />,
       badge: 'New'
     },
     {
       id: 'workflows',
       label: 'Workflows',
-      icon: <Workflow className="w-4 h-4" />,
+      icon: <Workflow className="w-5 h-5" />,
       badge: workflows.length
+    },
+    {
+      id: 'console',
+      label: 'Live Console',
+      icon: <Activity className="w-5 h-5" />,
+      badge: workflowExecutions.size,
+      highlight: workflowExecutions.size > 0
     },
     {
       id: 'templates',
       label: 'Templates',
-      icon: <FileText className="w-4 h-4" />,
+      icon: <FileText className="w-5 h-5" />,
       badge: null
     },
     {
       id: 'integrations',
       label: 'Integrations',
-      icon: <Plug className="w-4 h-4" />,
+      icon: <Plug className="w-5 h-5" />,
       badge: connectors.length
     },
     {
       id: 'reports',
       label: 'Reports',
-      icon: <Activity className="w-4 h-4" />,
+      icon: <BarChart3 className="w-5 h-5" />,
       badge: null
     },
     {
       id: 'settings',
       label: 'Settings',
-      icon: <Settings className="w-4 h-4" />,
+      icon: <Settings className="w-5 h-5" />,
       badge: null
     }
   ];
+
+  // Workflow execution functions
+  const handleSaveWorkflow = async (workflow: WorkflowType) => {
+    try {
+      console.log('Saving workflow:', workflow);
+      const existingIndex = workflows.findIndex(w => w.id === workflow.id);
+      if (existingIndex >= 0) {
+        workflows[existingIndex] = workflow;
+      } else {
+        workflows.push(workflow);
+      }
+      setWorkflows([...workflows]);
+      alert('Workflow saved successfully!');
+    } catch (error) {
+      console.error('Error saving workflow:', error);
+      alert('Failed to save workflow');
+    }
+  };
+
+  const handleExecuteWorkflow = async (workflowId: string) => {
+    try {
+      const workflow = workflows.find(w => w.id === workflowId);
+      if (!workflow) {
+        console.error('Workflow not found:', workflowId);
+        alert('Workflow not found');
+        return;
+      }
+
+      // Create execution context
+      const executionId = `exec_${Date.now()}`;
+      const execution = {
+        id: executionId,
+        workflowId,
+        workflowName: workflow.name,
+        status: 'running' as const,
+        startTime: new Date(),
+        currentNode: null,
+        results: {},
+        errors: [],
+        logs: [
+          {
+            id: `log_${Date.now()}`,
+            timestamp: new Date(),
+            type: 'info' as const,
+            message: `Starting workflow execution: ${workflow.name}`,
+            details: { workflowId, nodeCount: workflow.nodes.length }
+          }
+        ]
+      };
+
+      // Update executions state immediately
+      setWorkflowExecutions(prev => {
+        const newMap = new Map(prev);
+        newMap.set(executionId, execution);
+        return newMap;
+      });
+      
+      console.log('Workflow execution started:', executionId);
+      
+      // Start actual workflow execution after a brief delay to ensure state is updated
+      setTimeout(() => {
+        executeWorkflowNodes(executionId, workflow);
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error executing workflow:', error);
+      alert('Failed to execute workflow');
+    }
+  };
+
+  const executeWorkflowNodes = async (executionId: string, workflow: any) => {
+    try {
+      console.log('Starting workflow execution for:', executionId);
+      
+      // Find trigger nodes to start execution
+      const triggerNodes = workflow.nodes.filter((node: any) => node.type === 'trigger');
+      
+      if (triggerNodes.length === 0) {
+        addExecutionLog(executionId, 'error', 'No trigger nodes found in workflow');
+        updateExecutionStatus(executionId, 'failed');
+        return;
+      }
+
+      // Start with first trigger node
+      const startNode = triggerNodes[0];
+      addExecutionLog(executionId, 'info', `Starting execution from trigger: ${startNode.data.label}`, startNode.id, startNode.type);
+      
+      // Execute nodes in sequence
+      await executeNode(executionId, workflow, startNode);
+      
+    } catch (error) {
+      console.error('Error in workflow execution:', error);
+      addExecutionLog(executionId, 'error', `Workflow execution failed: ${error}`);
+      updateExecutionStatus(executionId, 'failed');
+    }
+  };
+
+  const executeNode = async (executionId: string, workflow: any, node: any) => {
+    try {
+      updateExecutionStatus(executionId, 'running', node.id);
+      
+      addExecutionLog(executionId, 'info', `Executing node: ${node.data.label}`, node.id, node.type);
+      
+      // Simulate node execution based on type
+      let result: any = {};
+      
+      switch (node.type) {
+        case 'trigger':
+          result = await executeTrigger(executionId, node);
+          break;
+        case 'agent-action':
+          result = await executeAgentAction(executionId, node);
+          break;
+        case 'api-call':
+          result = await executeAPICall(executionId, node);
+          break;
+        case 'condition':
+          result = await executeCondition(executionId, node);
+          break;
+        case 'delay':
+          result = await executeDelay(executionId, node);
+          break;
+        case 'function':
+          result = await executeFunction(executionId, node);
+          break;
+        case 'merge':
+          result = await executeMerge(executionId, node);
+          break;
+        case 'split':
+          result = await executeSplit(executionId, node);
+          break;
+        case 'end':
+          result = await executeEnd(executionId, node);
+          break;
+        default:
+          result = { message: `Unknown node type: ${node.type}` };
+      }
+
+      // Store node result
+      setWorkflowExecutions(prev => {
+        const newMap = new Map(prev);
+        const execution = newMap.get(executionId);
+        if (execution) {
+          execution.results[node.id] = result;
+          newMap.set(executionId, execution);
+        }
+        return newMap;
+      });
+
+      addExecutionLog(executionId, 'success', `Completed node: ${node.data.label}`, node.id, node.type, result);
+
+      // Find and execute next nodes
+      const nextNodes = getNextNodes(workflow, node);
+      
+      if (nextNodes.length === 0) {
+        // End of workflow
+        addExecutionLog(executionId, 'info', 'Workflow execution completed');
+        updateExecutionStatus(executionId, 'completed');
+        return;
+      }
+
+      // Execute next nodes
+      for (const nextNode of nextNodes) {
+        await executeNode(executionId, workflow, nextNode);
+      }
+      
+    } catch (error) {
+      console.error(`Error executing node ${node.id}:`, error);
+      addExecutionLog(executionId, 'error', `Node execution failed: ${error}`, node.id, node.type);
+      updateExecutionStatus(executionId, 'failed');
+    }
+  };
+
+  const getNextNodes = (workflow: any, currentNode: any) => {
+    const edges = workflow.edges.filter((edge: any) => edge.source === currentNode.id);
+    const nextNodeIds = edges.map((edge: any) => edge.target);
+    return workflow.nodes.filter((node: any) => nextNodeIds.includes(node.id));
+  };
+
+  const executeTrigger = async (executionId: string, node: any) => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    addExecutionLog(executionId, 'success', 'Trigger activated', node.id, node.type, { triggered: true });
+    return { triggered: true, timestamp: new Date().toISOString() };
+  };
+
+  const executeAgentAction = async (executionId: string, node: any) => {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    const agentName = node.data.label.split(':')[0] || 'AI Agent';
+    addExecutionLog(executionId, 'info', `Agent ${agentName} processing request`, node.id, node.type, { agent: agentName });
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    addExecutionLog(executionId, 'success', `${agentName} completed action`, node.id, node.type, { agent: agentName, result: 'success' });
+    
+    return { 
+      agent: agentName, 
+      action: 'completed', 
+      result: 'success',
+      timestamp: new Date().toISOString()
+    };
+  };
+
+  const executeAPICall = async (executionId: string, node: any) => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    addExecutionLog(executionId, 'info', 'Making API call', node.id, node.type);
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    addExecutionLog(executionId, 'success', 'API call completed', node.id, node.type, { status: 200 });
+    
+    return { status: 200, response: 'API call successful', timestamp: new Date().toISOString() };
+  };
+
+  const executeCondition = async (executionId: string, node: any) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const condition = node.data.label.includes('> 50');
+    const result = condition ? 'true' : 'false';
+    
+    addExecutionLog(executionId, 'info', `Evaluating condition: ${node.data.label}`, node.id, node.type);
+    addExecutionLog(executionId, 'success', `Condition result: ${result}`, node.id, node.type, { condition, result });
+    
+    return { condition, result, timestamp: new Date().toISOString() };
+  };
+
+  const executeDelay = async (executionId: string, node: any) => {
+    const delayMs = 2000;
+    addExecutionLog(executionId, 'info', `Waiting for ${delayMs}ms`, node.id, node.type);
+    
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+    
+    addExecutionLog(executionId, 'success', 'Delay completed', node.id, node.type);
+    return { delay: delayMs, completed: true, timestamp: new Date().toISOString() };
+  };
+
+  const executeFunction = async (executionId: string, node: any) => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    addExecutionLog(executionId, 'info', 'Executing function', node.id, node.type);
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    addExecutionLog(executionId, 'success', 'Function executed successfully', node.id, node.type);
+    
+    return { function: 'executed', result: 'success', timestamp: new Date().toISOString() };
+  };
+
+  const executeMerge = async (executionId: string, node: any) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    addExecutionLog(executionId, 'info', 'Merging data streams', node.id, node.type);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    addExecutionLog(executionId, 'success', 'Data streams merged', node.id, node.type);
+    
+    return { merged: true, timestamp: new Date().toISOString() };
+  };
+
+  const executeSplit = async (executionId: string, node: any) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    addExecutionLog(executionId, 'info', 'Splitting data stream', node.id, node.type);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    addExecutionLog(executionId, 'success', 'Data stream split', node.id, node.type);
+    
+    return { split: true, timestamp: new Date().toISOString() };
+  };
+
+  const executeEnd = async (executionId: string, node: any) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    addExecutionLog(executionId, 'success', 'Workflow completed successfully', node.id, node.type);
+    
+    return { completed: true, timestamp: new Date().toISOString() };
+  };
+
+  const updateExecutionStatus = (executionId: string, status: 'running' | 'completed' | 'failed' | 'paused', currentNode?: string) => {
+    setWorkflowExecutions(prev => {
+      const newMap = new Map(prev);
+      const execution = newMap.get(executionId);
+      if (execution) {
+        execution.status = status;
+        if (currentNode) {
+          execution.currentNode = currentNode;
+        }
+        if (status === 'completed' || status === 'failed') {
+          execution.endTime = new Date();
+        }
+        newMap.set(executionId, execution);
+      }
+      return newMap;
+    });
+  };
+
+  const addExecutionLog = (executionId: string, type: 'info' | 'success' | 'error' | 'warning', message: string, nodeId?: string, nodeType?: string, details?: any) => {
+    const log = {
+      id: `log_${Date.now()}`,
+      timestamp: new Date(),
+      type,
+      message,
+      nodeId,
+      nodeType,
+      agentName: nodeType === 'agent-action' ? details?.agent : undefined,
+      details
+    };
+    
+    setWorkflowExecutions(prev => {
+      const newMap = new Map(prev);
+      const execution = newMap.get(executionId);
+      if (execution) {
+        execution.logs.push(log);
+        newMap.set(executionId, execution);
+      }
+      return newMap;
+    });
+  };
+
+  const clearExecutions = () => {
+    setWorkflowExecutions(new Map());
+  };
+
+  const clearExecutionLogs = (executionId: string) => {
+    const execution = workflowExecutions.get(executionId);
+    if (execution) {
+      execution.logs = [];
+      setWorkflowExecutions(prev => new Map(prev).set(executionId, execution));
+    }
+  };
+
+  const stopExecution = (executionId: string) => {
+    const execution = workflowExecutions.get(executionId);
+    if (execution) {
+      execution.status = 'failed';
+      execution.endTime = new Date();
+      execution.errors.push('Execution stopped by user');
+      setWorkflowExecutions(prev => new Map(prev).set(executionId, execution));
+    }
+  };
 
   const getOverviewMetrics = () => {
     const activeAgents = agents.filter(a => a.status === 'active').length;
@@ -355,218 +697,129 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
   const recentActivity = getRecentActivity();
 
   return (
-    <div className={`space-y-8 ${className}`}>
-      {/* Enhanced Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-purple-500/5 to-blue-500/10 rounded-2xl"></div>
-        <div className="relative p-4 sm:p-6 lg:p-8">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="space-y-4 w-full lg:w-auto">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+    <div className={`flex h-screen bg-background ${className}`}>
+      <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-card border-r border-border transition-all duration-300 flex flex-col`}>
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">Nexus AI</h2>
+                    <p className="text-xs text-muted-foreground">Business Suite</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                    Nexus AI Business Suite
-                  </h1>
-                  <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
-                    Your autonomous AI business platform powered by Gemini
-                  </p>
+                <p className="text-xs text-muted-foreground">
+                  Your autonomous AI business platform
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="secondary" className="text-xs px-2 py-1">
+                    <Crown className="w-2 h-2 mr-1" />
+                    Enterprise
+                  </Badge>
+                  <Badge variant="outline" className="text-xs px-2 py-1">
+                    <Brain className="w-2 h-2 mr-1" />
+                    AI-Powered
+                  </Badge>
                 </div>
               </div>
-              
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                <Badge variant="secondary" className="px-2 sm:px-3 py-1 text-xs">
-                  <Crown className="w-3 h-3 mr-1" />
-                  Enterprise Ready
-                </Badge>
-                <Badge variant="outline" className="px-2 sm:px-3 py-1 text-xs">
-                  <Brain className="w-3 h-3 mr-1" />
-                  AI-Powered
-                </Badge>
-                <Badge variant="outline" className="px-2 sm:px-3 py-1 text-xs">
-                  <Zap className="w-3 h-3 mr-1" />
-                  Real-time
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-              <Button variant="outline" size="lg" className="shadow-lg w-full sm:w-auto">
-                <Search className="w-4 h-4 mr-2" />
-                Quick Search
-              </Button>
-              <Button size="lg" className="shadow-lg bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 w-full sm:w-auto">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Agent
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2"
+            >
+              {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </Button>
           </div>
         </div>
-      </div>
 
-      {/* Animated Hero Section - AI Agents */}
-      <div className="relative">
-        <div className="text-center mb-6 sm:mb-8 px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-            <Target className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-            Meet Your AI Business Team
-            <Target className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-          </h2>
-          <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Deploy intelligent AI agents that work 24/7 to grow your business. Each agent specializes in specific business functions and learns from your data.
-          </p>
+        {/* Navigation Items */}
+        <div className="flex-1 p-2 space-y-1">
+          {navigationItems.map((item) => (
+            <Button
+              key={item.id}
+              variant={activeTab === item.id ? 'default' : 'ghost'}
+              className={`w-full justify-start h-12 ${sidebarCollapsed ? 'px-2' : 'px-3'} ${
+                item.highlight ? 'border-l-4 border-l-blue-500' : ''
+              }`}
+              onClick={() => setActiveTab(item.id)}
+            >
+              <div className="flex items-center gap-3 w-full">
+                <div className={`${item.highlight ? 'text-blue-500' : ''}`}>
+                  {item.icon}
+                </div>
+                {!sidebarCollapsed && (
+                  <>
+                    <span className="flex-1 text-left text-sm">{item.label}</span>
+                    {item.badge !== null && item.badge > 0 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </>
+                )}
+              </div>
+            </Button>
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 px-4 sm:px-0">
-          {/* Aurora - Executive Assistant */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
-            <CardHeader className="text-center pb-4">
-              <div className="flex justify-center mb-4">
-                <AuroraCharacter />
-              </div>
-              <CardTitle className="text-xl text-purple-600 dark:text-purple-400">Aurora</CardTitle>
-              <CardDescription className="text-sm font-medium">AI Executive Assistant</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3">What I can do</h4>
-                <div className="grid grid-cols-2 gap-1 sm:gap-2">
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Schedule Calendar</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Prioritize Tasks</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Reply to Emails</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Take Notes</Badge>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">and hundreds more skills...</p>
-            </CardContent>
-          </Card>
-
-          {/* Vega - Sales Representative */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
-            <CardHeader className="text-center pb-4">
-              <div className="flex justify-center mb-4">
-                <VegaCharacter />
-              </div>
-              <CardTitle className="text-xl text-blue-600 dark:text-blue-400">Vega</CardTitle>
-              <CardDescription className="text-sm font-medium">AI Sales Representative</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 mb-3">What I can do</h4>
-                <div className="grid grid-cols-2 gap-1 sm:gap-2">
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Update CRM</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Chase Opportunities</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Find Leads</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Personalized Outreach</Badge>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">and hundreds more skills...</p>
-            </CardContent>
-          </Card>
-
-          {/* Luma - Customer Support */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
-            <CardHeader className="text-center pb-4">
-              <div className="flex justify-center mb-4">
-                <LumaCharacter />
-              </div>
-              <CardTitle className="text-xl text-green-600 dark:text-green-400">Luma</CardTitle>
-              <CardDescription className="text-sm font-medium">AI Customer Support</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400 mb-3">What I can do</h4>
-                <div className="grid grid-cols-2 gap-1 sm:gap-2">
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Respond to Tickets</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Escalate Issues</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Take Actions</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Solve Problems</Badge>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">and hundreds more skills...</p>
-            </CardContent>
-          </Card>
-
-          {/* Orion - Marketing Strategist */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
-            <CardHeader className="text-center pb-4">
-              <div className="flex justify-center mb-4">
-                <OrionCharacter />
-              </div>
-              <CardTitle className="text-xl text-orange-600 dark:text-orange-400">Orion</CardTitle>
-              <CardDescription className="text-sm font-medium">AI Marketing Strategist</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-orange-600 dark:text-orange-400 mb-3">What I can do</h4>
-                <div className="grid grid-cols-2 gap-1 sm:gap-2">
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Write Blog Posts</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Run SEO</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Manage Social Media</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Write with Brand Voice</Badge>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">and hundreds more skills...</p>
-            </CardContent>
-          </Card>
-
-          {/* Titan - Operations Manager */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
-            <CardHeader className="text-center pb-4">
-              <div className="flex justify-center mb-4">
-                <TitanCharacter />
-              </div>
-              <CardTitle className="text-xl text-slate-600 dark:text-slate-400">Titan</CardTitle>
-              <CardDescription className="text-sm font-medium">AI Operations Manager</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">What I can do</h4>
-                <div className="grid grid-cols-2 gap-1 sm:gap-2">
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Track KPIs</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Monitor Workflows</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Generate Reports</Badge>
-                  <Badge variant="secondary" className="text-xs justify-center py-1">Optimize Processes</Badge>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">and hundreds more skills...</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Call to Action */}
-        <div className="text-center mt-6 sm:mt-8 px-4">
-          <Button size="lg" className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg w-full sm:w-auto touch-manipulation">
-            <Rocket className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            Launch Your AI Team
-            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-border space-y-2">
+          <Button 
+            variant="default" 
+            className="w-full"
+            onClick={() => window.location.href = '/workspace'}
+          >
+            <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+            {!sidebarCollapsed && 'Back to Workspace'}
+          </Button>
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => setActiveTab('agents')}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {!sidebarCollapsed && 'Create Agent'}
           </Button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="overflow-x-auto scrollbar-hide">
-          <TabsList className="grid w-full min-w-[700px] grid-cols-7 bg-background border border-border shadow-lg">
-            {tabs.map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm touch-manipulation">
-                {tab.icon}
-                <span className="hidden sm:inline">{tab.label}</span>
-                {tab.badge !== null && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {tab.badge}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Content Header */}
+        <div className="p-6 border-b border-border bg-background">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                {navigationItems.find(item => item.id === activeTab)?.label || 'Nexus AI'}
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                {activeTab === 'overview' && 'Manage your AI agents, workflows, and business automation'}
+                {activeTab === 'agents' && 'Create and manage your AI agents'}
+                {activeTab === 'integrated' && 'Integrated AI agents working together'}
+                {activeTab === 'workflows' && 'Build and execute automated workflows'}
+                {activeTab === 'console' && 'Monitor workflow executions in real-time'}
+                {activeTab === 'templates' && 'Browse pre-built workflow templates'}
+                {activeTab === 'integrations' && 'Connect external services and APIs'}
+                {activeTab === 'reports' && 'View analytics and performance reports'}
+                {activeTab === 'settings' && 'Configure your Nexus AI platform'}
+              </p>
+            </div>
+          </div>
         </div>
 
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-6">
+
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+        {activeTab === 'overview' && (
+          <div className="space-y-4 sm:space-y-6">
           {/* Metrics Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 px-4 sm:px-0">
             <Card className="hover:shadow-lg transition-shadow touch-manipulation">
@@ -742,28 +995,140 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+          </div>
+        )}
 
         {/* Agents Tab */}
-        <TabsContent value="agents">
+        {activeTab === 'agents' && (
           <AgentManager 
             onAgentSelect={setSelectedAgent}
             selectedAgentId={selectedAgent?.id}
           />
-        </TabsContent>
+        )}
 
         {/* Integrated AI Tab */}
-        <TabsContent value="integrated">
+        {activeTab === 'integrated' && (
           <IntegratedAIAgents />
-        </TabsContent>
+        )}
 
         {/* Workflows Tab */}
-        <TabsContent value="workflows">
-          <WorkflowBuilder />
-        </TabsContent>
+        {activeTab === 'workflows' && (
+          <WorkflowBuilder 
+            onSave={handleSaveWorkflow}
+            onExecute={handleExecuteWorkflow}
+          />
+        )}
+
+        {/* Live Console Tab */}
+        {activeTab === 'console' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Activity className="w-6 h-6 text-blue-500" />
+                  Live Workflow Console
+                </h2>
+                <p className="text-muted-foreground">
+                  Monitor and debug workflow executions in real-time
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => {
+                    // Create a simple test workflow for demonstration
+                    const testWorkflow = {
+                      id: `test_workflow_${Date.now()}`,
+                      name: 'Test Workflow',
+                      description: 'A simple test workflow',
+                      nodes: [
+                        { id: 'trigger-1', type: 'trigger', position: { x: 100, y: 100 }, data: { label: 'Start' }, config: {} },
+                        { id: 'agent-1', type: 'agent-action', position: { x: 300, y: 100 }, data: { label: 'Vega: Process Data' }, config: { agent: 'Vega', action: 'process' } },
+                        { id: 'end-1', type: 'end', position: { x: 500, y: 100 }, data: { label: 'Complete' }, config: {} }
+                      ],
+                      edges: [
+                        { id: 'e1-2', source: 'trigger-1', target: 'agent-1', animated: true },
+                        { id: 'e2-3', source: 'agent-1', target: 'end-1', animated: true }
+                      ],
+                      triggers: [],
+                      status: 'draft',
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                      createdBy: 'current-user',
+                      executions: []
+                    };
+                    setWorkflows(prev => [...prev, testWorkflow]);
+                    handleExecuteWorkflow(testWorkflow.id);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Create & Run Test Workflow
+                </Button>
+                <Button
+                  onClick={clearExecutions}
+                  variant="outline"
+                  disabled={workflowExecutions.size === 0}
+                >
+                  Clear All
+                </Button>
+              </div>
+            </div>
+
+            {/* Available Workflows Section */}
+            {workflows.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Available Workflows</CardTitle>
+                  <CardDescription>
+                    Select a workflow to execute and monitor
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {workflows.map((workflow) => (
+                      <div key={workflow.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">{workflow.name}</h4>
+                          <Badge variant="outline">{workflow.nodes.length} nodes</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">{workflow.description}</p>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleExecuteWorkflow(workflow.id)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Play className="w-3 h-3 mr-1" />
+                            Execute
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setActiveTab('workflows')}
+                          >
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Workflow Execution Console */}
+            <WorkflowExecutionConsole
+              executions={workflowExecutions}
+              onClearExecutions={clearExecutions}
+              onClearLogs={clearExecutionLogs}
+              onStopExecution={stopExecution}
+            />
+          </div>
+        )}
 
         {/* Templates Tab */}
-        <TabsContent value="templates" className="space-y-6">
+        {activeTab === 'templates' && (
+          <div className="space-y-6">
           <div className="text-center py-12">
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Template Library</h3>
@@ -772,10 +1137,12 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
             </p>
             <Button>Browse Templates</Button>
           </div>
-        </TabsContent>
+          </div>
+        )}
 
         {/* Integrations Tab */}
-        <TabsContent value="integrations" className="space-y-6">
+        {activeTab === 'integrations' && (
+          <div className="space-y-6">
           <div className="text-center py-12">
             <Plug className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">API Integrations</h3>
@@ -784,10 +1151,12 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
             </p>
             <Button>Connect Service</Button>
           </div>
-        </TabsContent>
+          </div>
+        )}
 
         {/* Reports Tab */}
-        <TabsContent value="reports" className="space-y-6">
+        {activeTab === 'reports' && (
+          <div className="space-y-6">
           <div className="text-center py-12">
             <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Analytics & Reports</h3>
@@ -796,10 +1165,12 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
             </p>
             <Button>Generate Report</Button>
           </div>
-        </TabsContent>
+          </div>
+        )}
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
           <div className="text-center py-12">
             <Settings className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Settings</h3>
@@ -808,8 +1179,10 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
             </p>
             <Button>Open Settings</Button>
           </div>
-        </TabsContent>
-      </Tabs>
+          </div>
+        )}
+        </div>
+      </div>
     </div>
   );
 }
