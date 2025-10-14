@@ -163,9 +163,9 @@ export default function WorkspaceTabs({
 
       {/* Custom Horizontal Tab Navigation */}
       <div className="w-full mb-4 sm:mb-6 lg:mb-8">
-        <div className="flex items-center justify-center px-2 sm:px-0">
-          <div className="flex items-center gap-1 bg-muted/30 p-1 sm:p-1.5 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm overflow-x-auto scrollbar-hide w-full sm:w-auto">
-            {availableTabs.map((tab) => {
+        <div className="flex items-center justify-center px-2 sm:px-4 lg:px-0">
+          <div className="flex items-center gap-1 bg-muted/30 p-1 sm:p-1.5 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm overflow-x-auto scrollbar-hide w-full max-w-4xl min-w-0">
+            {availableTabs.length > 0 ? availableTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               const notificationCount = getNotificationCount(tab.id);
@@ -175,9 +175,9 @@ export default function WorkspaceTabs({
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
                   className={cn(
-                    "relative flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-300",
+                    "relative flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-300",
                     "hover:bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
-                    "min-w-[80px] sm:min-w-[120px] justify-center group flex-shrink-0 touch-manipulation",
+                    "min-w-[90px] sm:min-w-[110px] justify-center group flex-shrink-0 touch-manipulation",
                     "active:scale-95",
                     isActive 
                       ? "bg-background shadow-md border border-border text-foreground scale-105" 
@@ -212,7 +212,11 @@ export default function WorkspaceTabs({
                   )}
                 </button>
               );
-            })}
+            }) : (
+              <div className="flex items-center justify-center p-4 text-muted-foreground">
+                <span className="text-sm">No tabs available</span>
+              </div>
+            )}
           </div>
         </div>
         
@@ -289,7 +293,7 @@ export default function WorkspaceTabs({
       <div className="flex items-center justify-center mt-6">
         <div className="flex items-center gap-2 bg-muted/20 p-2 rounded-full">
           <span className="text-xs text-muted-foreground px-2">Quick Jump:</span>
-          {availableTabs.map((tab) => {
+          {availableTabs.length > 0 ? availableTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             
@@ -309,7 +313,9 @@ export default function WorkspaceTabs({
                 <Icon className="w-4 h-4" />
               </button>
             );
-          })}
+          }) : (
+            <span className="text-xs text-muted-foreground px-2">No quick navigation available</span>
+          )}
         </div>
       </div>
     </div>

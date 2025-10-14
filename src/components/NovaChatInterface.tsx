@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2, Send } from "lucide-react";
+import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2, Send, Network } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generateBusinessAssistantResponse, generateGeneralChatResponse, generateSmartSuggestions, type AssistantMode, type WorkspaceContext, type ConversationMemory } from "@/lib/gemini";
 import { debugEnvironment } from "@/lib/debug-env";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { toast } from "@/hooks/use-toast";
+import NovaTeamMode from "./NovaTeamMode";
 
 interface ChatMessage {
   id: string;
@@ -33,6 +34,7 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [assistantMode, setAssistantMode] = useState<AssistantMode>('chat');
+  const [showTeamMode, setShowTeamMode] = useState(false);
   
   // Speech recognition
   const {
@@ -254,7 +256,7 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
+    if (message.trim() && assistantMode !== 'team') {
       const userMessage = message.trim();
       
       // Add user message
@@ -291,9 +293,8 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      e.stopPropagation();
       handleSubmit(e);
     }
   };
@@ -350,26 +351,38 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
           <Button 
             variant={assistantMode === 'assistant' ? 'default' : 'ghost'}
             onClick={() => switchMode('assistant')}
-            className={`px-4 py-2 text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-2 text-xs font-medium transition-all duration-200 ${
               assistantMode === 'assistant'
                 ? 'bg-blue-500 text-white shadow-lg'
                 : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
             }`}
           >
-            <Brain className="w-4 h-4 mr-2" />
-            Assistant Mode
+            <Brain className="w-4 h-4 mr-1" />
+            Assistant
           </Button>
           <Button 
             variant={assistantMode === 'chat' ? 'default' : 'ghost'}
             onClick={() => switchMode('chat')}
-            className={`px-4 py-2 text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-2 text-xs font-medium transition-all duration-200 ${
               assistantMode === 'chat'
                 ? 'bg-blue-500 text-white shadow-lg'
                 : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
             }`}
           >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Chat Mode
+            <MessageSquare className="w-4 h-4 mr-1" />
+            Chat
+          </Button>
+          <Button 
+            variant={assistantMode === 'team' ? 'default' : 'ghost'}
+            onClick={() => switchMode('team')}
+            className={`px-3 py-2 text-xs font-medium transition-all duration-200 ${
+              assistantMode === 'team'
+                ? 'bg-purple-500 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+            }`}
+          >
+            <Network className="w-4 h-4 mr-1" />
+            Team
           </Button>
         </div>
         
@@ -398,6 +411,15 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
               Ask about your projects, team performance, business strategy, and ecosystem insights
             </p>
           </div>
+        ) : assistantMode === 'team' ? (
+          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg p-3 mx-4">
+            <h3 className="text-sm sm:text-base font-medium text-purple-300 mb-1">
+              🌐 Team Mode - AI Coordinator
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-400">
+              Coordinate and orchestrate all your AI agents
+            </p>
+          </div>
         ) : (
           <div className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 rounded-lg p-3 mx-4">
             <h3 className="text-sm sm:text-base font-medium text-green-300 mb-1">
@@ -411,7 +433,12 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
       </div>
 
       {/* Chat Container */}
-      <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
+      {assistantMode === 'team' ? (
+        <div className="h-[600px] bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
+          <NovaTeamMode className="h-full" />
+        </div>
+      ) : (
+        <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
         {/* Chat History */}
         <div 
           ref={chatContainerRef}
@@ -503,14 +530,10 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Chat Input */}
+        {/* Chat Input - Hidden in Team Mode */}
+        {assistantMode !== 'team' && (
         <div className="border-t border-gray-700/50 p-3 sm:p-4">
-          <form onSubmit={handleSubmit} className="relative" onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-          }}>
+          <form onSubmit={handleSubmit} className="relative">
             <div className="relative bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 rounded-xl overflow-hidden">
               <Input
                 value={message}
@@ -674,7 +697,9 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
             )}
           </div>
         </div>
-      </div>
+        )}
+        </div>
+      )}
     </div>
   );
 };

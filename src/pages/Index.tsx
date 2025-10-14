@@ -25,6 +25,7 @@ import ResourcesSection from "@/components/ResourcesSection";
 import { type TeamMember, type ActivityItem } from "@/lib/collaboration";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserDisplayName, getUserFirstName } from "@/lib/user-utils";
+import { useAIAgentIntegration } from "@/hooks/useAIAgentIntegration";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -370,6 +371,15 @@ export default function Index() {
   const [isQuickSwitcherOpen, setIsQuickSwitcherOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [teamMembers] = useState<TeamMember[]>([]);
+
+  // Initialize AI Agent Integration
+  const {
+    notifyProjectChange,
+    notifyTaskChange,
+    notifyEmailChange,
+    notifyCRMChange,
+    getSyncStats
+  } = useAIAgentIntegration({ autoSync: true });
   const [activityFeed] = useState<ActivityItem[]>([]);
   const [currentTab, setCurrentTab] = useState<WorkspaceTab>("mindmap");
   const [currentUserRole] = useState<"owner" | "admin" | "member" | "viewer">("admin");
@@ -684,6 +694,9 @@ export default function Index() {
     setProjects(newProjects);
     setFilteredProjects(newProjects);
     
+    // Notify AI agents of new project
+    notifyProjectChange('created', project);
+    
     // Reset form with all fields
     setNewProject({ 
       name: "", 
@@ -724,6 +737,7 @@ export default function Index() {
   };
 
   const handleDeleteProject = (projectId: string) => {
+    const projectToDelete = projects.find(p => p.id === projectId);
     const updatedProjects = projects.filter(p => p.id !== projectId);
     setProjects(updatedProjects);
     setFilteredProjects(updatedProjects);
@@ -732,6 +746,11 @@ export default function Index() {
     if (activeProject?.id === projectId) {
       setActiveProject(null);
       setSelectedProjectFromMap(null);
+    }
+    
+    // Notify AI agents of deleted project
+    if (projectToDelete) {
+      notifyProjectChange('deleted', projectToDelete);
     }
     
     // Save to localStorage

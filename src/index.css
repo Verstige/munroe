@@ -16,6 +16,20 @@
   animation: float 3s ease-in-out infinite;
 }
 
+/* Blink animation for AI character eyes */
+@keyframes blink {
+  0%, 90%, 100% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 4s ease-in-out infinite;
+}
+
 /* Grid pattern background */
 .bg-grid-pattern {
   background-image: 

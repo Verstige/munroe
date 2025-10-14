@@ -35,7 +35,7 @@ const getGenAI = () => {
   return new GoogleGenerativeAI(apiKey);
 };
 
-export type AssistantMode = 'assistant' | 'chat';
+export type AssistantMode = 'assistant' | 'chat' | 'team';
 
 export interface WorkspaceContext {
   projects: Array<{

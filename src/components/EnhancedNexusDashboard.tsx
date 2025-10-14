@@ -45,6 +45,7 @@ import {
 
 import AgentManager from './AgentManager';
 import WorkflowBuilder from './WorkflowBuilder';
+import IntegratedAIAgents from './IntegratedAIAgents';
 import { AIAgent, Workflow as WorkflowType, APIConnector } from '@/types/nexus';
 import { agentManager } from '@/lib/agent-manager';
 
@@ -54,96 +55,186 @@ interface EnhancedNexusDashboardProps {
 
 // AI Agent Character Components
 const AuroraCharacter = ({ className = "" }: { className?: string }) => (
-  <div className={`relative ${className}`}>
-    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center shadow-lg animate-float">
-      {/* Body */}
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full relative flex items-center justify-center">
+  <div className={`relative flex items-center justify-center ${className}`}>
+    <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-500/20 via-purple-600/30 to-purple-700/20 rounded-full flex items-center justify-center shadow-xl animate-float border border-purple-500/20">
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-400/10 to-purple-600/10 rounded-full animate-pulse"></div>
+      
+      {/* Main body */}
+      <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-white to-purple-50 rounded-full flex items-center justify-center shadow-inner">
         {/* Eyes */}
-        <div className="absolute top-3 left-3 w-2 h-2 bg-black rounded-full"></div>
-        <div className="absolute top-3 right-3 w-2 h-2 bg-black rounded-full"></div>
+        <div className="absolute top-4 left-4 w-2 h-2 bg-purple-800 rounded-full animate-blink"></div>
+        <div className="absolute top-4 right-4 w-2 h-2 bg-purple-800 rounded-full animate-blink" style={{ animationDelay: '0.1s' }}></div>
+        
         {/* Mouth */}
-        <div className="absolute top-6 w-4 h-0.5 bg-black rounded-full"></div>
-        {/* Bow Tie */}
-        <div className="absolute -top-2 w-6 h-4 bg-purple-500 rounded-full flex items-center justify-center">
-          <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+        <div className="absolute top-7 w-5 h-0.5 bg-purple-800 rounded-full"></div>
+        
+        {/* Bow tie */}
+        <div className="absolute -top-2 w-8 h-5 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
+          <div className="w-3 h-3 bg-purple-700 rounded-full"></div>
         </div>
-        {/* Waistcoat */}
-        <div className="absolute bottom-0 w-12 h-6 bg-white border-2 border-purple-300 rounded-t-lg"></div>
-        {/* Tray */}
-        <div className="absolute -left-6 top-8 w-4 h-2 bg-gray-300 rounded-sm transform rotate-12"></div>
+        
+        {/* Professional collar */}
+        <div className="absolute bottom-2 w-16 h-4 bg-white border-2 border-purple-300 rounded-t-lg shadow-sm"></div>
       </div>
+      
+      {/* Floating elements */}
+      <div className="absolute -left-3 top-6 w-3 h-3 bg-purple-400/30 rounded-full animate-pulse"></div>
+      <div className="absolute -right-2 top-8 w-2 h-2 bg-purple-300/40 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
     </div>
   </div>
 );
 
 const VegaCharacter = ({ className = "" }: { className?: string }) => (
-  <div className={`relative ${className}`}>
-    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center shadow-lg animate-float" style={{ animationDelay: '0.5s' }}>
-      {/* Body */}
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full relative flex items-center justify-center">
+  <div className={`relative flex items-center justify-center ${className}`}>
+    <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-500/20 via-blue-600/30 to-blue-700/20 rounded-full flex items-center justify-center shadow-xl animate-float border border-blue-500/20" style={{ animationDelay: '0.5s' }}>
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-400/10 to-blue-600/10 rounded-full animate-pulse"></div>
+      
+      {/* Main body */}
+      <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-white to-blue-50 rounded-full flex items-center justify-center shadow-inner">
         {/* Eyes */}
-        <div className="absolute top-3 left-3 w-2 h-2 bg-black rounded-full"></div>
-        <div className="absolute top-3 right-3 w-2 h-2 bg-black rounded-full"></div>
+        <div className="absolute top-4 left-4 w-2 h-2 bg-blue-800 rounded-full animate-blink"></div>
+        <div className="absolute top-4 right-4 w-2 h-2 bg-blue-800 rounded-full animate-blink" style={{ animationDelay: '0.1s' }}></div>
+        
         {/* Mouth */}
-        <div className="absolute top-6 w-4 h-0.5 bg-black rounded-full"></div>
-        {/* Shirt */}
-        <div className="absolute top-2 w-10 h-8 bg-blue-100 rounded-lg"></div>
-        {/* Tie */}
-        <div className="absolute top-4 w-2 h-6 bg-orange-400 rounded-full"></div>
-        {/* Thumbs Up */}
-        <div className="absolute -right-2 top-6 w-3 h-3 bg-white rounded-full flex items-center justify-center shadow-md">
-          <div className="w-1 h-2 bg-blue-500 rounded-full"></div>
+        <div className="absolute top-7 w-5 h-0.5 bg-blue-800 rounded-full"></div>
+        
+        {/* Professional shirt */}
+        <div className="absolute top-2 w-14 h-8 bg-gradient-to-b from-blue-100 to-blue-200 rounded-lg shadow-sm"></div>
+        
+        {/* Power tie */}
+        <div className="absolute top-4 w-3 h-7 bg-gradient-to-b from-orange-400 to-orange-500 rounded-full shadow-md"></div>
+        
+        {/* Success indicator */}
+        <div className="absolute -right-3 top-6 w-4 h-4 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-2 h-2 bg-white rounded-full"></div>
         </div>
       </div>
+      
+      {/* Floating success elements */}
+      <div className="absolute -left-2 top-4 w-2 h-2 bg-green-400/40 rounded-full animate-pulse"></div>
+      <div className="absolute -right-1 top-10 w-1.5 h-1.5 bg-blue-300/50 rounded-full animate-pulse" style={{ animationDelay: '0.8s' }}></div>
     </div>
   </div>
 );
 
 const LumaCharacter = ({ className = "" }: { className?: string }) => (
-  <div className={`relative ${className}`}>
-    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center shadow-lg animate-float" style={{ animationDelay: '1s' }}>
-      {/* Body */}
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full relative flex items-center justify-center">
+  <div className={`relative flex items-center justify-center ${className}`}>
+    <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-500/20 via-green-600/30 to-green-700/20 rounded-full flex items-center justify-center shadow-xl animate-float border border-green-500/20" style={{ animationDelay: '1s' }}>
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 to-green-600/10 rounded-full animate-pulse"></div>
+      
+      {/* Main body */}
+      <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-white to-green-50 rounded-full flex items-center justify-center shadow-inner">
         {/* Eyes */}
-        <div className="absolute top-3 left-3 w-2 h-2 bg-black rounded-full"></div>
-        <div className="absolute top-3 right-3 w-2 h-2 bg-black rounded-full"></div>
+        <div className="absolute top-4 left-4 w-2 h-2 bg-green-800 rounded-full animate-blink"></div>
+        <div className="absolute top-4 right-4 w-2 h-2 bg-green-800 rounded-full animate-blink" style={{ animationDelay: '0.1s' }}></div>
+        
         {/* Mouth */}
-        <div className="absolute top-6 w-4 h-0.5 bg-black rounded-full"></div>
-        {/* Headset */}
-        <div className="absolute -top-1 w-18 h-6 bg-black rounded-full flex items-center justify-center">
-          <div className="w-4 h-2 bg-gray-600 rounded-full"></div>
-          <div className="absolute -left-2 w-2 h-1 bg-gray-400 rounded-full"></div>
+        <div className="absolute top-7 w-5 h-0.5 bg-green-800 rounded-full"></div>
+        
+        {/* Professional headset */}
+        <div className="absolute -top-2 w-20 h-7 bg-gradient-to-r from-gray-800 to-gray-700 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-6 h-3 bg-gray-600 rounded-full"></div>
+          <div className="absolute -left-3 w-3 h-2 bg-gray-500 rounded-full"></div>
+          <div className="absolute -right-3 w-3 h-2 bg-gray-500 rounded-full"></div>
         </div>
-        {/* Shirt */}
-        <div className="absolute bottom-2 w-12 h-4 bg-green-100 rounded-lg"></div>
+        
+        {/* Support uniform */}
+        <div className="absolute bottom-2 w-16 h-4 bg-gradient-to-r from-green-100 to-green-200 rounded-lg shadow-sm"></div>
+        
+        {/* Help indicator */}
+        <div className="absolute -right-3 top-8 w-3 h-3 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full flex items-center justify-center shadow-md">
+          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+        </div>
       </div>
+      
+      {/* Floating support elements */}
+      <div className="absolute -left-2 top-6 w-2 h-2 bg-blue-400/40 rounded-full animate-pulse"></div>
+      <div className="absolute -right-1 top-12 w-1.5 h-1.5 bg-green-300/50 rounded-full animate-pulse" style={{ animationDelay: '1.2s' }}></div>
     </div>
   </div>
 );
 
 const OrionCharacter = ({ className = "" }: { className?: string }) => (
-  <div className={`relative ${className}`}>
-    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center shadow-lg animate-float" style={{ animationDelay: '1.5s' }}>
-      {/* Body */}
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full relative flex items-center justify-center">
+  <div className={`relative flex items-center justify-center ${className}`}>
+    <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-orange-500/20 via-orange-600/30 to-orange-700/20 rounded-full flex items-center justify-center shadow-xl animate-float border border-orange-500/20" style={{ animationDelay: '1.5s' }}>
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-400/10 to-orange-600/10 rounded-full animate-pulse"></div>
+      
+      {/* Main body */}
+      <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-white to-orange-50 rounded-full flex items-center justify-center shadow-inner">
         {/* Eyes */}
-        <div className="absolute top-3 left-3 w-2 h-2 bg-black rounded-full"></div>
-        <div className="absolute top-3 right-3 w-2 h-2 bg-black rounded-full"></div>
+        <div className="absolute top-4 left-4 w-2 h-2 bg-orange-800 rounded-full animate-blink"></div>
+        <div className="absolute top-4 right-4 w-2 h-2 bg-orange-800 rounded-full animate-blink" style={{ animationDelay: '0.1s' }}></div>
+        
         {/* Mouth */}
-        <div className="absolute top-6 w-4 h-0.5 bg-black rounded-full"></div>
-        {/* Hair */}
-        <div className="absolute -top-2 w-14 h-4 bg-yellow-300 rounded-full flex items-center justify-center">
+        <div className="absolute top-7 w-5 h-0.5 bg-orange-800 rounded-full"></div>
+        
+        {/* Creative hairstyle */}
+        <div className="absolute -top-3 w-16 h-5 bg-gradient-to-r from-orange-300 to-orange-400 rounded-full shadow-md flex items-center justify-center">
           <div className="flex gap-1">
-            <div className="w-1 h-3 bg-yellow-400 rounded-full transform rotate-12"></div>
-            <div className="w-1 h-3 bg-yellow-400 rounded-full"></div>
-            <div className="w-1 h-3 bg-yellow-400 rounded-full transform -rotate-12"></div>
+            <div className="w-1 h-3 bg-orange-500 rounded-full transform rotate-12"></div>
+            <div className="w-1 h-3 bg-orange-500 rounded-full"></div>
+            <div className="w-1 h-3 bg-orange-500 rounded-full transform -rotate-12"></div>
           </div>
         </div>
-        {/* Shirt */}
-        <div className="absolute bottom-2 w-12 h-4 bg-orange-100 rounded-lg"></div>
+        
+        {/* Marketing jacket */}
+        <div className="absolute bottom-2 w-16 h-4 bg-gradient-to-r from-orange-100 to-orange-200 rounded-lg shadow-sm"></div>
+        
         {/* Creative sparkles */}
-        <div className="absolute -right-2 -top-1 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+        <div className="absolute -right-3 top-6 w-3 h-3 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+        </div>
+        
+        {/* Additional sparkle */}
+        <div className="absolute -left-3 top-4 w-2 h-2 bg-yellow-400/60 rounded-full animate-pulse"></div>
       </div>
+      
+      {/* Floating creative elements */}
+      <div className="absolute -left-2 top-8 w-1.5 h-1.5 bg-yellow-300/50 rounded-full animate-pulse"></div>
+      <div className="absolute -right-1 top-12 w-2 h-2 bg-orange-300/40 rounded-full animate-pulse" style={{ animationDelay: '1.6s' }}></div>
+    </div>
+  </div>
+);
+
+const TitanCharacter = ({ className = "" }: { className?: string }) => (
+  <div className={`relative flex items-center justify-center ${className}`}>
+    <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-slate-500/20 via-slate-600/30 to-slate-700/20 rounded-full flex items-center justify-center shadow-xl animate-float border border-slate-500/20" style={{ animationDelay: '2s' }}>
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-400/10 to-slate-600/10 rounded-full animate-pulse"></div>
+      
+      {/* Main body */}
+      <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-white to-slate-50 rounded-full flex items-center justify-center shadow-inner">
+        {/* Eyes */}
+        <div className="absolute top-4 left-4 w-2 h-2 bg-slate-800 rounded-full animate-blink"></div>
+        <div className="absolute top-4 right-4 w-2 h-2 bg-slate-800 rounded-full animate-blink" style={{ animationDelay: '0.1s' }}></div>
+        
+        {/* Mouth */}
+        <div className="absolute top-7 w-5 h-0.5 bg-slate-800 rounded-full"></div>
+        
+        {/* Professional cap */}
+        <div className="absolute -top-3 w-14 h-5 bg-gradient-to-r from-slate-600 to-slate-700 rounded-full shadow-lg flex items-center justify-center">
+          <div className="w-2 h-1 bg-slate-500 rounded-full"></div>
+        </div>
+        
+        {/* Operations uniform */}
+        <div className="absolute bottom-2 w-16 h-4 bg-gradient-to-r from-slate-100 to-slate-200 rounded-lg shadow-sm"></div>
+        
+        {/* Efficiency indicator */}
+        <div className="absolute -right-3 top-6 w-3 h-3 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+        </div>
+        
+        {/* Gear indicator */}
+        <div className="absolute -left-3 top-8 w-2 h-2 bg-slate-400/60 rounded-full animate-pulse"></div>
+      </div>
+      
+      {/* Floating operation elements */}
+      <div className="absolute -left-2 top-10 w-1.5 h-1.5 bg-emerald-300/50 rounded-full animate-pulse"></div>
+      <div className="absolute -right-1 top-14 w-2 h-2 bg-slate-300/40 rounded-full animate-pulse" style={{ animationDelay: '2.2s' }}></div>
     </div>
   </div>
 );
@@ -189,6 +280,12 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
       label: 'Active Agents',
       icon: <Bot className="w-4 h-4" />,
       badge: agents.filter(a => a.status === 'active').length
+    },
+    {
+      id: 'integrated',
+      label: 'Integrated AI',
+      icon: <Brain className="w-4 h-4" />,
+      badge: 'New'
     },
     {
       id: 'workflows',
@@ -323,9 +420,9 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 px-4 sm:px-0">
           {/* Aurora - Executive Assistant */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-gradient-to-br from-purple-50/50 to-purple-100/30 dark:from-purple-900/20 dark:to-purple-800/10">
+          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
                 <AuroraCharacter />
@@ -348,7 +445,7 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
           </Card>
 
           {/* Vega - Sales Representative */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-900/20 dark:to-blue-800/10">
+          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
                 <VegaCharacter />
@@ -371,7 +468,7 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
           </Card>
 
           {/* Luma - Customer Support */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-gradient-to-br from-green-50/50 to-green-100/30 dark:from-green-900/20 dark:to-green-800/10">
+          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
                 <LumaCharacter />
@@ -394,7 +491,7 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
           </Card>
 
           {/* Orion - Marketing Strategist */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-gradient-to-br from-orange-50/50 to-orange-100/30 dark:from-orange-900/20 dark:to-orange-800/10">
+          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
                 <OrionCharacter />
@@ -410,6 +507,29 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
                   <Badge variant="secondary" className="text-xs justify-center py-1">Run SEO</Badge>
                   <Badge variant="secondary" className="text-xs justify-center py-1">Manage Social Media</Badge>
                   <Badge variant="secondary" className="text-xs justify-center py-1">Write with Brand Voice</Badge>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">and hundreds more skills...</p>
+            </CardContent>
+          </Card>
+
+          {/* Titan - Operations Manager */}
+          <Card className="group hover:shadow-xl transition-all duration-300 border-border bg-chatgpt-card">
+            <CardHeader className="text-center pb-4">
+              <div className="flex justify-center mb-4">
+                <TitanCharacter />
+              </div>
+              <CardTitle className="text-xl text-slate-600 dark:text-slate-400">Titan</CardTitle>
+              <CardDescription className="text-sm font-medium">AI Operations Manager</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">What I can do</h4>
+                <div className="grid grid-cols-2 gap-1 sm:gap-2">
+                  <Badge variant="secondary" className="text-xs justify-center py-1">Track KPIs</Badge>
+                  <Badge variant="secondary" className="text-xs justify-center py-1">Monitor Workflows</Badge>
+                  <Badge variant="secondary" className="text-xs justify-center py-1">Generate Reports</Badge>
+                  <Badge variant="secondary" className="text-xs justify-center py-1">Optimize Processes</Badge>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground text-center">and hundreds more skills...</p>
@@ -630,6 +750,11 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
             onAgentSelect={setSelectedAgent}
             selectedAgentId={selectedAgent?.id}
           />
+        </TabsContent>
+
+        {/* Integrated AI Tab */}
+        <TabsContent value="integrated">
+          <IntegratedAIAgents />
         </TabsContent>
 
         {/* Workflows Tab */}
