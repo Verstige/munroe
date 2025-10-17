@@ -173,9 +173,15 @@ const LandingPage = () => {
       <nav className="relative z-10 px-4 sm:px-6 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border border-blue-500/30">
-              <Network className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
-            </div>
+            <img 
+              src="https://storage.googleapis.com/msgsndr/555cPqlZh4po0jGHqsnl/media/68f296a880dbce7deda676f5.png"
+              alt="Nexus AI Logo"
+              className="w-20 h-20 sm:w-24 sm:h-24 object-contain logo-img"
+              loading="eager"
+              decoding="sync"
+              width={96}
+              height={96}
+            />
             <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
               Nexus AI
             </span>
@@ -836,7 +842,15 @@ const LandingPage = () => {
       <footer className="relative z-10 px-4 sm:px-6 py-8 sm:py-12 border-t border-white/10">
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center space-x-2 mb-3 sm:mb-4">
-            <Network className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
+            <img 
+              src="https://storage.googleapis.com/msgsndr/555cPqlZh4po0jGHqsnl/media/68f296a880dbce7deda676f5.png"
+              alt="Nexus AI Logo"
+              className="w-16 h-16 sm:w-20 sm:h-20 object-contain logo-img"
+              loading="eager"
+              decoding="sync"
+              width={80}
+              height={80}
+            />
             <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
               Nexus AI
             </span>

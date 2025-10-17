@@ -71,15 +71,15 @@ export default function Sidebar({
       <div className="mb-8">
         <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-            <div className={`${isMinimized ? 'w-8 h-8' : 'w-12 h-12'} rounded-xl overflow-hidden shadow-lg shadow-blue-500/25 transition-all duration-300`}>
+            <div className={`${isMinimized ? 'w-12 h-12' : 'w-16 h-16'} rounded-xl overflow-hidden shadow-lg shadow-blue-500/25 transition-all duration-300`}>
               <img 
-                src="https://storage.googleapis.com/msgsndr/555cPqlZh4po0jGHqsnl/media/68f25ce3855bde33b4cb5dd2.png"
+                src="https://storage.googleapis.com/msgsndr/555cPqlZh4po0jGHqsnl/media/68f296a880dbce7deda676f5.png"
                 alt="Nexus AI Logo"
-                className={`${isMinimized ? 'w-8 h-8' : 'w-12 h-12'} object-contain transition-all duration-300 logo-img`}
+                className={`${isMinimized ? 'w-12 h-12' : 'w-16 h-16'} object-contain transition-all duration-300 logo-img`}
                 loading="eager"
                 decoding="sync"
-                width={isMinimized ? 32 : 48}
-                height={isMinimized ? 32 : 48}
+                width={isMinimized ? 48 : 64}
+                height={isMinimized ? 48 : 64}
               />
             </div>
             {!isMinimized && (
