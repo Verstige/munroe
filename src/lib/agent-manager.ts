@@ -415,24 +415,33 @@ Focus on efficiency, forecasting, and actionable insights. Be analytical and pro
       console.log('👤 Current user:', user ? user.id : 'No user');
       
       if (authError) {
-        console.error('❌ Auth error:', authError);
-        throw new Error(`Authentication error: ${authError.message}`);
+        console.warn('⚠️ Auth error, saving to localStorage only:', authError);
+        // Fallback to localStorage if auth fails
+        const agents = this.loadAgentsFromLocalStorage();
+        agents[agent.id] = agent;
+        localStorage.setItem('nexus_ai_agents', JSON.stringify(agents));
+        console.log('✅ Agent saved to localStorage (fallback):', agent.id);
+        return;
       }
       
       if (user) {
         agentData.created_by = user.id;
       } else {
-        console.warn('⚠️ No authenticated user found');
-        // For development, we'll allow creating agents without a user
-        agentData.created_by = null;
+        console.warn('⚠️ No authenticated user found, using localStorage');
+        // Fallback to localStorage if no user
+        const agents = this.loadAgentsFromLocalStorage();
+        agents[agent.id] = agent;
+        localStorage.setItem('nexus_ai_agents', JSON.stringify(agents));
+        console.log('✅ Agent saved to localStorage:', agent.id);
+        return;
       }
       
-      // For now, we'll use a default team_id or make it nullable
-      // In a real implementation, you'd get this from the user's current team
-      agentData.team_id = null; // Make it nullable for now
+      // Get user's team_id (optional - will be null if no team)
+      agentData.team_id = null; // Can be enhanced later to get actual team
       
       console.log('💾 Final agent data to save:', agentData);
       
+      // Try to save to Supabase
       const { data, error } = await supabase
         .from('ai_agents')
         .upsert(agentData)
@@ -441,14 +450,42 @@ Focus on efficiency, forecasting, and actionable insights. Be analytical and pro
       console.log('📊 Supabase response:', { data, error });
 
       if (error) {
-        console.error('❌ Supabase error:', error);
-        throw new Error(`Database error: ${error.message}`);
+        console.error('❌ Supabase error, falling back to localStorage:', error);
+        // Fallback to localStorage if Supabase fails
+        const agents = this.loadAgentsFromLocalStorage();
+        agents[agent.id] = agent;
+        localStorage.setItem('nexus_ai_agents', JSON.stringify(agents));
+        console.log('✅ Agent saved to localStorage (fallback):', agent.id);
+      } else {
+        console.log('✅ Agent saved to Supabase successfully:', data);
+        // Also save to localStorage for offline access
+        const agents = this.loadAgentsFromLocalStorage();
+        agents[agent.id] = agent;
+        localStorage.setItem('nexus_ai_agents', JSON.stringify(agents));
+        console.log('✅ Agent also cached in localStorage');
       }
-      
-      console.log('✅ Agent saved successfully:', data);
     } catch (error) {
-      console.error('💥 Error saving agent:', error);
-      throw error;
+      console.error('💥 Error saving agent, using localStorage fallback:', error);
+      // Final fallback to localStorage
+      try {
+        const agents = this.loadAgentsFromLocalStorage();
+        agents[agent.id] = agent;
+        localStorage.setItem('nexus_ai_agents', JSON.stringify(agents));
+        console.log('✅ Agent saved to localStorage (error fallback):', agent.id);
+      } catch (localError) {
+        console.error('❌ Failed to save to localStorage:', localError);
+        throw localError;
+      }
+    }
+  }
+  
+  private loadAgentsFromLocalStorage(): Record<string, AIAgent> {
+    try {
+      const stored = localStorage.getItem('nexus_ai_agents');
+      return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+      console.error('Error loading agents from localStorage:', error);
+      return {};
     }
   }
 

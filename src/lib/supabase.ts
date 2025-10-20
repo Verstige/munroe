@@ -1,9 +1,52 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'your-supabase-url'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-supabase-anon-key'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Validate environment variables
+if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your-supabase-url' || supabaseAnonKey === 'your-supabase-anon-key') {
+  console.error('❌ Supabase configuration error: Missing or invalid environment variables');
+  console.error('Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set correctly');
+} else {
+  console.log('✅ Supabase client initialized:', {
+    url: supabaseUrl,
+    hasKey: !!supabaseAnonKey
+  });
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'x-application-name': 'nexus-ai'
+    }
+  }
+})
+
+// Test Supabase connection on initialization
+export const testSupabaseConnection = async () => {
+  try {
+    const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true })
+    if (error) {
+      console.warn('⚠️ Supabase connection test failed:', error.message)
+      return false
+    }
+    console.log('✅ Supabase connection test successful')
+    return true
+  } catch (err) {
+    console.error('❌ Supabase connection test error:', err)
+    return false
+  }
+}
+
+// Run connection test in development
+if (import.meta.env.DEV) {
+  testSupabaseConnection()
+}
 
 // Database types (you'll need to generate these from your Supabase schema)
 export interface Database {

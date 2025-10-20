@@ -78,28 +78,62 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
     setIsLoading(true)
 
     try {
-      const { error } = await signUp(
+      console.log('Attempting to sign up with:', {
+        email: formData.email.trim().toLowerCase(),
+        fullName: formData.fullName.trim()
+      });
+      
+      const result = await signUp(
         formData.email.trim().toLowerCase(),
         formData.password,
         formData.fullName.trim()
       )
 
-      if (error) {
-        if (error.message.includes('already registered')) {
-          setErrors(['An account with this email already exists. Please sign in instead.'])
-        } else if (error.message.includes('Password')) {
-          setErrors(['Password does not meet requirements.'])
-        } else {
-          setErrors([error.message])
+      console.log('Sign up successful!', { 
+        hasSession: !!result?.session,
+        requiresEmailConfirmation: !result?.session,
+        user: result?.user 
+      });
+      
+      // If session was created, user is auto-signed in, redirect immediately
+      if (result?.session) {
+        console.log('User has session, redirecting to workspace...');
+        if (onSuccess) {
+          onSuccess();
         }
       } else {
-        setSuccess(true)
-        setTimeout(() => {
-          if (onSuccess) onSuccess()
-        }, 2000)
+        // No session means email confirmation is required
+        console.log('No session - email confirmation required');
+        setErrors([
+          'Account created! Please check your email to verify your account before signing in.',
+          'After verification, you can sign in with your credentials.'
+        ]);
       }
-    } catch (error) {
-      setErrors(['An unexpected error occurred. Please try again.'])
+    } catch (err: any) {
+      console.error('Sign up error:', err);
+      const message = typeof err?.message === 'string' ? err.message : ''
+      
+      // Handle specific errors
+      if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
+        setErrors([
+          'Unable to connect to authentication service.',
+          'Please check your internet connection and try again.',
+          'If the problem persists, the database may not be set up correctly.'
+        ])
+      } else if (message.includes('already registered') || message.includes('already been registered')) {
+        setErrors(['An account with this email already exists. Please sign in instead.'])
+      } else if (message.includes('Password')) {
+        setErrors(['Password does not meet requirements.'])
+      } else if (message.includes('Invalid API key') || message.includes('Invalid project URL')) {
+        setErrors([
+          'Configuration error detected.',
+          'Please ensure Supabase is properly configured.'
+        ])
+      } else if (message) {
+        setErrors([message])
+      } else {
+        setErrors(['An unexpected error occurred. Please try again.'])
+      }
     } finally {
       setIsLoading(false)
     }

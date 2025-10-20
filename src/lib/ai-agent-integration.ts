@@ -117,7 +117,7 @@ export class AIAgentIntegration {
   public async initializeAgents(): Promise<void> {
     try {
       // Get current user data
-      const userData = await novaDataAccess.getCompleteUserData();
+      const userData = await novaDataAccess.getUserDataSnapshot();
       
       // Initialize each agent with their specific context
       await this.initializeAurora(userData);

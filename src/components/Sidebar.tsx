@@ -365,11 +365,17 @@ export default function Sidebar({
           variant="ghost"
           size="sm"
           onClick={async () => {
+            console.log('Sign out button clicked!');
             try {
+              console.log('Attempting to sign out...');
               await signOut();
-              navigate('/');
+              console.log('Sign out successful, navigating to home...');
+              // Use window.location for more reliable navigation
+              window.location.href = '/';
             } catch (error) {
               console.error('Error signing out:', error);
+              // Try to navigate anyway in case the sign out worked but there was an error
+              window.location.href = '/';
             }
           }}
           className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"

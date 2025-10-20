@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import SignInForm from '@/components/auth/SignInForm'
 import SignUpForm from '@/components/auth/SignUpForm'
 
@@ -6,6 +7,23 @@ type AuthMode = 'signin' | 'signup' | 'forgot'
 
 export default function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('signin')
+  const navigate = useNavigate()
+
+  const handleSignUpSuccess = () => {
+    // Redirect to workspace after successful signup
+    console.log('🚀 handleSignUpSuccess called - navigating to /workspace');
+    
+    // Try navigate first
+    navigate('/workspace', { replace: true });
+    
+    // Fallback to window.location after a brief delay if navigate doesn't work
+    setTimeout(() => {
+      if (window.location.pathname !== '/workspace') {
+        console.log('🔄 Navigate didn\'t work, using window.location as fallback');
+        window.location.href = '/workspace';
+      }
+    }, 100);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
@@ -28,6 +46,7 @@ export default function AuthPage() {
 
         {mode === 'signup' && (
           <SignUpForm
+            onSuccess={handleSignUpSuccess}
             onSwitchToSignIn={() => setMode('signin')}
           />
         )}

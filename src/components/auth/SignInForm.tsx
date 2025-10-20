@@ -49,22 +49,22 @@ export default function SignInForm({ onSwitchToSignUp, onForgotPassword }: SignI
     setIsLoading(true)
 
     try {
-      const { error } = await signIn(
+      await signIn(
         formData.email.trim().toLowerCase(),
         formData.password
       )
-
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          setErrors(['Invalid email or password. Please check your credentials and try again.'])
-        } else if (error.message.includes('Email not confirmed')) {
-          setErrors(['Please check your email and click the verification link before signing in.'])
-        } else {
-          setErrors([error.message])
-        }
+      // On success, ProtectedRoute will render the protected content automatically
+    } catch (err: any) {
+      const message = typeof err?.message === 'string' ? err.message : ''
+      if (message.includes('Invalid login credentials')) {
+        setErrors(['Invalid email or password. Please check your credentials and try again.'])
+      } else if (message.includes('Email not confirmed')) {
+        setErrors(['Please check your email and click the verification link before signing in.'])
+      } else if (message) {
+        setErrors([message])
+      } else {
+        setErrors(['An unexpected error occurred. Please try again.'])
       }
-    } catch (error) {
-      setErrors(['An unexpected error occurred. Please try again.'])
     } finally {
       setIsLoading(false)
     }

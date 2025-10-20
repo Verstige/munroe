@@ -10,7 +10,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ user: User | null; session: Session | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: { full_name?: string; avatar_url?: string }) => Promise<void>;
 }
@@ -121,7 +121,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const { error } = await supabase.auth.signUp({
+    console.log('AuthContext signUp called with:', { email, fullName });
+    
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -130,7 +132,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       },
     });
-    if (error) throw error;
+    
+    console.log('Supabase signUp response:', { 
+      data, 
+      error,
+      hasSession: !!data.session,
+      hasUser: !!data.user,
+      userConfirmed: data.user?.confirmed_at 
+    });
+    
+    if (error) {
+      console.error('Supabase signUp error:', error);
+      throw error;
+    }
+    
+    // If session was created, user is automatically signed in
+    // If no session, user needs to confirm email first
+    return data;
   };
 
   const signOut = async () => {

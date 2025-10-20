@@ -333,6 +333,11 @@ export class NovaDataAccess {
     return snapshot;
   }
 
+  // Alias for backwards compatibility
+  async getCompleteUserData(): Promise<UserDataSnapshot> {
+    return this.getUserDataSnapshot();
+  }
+
   // Get all projects data
   private async getProjectsData(): Promise<ProjectData[]> {
     // Load from localStorage only
@@ -718,6 +723,163 @@ export class NovaDataAccess {
         return acc;
       }, {} as Record<string, ActivityData[]>)
     };
+  }
+  
+  // ===== WORKSPACE ACTIONS =====
+  // Methods for Nova AI to create/update workspace data
+  
+  async createTask(task: Partial<TaskData>): Promise<TaskData> {
+    const newTask: TaskData = {
+      id: `task-${Date.now()}`,
+      title: task.title || 'Untitled Task',
+      description: task.description || '',
+      status: task.status || 'todo',
+      priority: task.priority || 'medium',
+      projectId: task.projectId,
+      assignedTo: task.assignedTo,
+      createdBy: this.userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      dueDate: task.dueDate,
+      tags: task.tags || [],
+      dependencies: task.dependencies || [],
+      subtasks: task.subtasks || []
+    };
+    
+    // Save to localStorage
+    const savedTasks = localStorage.getItem('userTasks');
+    const tasks = savedTasks ? JSON.parse(savedTasks) : [];
+    tasks.push(newTask);
+    localStorage.setItem('userTasks', JSON.stringify(tasks));
+    
+    // Invalidate cache
+    this.userData = null;
+    this.lastUpdate = null;
+    
+    console.log('✅ Nova AI created task:', newTask.title);
+    return newTask;
+  }
+  
+  async createNote(note: Partial<NoteData>): Promise<NoteData> {
+    const newNote: NoteData = {
+      id: `note-${Date.now()}`,
+      title: note.title || 'Untitled Note',
+      content: note.content || '',
+      type: note.type || 'personal',
+      projectId: note.projectId,
+      tags: note.tags || [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isPinned: note.isPinned || false,
+      isShared: note.isShared || false,
+      sharedWith: note.sharedWith || []
+    };
+    
+    // Save to localStorage
+    const savedNotes = localStorage.getItem('userNotes');
+    const notes = savedNotes ? JSON.parse(savedNotes) : [];
+    notes.push(newNote);
+    localStorage.setItem('userNotes', JSON.stringify(notes));
+    
+    // Invalidate cache
+    this.userData = null;
+    this.lastUpdate = null;
+    
+    console.log('✅ Nova AI created note:', newNote.title);
+    return newNote;
+  }
+  
+  async createProject(project: Partial<ProjectData>): Promise<ProjectData> {
+    const newProject: ProjectData = {
+      id: `project-${Date.now()}`,
+      name: project.name || 'Untitled Project',
+      description: project.description || '',
+      status: project.status || 'planning',
+      priority: project.priority || 'medium',
+      progress: project.progress || 0,
+      startDate: project.startDate || new Date(),
+      endDate: project.endDate,
+      teamId: project.teamId || '',
+      createdBy: this.userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      tags: project.tags || [],
+      category: project.category || 'general',
+      budget: project.budget,
+      client: project.client,
+      milestones: project.milestones || [],
+      risks: project.risks || []
+    };
+    
+    // Save to localStorage
+    const savedProjects = localStorage.getItem('userProjects');
+    const projects = savedProjects ? JSON.parse(savedProjects) : [];
+    projects.push(newProject);
+    localStorage.setItem('userProjects', JSON.stringify(projects));
+    
+    // Invalidate cache
+    this.userData = null;
+    this.lastUpdate = null;
+    
+    console.log('✅ Nova AI created project:', newProject.name);
+    return newProject;
+  }
+  
+  async updateTask(taskId: string, updates: Partial<TaskData>): Promise<TaskData | null> {
+    const savedTasks = localStorage.getItem('userTasks');
+    if (!savedTasks) return null;
+    
+    const tasks = JSON.parse(savedTasks);
+    const taskIndex = tasks.findIndex((t: TaskData) => t.id === taskId);
+    if (taskIndex === -1) return null;
+    
+    tasks[taskIndex] = { ...tasks[taskIndex], ...updates, updatedAt: new Date() };
+    localStorage.setItem('userTasks', JSON.stringify(tasks));
+    
+    // Invalidate cache
+    this.userData = null;
+    this.lastUpdate = null;
+    
+    console.log('✅ Nova AI updated task:', taskId);
+    return tasks[taskIndex];
+  }
+  
+  async updateProject(projectId: string, updates: Partial<ProjectData>): Promise<ProjectData | null> {
+    const savedProjects = localStorage.getItem('userProjects');
+    if (!savedProjects) return null;
+    
+    const projects = JSON.parse(savedProjects);
+    const projectIndex = projects.findIndex((p: ProjectData) => p.id === projectId);
+    if (projectIndex === -1) return null;
+    
+    projects[projectIndex] = { ...projects[projectIndex], ...updates, updatedAt: new Date() };
+    localStorage.setItem('userProjects', JSON.stringify(projects));
+    
+    // Invalidate cache
+    this.userData = null;
+    this.lastUpdate = null;
+    
+    console.log('✅ Nova AI updated project:', projectId);
+    return projects[projectIndex];
+  }
+  
+  async deleteTask(taskId: string): Promise<boolean> {
+    const savedTasks = localStorage.getItem('userTasks');
+    if (!savedTasks) return false;
+    
+    const tasks = JSON.parse(savedTasks);
+    const filtered = tasks.filter((t: TaskData) => t.id !== taskId);
+    
+    if (filtered.length === tasks.length) return false;
+    
+    localStorage.setItem('userTasks', JSON.stringify(filtered));
+    
+    // Invalidate cache
+    this.userData = null;
+    this.lastUpdate = null;
+    
+    console.log('✅ Nova AI deleted task:', taskId);
+    return true;
   }
 }
 
