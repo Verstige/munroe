@@ -44,15 +44,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-import AgentManager from './AgentManager';
 import WorkflowBuilder from './WorkflowBuilder';
-import WorkflowExecutionConsole from './WorkflowExecutionConsole';
-import IntegratedAIAgents from './IntegratedAIAgents';
-import ActiveAgentsDashboard from './ActiveAgentsDashboard';
-import AIAgentDemo from './AIAgentDemo';
-import AgentWorkspaceTest from './AgentWorkspaceTest';
-import SupportTicketsSection from './SupportTicketsSection';
-import AgentReportsSection from './AgentReportsSection';
 import { AIAgent, Workflow as WorkflowType, APIConnector } from '@/types/nexus';
 import { agentManager } from '@/lib/agent-manager';
 
@@ -1030,37 +1022,50 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
 
         {/* Agents Tab */}
         {activeTab === 'agents' && (
-          <ActiveAgentsDashboard 
-            onAgentSelect={(agentId) => {
-              const agent = agents.find(a => a.id === agentId);
-              setSelectedAgent(agent || null);
-            }}
-          />
+          <div className="p-6 text-center">
+            <h3 className="text-lg font-medium mb-2">Active Agents Dashboard</h3>
+            <p className="text-muted-foreground">This feature is coming soon.</p>
+          </div>
         )}
 
         {/* Integrated AI Tab */}
         {activeTab === 'integrated' && (
-          <IntegratedAIAgents />
+          <div className="p-6 text-center">
+            <h3 className="text-lg font-medium mb-2">Integrated AI Agents</h3>
+            <p className="text-muted-foreground">This feature is coming soon.</p>
+          </div>
         )}
 
         {/* Demo Tab */}
         {activeTab === 'demo' && (
-          <AIAgentDemo />
+          <div className="p-6 text-center">
+            <h3 className="text-lg font-medium mb-2">AI Agent Demo</h3>
+            <p className="text-muted-foreground">This feature is coming soon.</p>
+          </div>
         )}
 
         {/* Test Tab */}
         {activeTab === 'test' && (
-          <AgentWorkspaceTest />
+          <div className="p-6 text-center">
+            <h3 className="text-lg font-medium mb-2">Agent Workspace Test</h3>
+            <p className="text-muted-foreground">This feature is coming soon.</p>
+          </div>
         )}
 
         {/* Support Tickets Tab */}
         {activeTab === 'support' && (
-          <SupportTicketsSection />
+          <div className="p-6 text-center">
+            <h3 className="text-lg font-medium mb-2">Support Tickets</h3>
+            <p className="text-muted-foreground">This feature is coming soon.</p>
+          </div>
         )}
 
         {/* Agent Reports Tab */}
         {activeTab === 'reports' && (
-          <AgentReportsSection />
+          <div className="p-6 text-center">
+            <h3 className="text-lg font-medium mb-2">Agent Reports</h3>
+            <p className="text-muted-foreground">This feature is coming soon.</p>
+          </div>
         )}
 
         {/* Workflows Tab */}
@@ -1169,12 +1174,10 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
             )}
 
             {/* Workflow Execution Console */}
-            <WorkflowExecutionConsole
-              executions={workflowExecutions}
-              onClearExecutions={clearExecutions}
-              onClearLogs={clearExecutionLogs}
-              onStopExecution={stopExecution}
-            />
+            <div className="p-6 text-center">
+              <h3 className="text-lg font-medium mb-2">Workflow Execution Console</h3>
+              <p className="text-muted-foreground">This feature is coming soon.</p>
+            </div>
           </div>
         )}
 
