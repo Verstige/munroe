@@ -365,16 +365,28 @@ export default function Sidebar({
           variant="ghost"
           size="sm"
           onClick={async () => {
-            console.log('Sign out button clicked!');
+            console.log('🔴 Sign out button clicked');
             try {
-              console.log('Attempting to sign out...');
+              console.log('🔄 Calling signOut...');
               await signOut();
-              console.log('Sign out successful, navigating to home...');
-              // Use window.location for more reliable navigation
+              console.log('✅ Sign out successful');
+              
+              // Clear any local storage data
+              console.log('🧹 Clearing localStorage...');
+              localStorage.clear();
+              
+              // Force a hard reload to the auth page
+              console.log('🔄 Redirecting to auth page...');
               window.location.href = '/';
+              
+              // Fallback: if the above doesn't work, try navigate
+              setTimeout(() => {
+                navigate('/');
+              }, 100);
             } catch (error) {
-              console.error('Error signing out:', error);
-              // Try to navigate anyway in case the sign out worked but there was an error
+              console.error('❌ Error signing out:', error);
+              // Even if there's an error, clear local data and redirect
+              localStorage.clear();
               window.location.href = '/';
             }
           }}

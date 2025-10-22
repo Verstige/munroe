@@ -152,8 +152,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    console.log('🔐 AuthContext: Starting sign out process...');
+    
+    try {
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('❌ Supabase sign out error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Supabase sign out successful');
+      
+      // Manually clear the local state to ensure immediate update
+      setUser(null);
+      setSession(null);
+      
+      console.log('✅ Local auth state cleared');
+    } catch (error) {
+      console.error('❌ Error in signOut:', error);
+      
+      // Even if there's an error, clear local state
+      setUser(null);
+      setSession(null);
+      
+      throw error;
+    }
   };
 
   const updateProfile = async (updates: { full_name?: string; avatar_url?: string }) => {
