@@ -263,6 +263,7 @@ export default function Index() {
               activeTab={currentTab}
               onTabChange={setCurrentTab}
               userRole={currentUserRole}
+              teamId={currentUser?.id} // Pass user ID as team ID for now
               mindmapContent={
                 isLoading ? (
                   <MindmapSkeleton />
@@ -282,8 +283,8 @@ export default function Index() {
                   </div>
                 )
               }
-              notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
-              tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} />}
+              notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} teamId={currentUser?.id} />}
+              tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser={getUserDisplayName(profile)} teamId={currentUser?.id} />}
               teamContent={<TeamManagement />}
               timerContent={<div className="text-center py-8"><p className="text-muted-foreground">Timer functionality coming soon</p></div>}
               crmContent={<CRMDashboard />}

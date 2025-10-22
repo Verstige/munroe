@@ -19,60 +19,62 @@ import {
   Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface BuiltInNote {
-  id: string;
-  title: string;
-  content: string;
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  visibility: "public" | "team" | "private";
-  author: string;
-  projectId?: string;
-  dueDate?: Date;
-  reminderDate?: Date;
-}
+import { WorkspaceNotesService, MigrationService, type WorkspaceNote } from "@/lib/workspace-persistence";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 interface BuiltInNotesProps {
   projectId?: string;
   currentUser?: string;
+  teamId?: string;
 }
 
-// Mock notes data removed - users start with empty notes
-const mockBuiltInNotes: BuiltInNote[] = [];
-
-export default function BuiltInNotes({ projectId, currentUser = "Current User" }: BuiltInNotesProps) {
-  const [notes, setNotes] = useState<BuiltInNote[]>([]);
-  const [filteredNotes, setFilteredNotes] = useState<BuiltInNote[]>([]);
+export default function BuiltInNotes({ projectId, currentUser = "Current User", teamId }: BuiltInNotesProps) {
+  const { user } = useAuth();
+  const [notes, setNotes] = useState<WorkspaceNote[]>([]);
+  const [filteredNotes, setFilteredNotes] = useState<WorkspaceNote[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [visibilityFilter, setVisibilityFilter] = useState<"all" | "public" | "team" | "private">("all");
   const [isCreating, setIsCreating] = useState(false);
-  const [editingNote, setEditingNote] = useState<BuiltInNote | null>(null);
+  const [editingNote, setEditingNote] = useState<WorkspaceNote | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [newNote, setNewNote] = useState({ 
     title: "", 
     content: "", 
     tags: "",
-    visibility: "team" as BuiltInNote["visibility"],
+    visibility: "team" as WorkspaceNote["visibility"],
     dueDate: "",
     reminderDate: ""
   });
 
-  // Load notes from localStorage or use mock data
+  // Load notes from database
   useEffect(() => {
-    const savedNotes = localStorage.getItem('builtInNotes');
-    if (savedNotes) {
-      const parsedNotes = JSON.parse(savedNotes).map((note: BuiltInNote & { createdAt: string; updatedAt: string }) => ({
-        ...note,
-        createdAt: new Date(note.createdAt),
-        updatedAt: new Date(note.updatedAt)
-      }));
-      setNotes(parsedNotes);
-    } else {
-      setNotes(mockBuiltInNotes);
-    }
-  }, []);
+    const loadNotes = async () => {
+      if (!teamId || !user) return;
+      
+      try {
+        setIsLoading(true);
+        // First, try to migrate any localStorage data
+        await MigrationService.migrateLocalStorageNotes(teamId, user.id);
+        
+        // Then load from database
+        const dbNotes = await WorkspaceNotesService.getNotes(teamId, projectId);
+        setNotes(dbNotes);
+      } catch (error) {
+        console.error('Error loading notes:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load notes. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadNotes();
+  }, [teamId, user, projectId]);
 
   // Filter notes based on project, search, tags, and visibility
   useEffect(() => {
@@ -105,49 +107,88 @@ export default function BuiltInNotes({ projectId, currentUser = "Current User" }
   // Get all unique tags
   const allTags = Array.from(new Set(notes.flatMap(note => note.tags)));
 
-  const handleCreateNote = () => {
-    if (!newNote.title.trim()) return;
+  const handleCreateNote = async () => {
+    if (!newNote.title.trim() || !teamId || !user) return;
 
-    const note: BuiltInNote = {
-      id: `note_${Date.now()}`,
-      title: newNote.title,
-      content: newNote.content,
-      tags: newNote.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      visibility: newNote.visibility,
-      author: currentUser,
-      projectId: projectId || undefined,
-      dueDate: newNote.dueDate ? new Date(newNote.dueDate) : undefined,
-      reminderDate: newNote.reminderDate ? new Date(newNote.reminderDate) : undefined
-    };
+    try {
+      const note = await WorkspaceNotesService.createNote({
+        title: newNote.title,
+        content: newNote.content,
+        tags: newNote.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+        visibility: newNote.visibility,
+        author: currentUser,
+        projectId: projectId || undefined,
+        dueDate: newNote.dueDate ? new Date(newNote.dueDate) : undefined,
+        reminderDate: newNote.reminderDate ? new Date(newNote.reminderDate) : undefined
+      }, teamId, user.id);
 
-    const updatedNotes = [note, ...notes];
-    setNotes(updatedNotes);
-    localStorage.setItem('builtInNotes', JSON.stringify(updatedNotes));
-    
-    setNewNote({ title: "", content: "", tags: "", visibility: "team" });
-    setIsCreating(false);
+      setNotes(prev => [note, ...prev]);
+      setNewNote({ title: "", content: "", tags: "", visibility: "team", dueDate: "", reminderDate: "" });
+      setIsCreating(false);
+      
+      toast({
+        title: "Success",
+        description: "Note created successfully!",
+      });
+    } catch (error) {
+      console.error('Error creating note:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create note. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleUpdateNote = () => {
+  const handleUpdateNote = async () => {
     if (!editingNote || !editingNote.title.trim()) return;
 
-    const updatedNotes = notes.map(note =>
-      note.id === editingNote.id
-        ? { ...editingNote, updatedAt: new Date() }
-        : note
-    );
+    try {
+      const updatedNote = await WorkspaceNotesService.updateNote(editingNote.id, {
+        title: editingNote.title,
+        content: editingNote.content,
+        tags: editingNote.tags,
+        visibility: editingNote.visibility,
+        dueDate: editingNote.dueDate,
+        reminderDate: editingNote.reminderDate
+      });
 
-    setNotes(updatedNotes);
-    localStorage.setItem('builtInNotes', JSON.stringify(updatedNotes));
-    setEditingNote(null);
+      setNotes(prev => prev.map(note => 
+        note.id === editingNote.id ? updatedNote : note
+      ));
+      setEditingNote(null);
+      
+      toast({
+        title: "Success",
+        description: "Note updated successfully!",
+      });
+    } catch (error) {
+      console.error('Error updating note:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update note. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteNote = (noteId: string) => {
-    const updatedNotes = notes.filter(note => note.id !== noteId);
-    setNotes(updatedNotes);
-    localStorage.setItem('builtInNotes', JSON.stringify(updatedNotes));
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      await WorkspaceNotesService.deleteNote(noteId);
+      setNotes(prev => prev.filter(note => note.id !== noteId));
+      
+      toast({
+        title: "Success",
+        description: "Note deleted successfully!",
+      });
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete note. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -159,7 +200,7 @@ export default function BuiltInNotes({ projectId, currentUser = "Current User" }
     }).format(date);
   };
 
-  const getVisibilityIcon = (visibility: BuiltInNote["visibility"]) => {
+  const getVisibilityIcon = (visibility: WorkspaceNote["visibility"]) => {
     switch (visibility) {
       case "public": return <Globe className="w-4 h-4 text-green-500" />;
       case "team": return <Users className="w-4 h-4 text-blue-500" />;
@@ -167,13 +208,24 @@ export default function BuiltInNotes({ projectId, currentUser = "Current User" }
     }
   };
 
-  const getVisibilityColor = (visibility: BuiltInNote["visibility"]) => {
+  const getVisibilityColor = (visibility: WorkspaceNote["visibility"]) => {
     switch (visibility) {
       case "public": return "bg-green-100 text-green-800";
       case "team": return "bg-blue-100 text-blue-800";
       case "private": return "bg-gray-100 text-gray-800";
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Built-in Notes</h2>
+          <p className="text-muted-foreground">Loading notes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

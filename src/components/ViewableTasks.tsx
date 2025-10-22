@@ -25,74 +25,66 @@ import {
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  status: "todo" | "in-progress" | "review" | "done";
-  priority: "low" | "medium" | "high" | "urgent";
-  assignee: string;
-  assigneeAvatar?: string;
-  dueDate?: Date;
-  startDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  tags: string[];
-  projectId?: string;
-  subtasks?: Task[];
-  visibility: "public" | "team" | "private";
-}
+import { WorkspaceTasksService, MigrationService, type WorkspaceTask } from "@/lib/workspace-persistence";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 interface ViewableTasksProps {
   projectId?: string;
   currentUser?: string;
+  teamId?: string;
 }
 
-// Mock tasks data removed - users start with empty tasks
-const mockTasks: Task[] = [];
-
-export default function ViewableTasks({ projectId, currentUser = "Current User" }: ViewableTasksProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+export default function ViewableTasks({ projectId, currentUser = "Current User", teamId }: ViewableTasksProps) {
+  const { user } = useAuth();
+  const [tasks, setTasks] = useState<WorkspaceTask[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<WorkspaceTask[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | Task["status"]>("all");
-  const [priorityFilter, setPriorityFilter] = useState<"all" | Task["priority"]>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | WorkspaceTask["status"]>("all");
+  const [priorityFilter, setPriorityFilter] = useState<"all" | WorkspaceTask["priority"]>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const [isCreating, setIsCreating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    priority: "medium" as Task["priority"],
+    priority: "medium" as WorkspaceTask["priority"],
     assignee: currentUser,
-    visibility: "team" as Task["visibility"],
+    visibility: "team" as WorkspaceTask["visibility"],
     tags: "",
     dueDate: "",
     startDate: ""
   });
 
-  // Load tasks from localStorage or use mock data
+  // Load tasks from database
   useEffect(() => {
-    const savedTasks = localStorage.getItem('viewableTasks');
-    if (savedTasks) {
-      const parsedTasks = JSON.parse(savedTasks).map((task: Task & { createdAt: string; updatedAt: string; dueDate?: string }) => ({
-        ...task,
-        createdAt: new Date(task.createdAt),
-        updatedAt: new Date(task.updatedAt),
-        dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
-        subtasks: task.subtasks?.map((subtask: Task & { createdAt: string; updatedAt: string }) => ({
-          ...subtask,
-          createdAt: new Date(subtask.createdAt),
-          updatedAt: new Date(subtask.updatedAt)
-        }))
-      }));
-      setTasks(parsedTasks);
-    } else {
-      setTasks(mockTasks);
-    }
-  }, []);
+    const loadTasks = async () => {
+      if (!teamId || !user) return;
+      
+      try {
+        setIsLoading(true);
+        // First, try to migrate any localStorage data
+        await MigrationService.migrateLocalStorageTasks(teamId, user.id);
+        
+        // Then load from database
+        const dbTasks = await WorkspaceTasksService.getTasks(teamId, projectId);
+        setTasks(dbTasks);
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load tasks. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTasks();
+  }, [teamId, user, projectId]);
 
   // Filter tasks
   useEffect(() => {
@@ -144,7 +136,7 @@ export default function ViewableTasks({ projectId, currentUser = "Current User" 
     setExpandedTasks(newExpanded);
   };
 
-  const getStatusColor = (status: Task["status"]) => {
+  const getStatusColor = (status: WorkspaceTask["status"]) => {
     switch (status) {
       case "todo": return "bg-gray-100 text-gray-800";
       case "in-progress": return "bg-blue-100 text-blue-800";
@@ -153,7 +145,7 @@ export default function ViewableTasks({ projectId, currentUser = "Current User" 
     }
   };
 
-  const getPriorityColor = (priority: Task["priority"]) => {
+  const getPriorityColor = (priority: WorkspaceTask["priority"]) => {
     switch (priority) {
       case "low": return "bg-gray-100 text-gray-800";
       case "medium": return "bg-blue-100 text-blue-800";
@@ -162,7 +154,7 @@ export default function ViewableTasks({ projectId, currentUser = "Current User" 
     }
   };
 
-  const getStatusIcon = (status: Task["status"]) => {
+  const getStatusIcon = (status: WorkspaceTask["status"]) => {
     switch (status) {
       case "todo": return <Circle className="w-4 h-4" />;
       case "in-progress": return <Clock className="w-4 h-4" />;
@@ -187,7 +179,7 @@ export default function ViewableTasks({ projectId, currentUser = "Current User" 
     return diffDays;
   };
 
-  const getTaskProgress = (task: Task) => {
+  const getTaskProgress = (task: WorkspaceTask) => {
     if (!task.subtasks || task.subtasks.length === 0) {
       return task.status === "done" ? 100 : task.status === "in-progress" ? 50 : 0;
     }
@@ -196,39 +188,61 @@ export default function ViewableTasks({ projectId, currentUser = "Current User" 
     return Math.round((completedSubtasks / task.subtasks.length) * 100);
   };
 
-  const handleCreateTask = () => {
-    if (!newTask.title.trim()) return;
+  const handleCreateTask = async () => {
+    if (!newTask.title.trim() || !teamId || !user) return;
 
-    const task: Task = {
-      id: `task_${Date.now()}`,
-      title: newTask.title,
-      description: newTask.description,
-      status: "todo",
-      priority: newTask.priority,
-      assignee: newTask.assignee,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      tags: newTask.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-      projectId: projectId || undefined,
-      visibility: newTask.visibility,
-      dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined,
-      startDate: newTask.startDate ? new Date(newTask.startDate) : undefined
-    };
+    try {
+      const task = await WorkspaceTasksService.createTask({
+        title: newTask.title,
+        description: newTask.description,
+        status: "todo",
+        priority: newTask.priority,
+        assignee: newTask.assignee,
+        tags: newTask.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+        projectId: projectId || undefined,
+        visibility: newTask.visibility,
+        dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined,
+        startDate: newTask.startDate ? new Date(newTask.startDate) : undefined,
+        subtasks: []
+      }, teamId, user.id);
 
-    const updatedTasks = [task, ...tasks];
-    setTasks(updatedTasks);
-    localStorage.setItem('viewableTasks', JSON.stringify(updatedTasks));
-    
-    setNewTask({ 
-      title: "", 
-      description: "", 
-      priority: "medium", 
-      assignee: currentUser, 
-      visibility: "team", 
-      tags: "" 
-    });
-    setIsCreating(false);
+      setTasks(prev => [task, ...prev]);
+      setNewTask({ 
+        title: "", 
+        description: "", 
+        priority: "medium", 
+        assignee: currentUser, 
+        visibility: "team", 
+        tags: "",
+        dueDate: "",
+        startDate: ""
+      });
+      setIsCreating(false);
+      
+      toast({
+        title: "Success",
+        description: "Task created successfully!",
+      });
+    } catch (error) {
+      console.error('Error creating task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create task. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Viewable Tasks</h2>
+          <p className="text-muted-foreground">Loading tasks...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

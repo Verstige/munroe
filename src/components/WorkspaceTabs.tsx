@@ -22,6 +22,7 @@ interface WorkspaceTabsProps {
   activeTab: WorkspaceTab;
   onTabChange: (tab: WorkspaceTab) => void;
   userRole?: "owner" | "admin" | "member" | "viewer";
+  teamId?: string;
   className?: string;
   // Props for different tab contents
   mindmapContent: React.ReactNode;
@@ -108,6 +109,7 @@ export default function WorkspaceTabs({
   activeTab,
   onTabChange,
   userRole = "member",
+  teamId,
   className,
   mindmapContent,
   notesContent,
