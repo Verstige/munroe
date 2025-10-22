@@ -42,3 +42,4 @@ export const isMobileApp = () => Capacitor.isNativePlatform();
 export const getPlatform = () => Capacitor.getPlatform();
 
 
+

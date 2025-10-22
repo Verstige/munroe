@@ -277,11 +277,8 @@ export default function Index() {
                     <div className="w-16 h-16 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                       <Sparkles className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Create Your First Project</h3>
-                    <p className="text-muted-foreground mb-4">Get started by creating your first brand project</p>
-                    <Button onClick={() => setIsNewProjectOpen(true)} className="bg-primary hover:bg-primary/90">
-                      Create Project
-                    </Button>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Your Workspace is Ready</h3>
+                    <p className="text-muted-foreground mb-4">Start chatting with Nova AI or use the sidebar to navigate</p>
                   </div>
                 )
               }
@@ -343,11 +340,8 @@ export default function Index() {
                     <div className="w-16 h-16 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                       <Sparkles className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Create Your First Project</h3>
-                    <p className="text-muted-foreground mb-4">Get started by creating your first brand project</p>
-                    <Button onClick={() => setIsNewProjectOpen(true)} className="bg-primary hover:bg-primary/90">
-                      Create Project
-                    </Button>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Your Workspace is Ready</h3>
+                    <p className="text-muted-foreground mb-4">Start chatting with Nova AI or use the sidebar to navigate</p>
                   </div>
                 </div>
               )}
