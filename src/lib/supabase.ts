@@ -19,7 +19,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    redirectTo: import.meta.env.VITE_SITE_URL || 'https://nexusaisuite.com'
+    redirectTo: 'https://nexusaisuite.com'
   },
   global: {
     headers: {
