@@ -17,6 +17,7 @@ import ReactFlow, {
   Position,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { createProject, updateProject, deleteProject, getUserProjects } from '@/lib/projects-service';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -312,43 +313,55 @@ function EnhancedProjectMapContent({
   const [isEcosystemClosed, setIsEcosystemClosed] = useState(false);
   const [isLayouting, setIsLayouting] = useState(false);
 
-  // Initialize with existing projects and enhanced sample data
+  // Initialize with projects from database
   useEffect(() => {
-    if (projects.length > 0) {
-      const initialNodes: Node[] = [];
-      
-      // Add project nodes
-      projects.forEach((project, index) => {
-        initialNodes.push({
-          id: project.id,
-          type: 'project',
-          position: { 
-            x: 100 + (index % 3) * 300, 
-            y: 100 + Math.floor(index / 3) * 200 
-          },
-          data: {
-            title: project.name,
-            description: project.description,
-            status: project.status,
-            priority: project.priority,
-            category: 'business',
-            progress: 0, // Start with 0% progress
-            team: [],
-            tags: []
-          }
-        });
+    const loadProjects = async () => {
+      try {
+        const userProjects = await getUserProjects();
         
-        // TODO: Add tasks, milestones, and resources via API calls
-      });
-      
-      setNodes(initialNodes);
-      setEdges([]); // Start with no connections
-    } else {
-      // No projects, clear everything
-      setNodes([]);
-      setEdges([]);
-    }
-  }, [projects]);
+        if (userProjects && userProjects.length > 0) {
+          const initialNodes: Node[] = [];
+          
+          // Add project nodes from database
+          userProjects.forEach((project, index) => {
+            initialNodes.push({
+              id: project.id,
+              type: 'project',
+              position: { 
+                x: 100 + (index % 3) * 300, 
+                y: 100 + Math.floor(index / 3) * 200 
+              },
+              data: {
+                title: project.name,
+                description: project.description,
+                status: project.status,
+                priority: project.priority,
+                category: 'business',
+                progress: 0,
+                team: [],
+                tags: []
+              }
+            });
+          });
+          
+          setNodes(initialNodes);
+          setEdges([]);
+          console.log('✅ Loaded projects from database:', userProjects.length);
+        } else {
+          // No projects, clear everything
+          setNodes([]);
+          setEdges([]);
+          console.log('ℹ️ No projects found in database');
+        }
+      } catch (error) {
+        console.error('❌ Error loading projects from database:', error);
+        setNodes([]);
+        setEdges([]);
+      }
+    };
+    
+    loadProjects();
+  }, []);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({
@@ -361,13 +374,13 @@ function EnhancedProjectMapContent({
   );
 
   const addNode = useCallback(
-    (nodeType: string) => {
+    async (nodeType: string) => {
       const newNode: Node = {
         id: `${nodeType}_${Date.now()}`,
         type: nodeType,
         position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
         data: {
-          title: `New ${nodeType}`,
+          title: nodeType === 'project' ? 'New Project' : `New ${nodeType}`,
           description: `Description for new ${nodeType}`,
           status: nodeType === 'project' ? 'planning' : nodeType === 'task' ? 'todo' : 'pending',
           priority: 'medium',
@@ -377,6 +390,46 @@ function EnhancedProjectMapContent({
           tags: []
         },
       };
+
+      // If it's a project node, save it to the database
+      if (nodeType === 'project') {
+        try {
+          const projectData = {
+            name: newNode.data.title,
+            description: newNode.data.description,
+            status: newNode.data.status,
+            priority: newNode.data.priority,
+            location: '',
+            website: '',
+            industry: '',
+            products: '',
+            targetAudience: '',
+            businessStage: '',
+            revenue: '',
+            employees: '',
+            founded: '',
+            contactEmail: '',
+            phone: '',
+            socialMedia: '',
+            additionalNotes: ''
+          };
+          
+          const savedProject = await createProject(projectData);
+          
+          if (savedProject) {
+            // Update the node with the database ID
+            newNode.id = savedProject.id;
+            newNode.data.title = savedProject.name;
+            newNode.data.description = savedProject.description;
+            console.log('✅ Project saved to database:', savedProject.id);
+          } else {
+            console.error('❌ Failed to save project to database');
+          }
+        } catch (error) {
+          console.error('❌ Error saving project to database:', error);
+        }
+      }
+      
       setNodes((nds) => [...nds, newNode]);
     },
     [setNodes]
@@ -475,7 +528,7 @@ function EnhancedProjectMapContent({
     }));
   }, [edges, setNodes]);
 
-  const updateNodeData = useCallback((nodeId: string, newData: any) => {
+  const updateNodeData = useCallback(async (nodeId: string, newData: any) => {
     setNodes(nds => {
       const updatedNodes = nds.map(n => 
         n.id === nodeId ? { ...n, data: { ...n.data, ...newData } } : n
@@ -486,16 +539,56 @@ function EnhancedProjectMapContent({
       if (updatedNode) {
         // Use setTimeout to ensure state updates are processed
         setTimeout(() => syncRelatedElements(updatedNode), 0);
+        
+        // If it's a project node, save updates to the database
+        if (updatedNode.type === 'project') {
+          setTimeout(async () => {
+            try {
+              const projectUpdates = {
+                name: updatedNode.data.title,
+                description: updatedNode.data.description,
+                status: updatedNode.data.status,
+                priority: updatedNode.data.priority
+              };
+              
+              const result = await updateProject(nodeId, projectUpdates);
+              if (result) {
+                console.log('✅ Project updated in database:', nodeId);
+              } else {
+                console.error('❌ Failed to update project in database');
+              }
+            } catch (error) {
+              console.error('❌ Error updating project in database:', error);
+            }
+          }, 100);
+        }
       }
       
       return updatedNodes;
     });
   }, [setNodes, syncRelatedElements]);
 
-  const deleteNode = useCallback((nodeId: string) => {
+  const deleteNode = useCallback(async (nodeId: string) => {
+    // Find the node to check if it's a project
+    const nodeToDelete = nodes.find(n => n.id === nodeId);
+    
+    // If it's a project node, delete it from the database
+    if (nodeToDelete && nodeToDelete.type === 'project') {
+      try {
+        const result = await deleteProject(nodeId);
+        if (result) {
+          console.log('✅ Project deleted from database:', nodeId);
+        } else {
+          console.error('❌ Failed to delete project from database');
+        }
+      } catch (error) {
+        console.error('❌ Error deleting project from database:', error);
+      }
+    }
+    
     setNodes(nds => nds.filter(n => n.id !== nodeId));
     setEdges(eds => eds.filter(e => e.source !== nodeId && e.target !== nodeId));
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, nodes]);
 
   const filteredNodes = useMemo(() => {
     let filtered = nodes;
@@ -672,7 +765,12 @@ function EnhancedProjectMapContent({
               <div
                 key={template.type}
                 className="p-3 border border-border rounded-lg cursor-pointer hover:bg-background/50 transition-colors"
-                onClick={() => addNode(template.type)}
+                onClick={() => {
+                  console.log('🎯 Button clicked for template type:', template.type);
+                  addNode(template.type).catch(error => {
+                    console.error('❌ Error adding node:', error);
+                  });
+                }}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary`}>

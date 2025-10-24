@@ -152,8 +152,10 @@ const MentionInput = forwardRef<HTMLTextAreaElement, MentionInputProps>(({
     // Move cursor after the mention
     const newCursorPosition = before.length + mentionText.length;
     setTimeout(() => {
-      textareaRef.current?.setSelectionRange(newCursorPosition, newCursorPosition);
-      textareaRef.current?.focus();
+      if (textareaRef.current) {
+        textareaRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
+        textareaRef.current.focus();
+      }
     }, 0);
     
     setMentionPosition(null);
@@ -217,6 +219,8 @@ const MentionInput = forwardRef<HTMLTextAreaElement, MentionInputProps>(({
     <div className="relative">
       <Textarea
         ref={textareaRef}
+        id="mention-input"
+        name="mention-input"
         value={value}
         onChange={(e) => handleTextChange(e.target.value)}
         onKeyDown={handleKeyDown}

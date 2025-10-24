@@ -109,7 +109,7 @@ export default function ChatInterface({
     setIsLoading(true);
 
     // Generate smart AI response with context
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       const { response, suggestions } = generateSmartResponse(
         input,
         activeProject || null,
@@ -126,6 +126,8 @@ export default function ChatInterface({
       setMessages(prev => [...prev, aiMessage]);
       setIsLoading(false);
     }, 1200);
+    
+    return () => clearTimeout(timeoutId);
   };
 
   const handleAction = (suggestion: ActionSuggestion) => {

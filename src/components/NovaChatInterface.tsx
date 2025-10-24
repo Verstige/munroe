@@ -179,9 +179,11 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   useEffect(() => {
     if (messages.length > 0 && shouldScroll) {
       // Use a small delay to ensure DOM is updated
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         scrollToBottom();
       }, 50);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [messages.length, shouldScroll]);
 
@@ -400,9 +402,11 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   const handleQuickAction = async (quickMessage: string) => {
     setMessage(quickMessage);
     // Trigger submit after a brief delay to show the message in input
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       handleSubmit(new Event('submit') as any);
     }, 100);
+    
+    return () => clearTimeout(timeoutId);
   };
 
   const clearConversation = () => {
@@ -626,6 +630,8 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
           <form onSubmit={handleSubmit} className="relative">
             <div className="relative bg-gray-800/50 backdrop-blur-sm border border-gray-600/50 rounded-xl overflow-hidden">
               <Input
+                id="nova-chat-input"
+                name="nova-chat-input"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}

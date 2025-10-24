@@ -113,17 +113,17 @@ export class WorkspaceNotesService {
     // Try database in background (don't wait for it)
     setTimeout(async () => {
       try {
-        let query = supabase
+    let query = supabase
           .from('notes')
-          .select('*')
+      .select('*')
           .eq('created_by', teamId)
-          .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false });
 
-        if (projectId) {
-          query = query.eq('project_id', projectId);
-        }
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
 
-        const { data, error } = await query;
+    const { data, error } = await query;
         if (!error && data) {
           const dbNotes = data.map(note => ({
             id: note.id,
@@ -133,8 +133,8 @@ export class WorkspaceNotesService {
             visibility: 'team' as const,
             author: note.created_by,
             projectId: note.project_id,
-            createdAt: new Date(note.created_at),
-            updatedAt: new Date(note.updated_at),
+      createdAt: new Date(note.created_at),
+      updatedAt: new Date(note.updated_at),
           }));
           
           // Update localStorage with database data
@@ -166,17 +166,17 @@ export class WorkspaceNotesService {
 
     // Try to save to database in background
     try {
-      const { data, error } = await supabase
+    const { data, error } = await supabase
         .from('notes')
-        .insert({
-          title: note.title,
-          content: note.content,
-          tags: note.tags,
-          project_id: note.projectId,
-          created_by: userId,
-        })
-        .select()
-        .single();
+      .insert({
+        title: note.title,
+        content: note.content,
+        tags: note.tags,
+        project_id: note.projectId,
+        created_by: userId,
+      })
+      .select()
+      .single();
 
       if (!error && data) {
         // Update localStorage with database ID
@@ -187,17 +187,17 @@ export class WorkspaceNotesService {
         );
         localStorage.setItem('builtInNotes', JSON.stringify(updatedNotes));
         console.log('✅ Note synced to database');
-        
-        return {
-          id: data.id,
+
+    return {
+      id: data.id,
           title: data.title,
           content: data.content || '',
           tags: data.tags || [],
           visibility: 'team' as const,
           author: data.created_by,
           projectId: data.project_id,
-          createdAt: new Date(data.created_at),
-          updatedAt: new Date(data.updated_at),
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
         };
       }
     } catch (dbError) {
@@ -229,16 +229,16 @@ export class WorkspaceNotesService {
 
     // Try to update in database in background
     try {
-      const { data, error } = await supabase
+    const { data, error } = await supabase
         .from('notes')
-        .update({
-          title: updates.title,
-          content: updates.content,
-          tags: updates.tags,
-        })
-        .eq('id', id)
-        .select()
-        .single();
+      .update({
+        title: updates.title,
+        content: updates.content,
+        tags: updates.tags,
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
       if (!error && data) {
         // Update localStorage with database data
@@ -259,17 +259,17 @@ export class WorkspaceNotesService {
         );
         localStorage.setItem('builtInNotes', JSON.stringify(updatedNotes));
         console.log('✅ Note synced to database');
-        
-        return {
-          id: data.id,
+
+    return {
+      id: data.id,
           title: data.title,
           content: data.content || '',
           tags: data.tags || [],
           visibility: 'team' as const,
           author: data.created_by,
           projectId: data.project_id,
-          createdAt: new Date(data.created_at),
-          updatedAt: new Date(data.updated_at),
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
         };
       }
     } catch (dbError) {
@@ -299,10 +299,10 @@ export class WorkspaceNotesService {
 
     // Try to delete from database in background
     try {
-      const { error } = await supabase
+    const { error } = await supabase
         .from('notes')
-        .delete()
-        .eq('id', id);
+      .delete()
+      .eq('id', id);
 
       if (!error) {
         console.log('✅ Note deleted from database');
@@ -330,20 +330,20 @@ export class WorkspaceTasksService {
     // Try database in background (don't wait for it)
     setTimeout(async () => {
       try {
-        let query = supabase
+    let query = supabase
           .from('tasks')
-          .select('*')
+      .select('*')
           .eq('created_by', teamId)
-          .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false });
 
-        if (projectId) {
-          query = query.eq('project_id', projectId);
-        }
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
 
-        const { data, error } = await query;
+    const { data, error } = await query;
         if (!error && data) {
           const dbTasks = data.map(task => ({
-            id: task.id,
+      id: task.id,
             title: task.title,
             description: task.description || '',
             status: task.status as WorkspaceTask['status'],
@@ -356,8 +356,8 @@ export class WorkspaceTasksService {
             projectId: task.project_id,
             visibility: 'team' as const,
             subtasks: [],
-            createdAt: new Date(task.created_at),
-            updatedAt: new Date(task.updated_at),
+      createdAt: new Date(task.created_at),
+      updatedAt: new Date(task.updated_at),
           }));
           
           // Update localStorage with database data
@@ -389,20 +389,20 @@ export class WorkspaceTasksService {
 
     // Try to save to database in background
     try {
-      const { data, error } = await supabase
+    const { data, error } = await supabase
         .from('tasks')
-        .insert({
-          title: task.title,
-          description: task.description,
-          status: task.status,
-          priority: task.priority,
+      .insert({
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
           assigned_to: task.assignee,
-          due_date: task.dueDate?.toISOString(),
-          project_id: task.projectId,
-          created_by: userId,
-        })
-        .select()
-        .single();
+        due_date: task.dueDate?.toISOString(),
+        project_id: task.projectId,
+        created_by: userId,
+      })
+      .select()
+      .single();
 
       if (!error && data) {
         // Update localStorage with database ID
@@ -413,9 +413,9 @@ export class WorkspaceTasksService {
         );
         localStorage.setItem('viewableTasks', JSON.stringify(updatedTasks));
         console.log('✅ Task synced to database');
-        
-        return {
-          id: data.id,
+
+    return {
+      id: data.id,
           title: data.title,
           description: data.description || '',
           status: data.status as WorkspaceTask['status'],
@@ -428,8 +428,8 @@ export class WorkspaceTasksService {
           projectId: data.project_id,
           visibility: 'team' as const,
           subtasks: [],
-          createdAt: new Date(data.created_at),
-          updatedAt: new Date(data.updated_at),
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
         };
       }
     } catch (dbError) {
@@ -461,19 +461,19 @@ export class WorkspaceTasksService {
 
     // Try to update in database in background
     try {
-      const { data, error } = await supabase
+    const { data, error } = await supabase
         .from('tasks')
-        .update({
-          title: updates.title,
-          description: updates.description,
-          status: updates.status,
-          priority: updates.priority,
+      .update({
+        title: updates.title,
+        description: updates.description,
+        status: updates.status,
+        priority: updates.priority,
           assigned_to: updates.assignee,
-          due_date: updates.dueDate?.toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
+        due_date: updates.dueDate?.toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
       if (!error && data) {
         // Update localStorage with database data
@@ -495,9 +495,9 @@ export class WorkspaceTasksService {
         );
         localStorage.setItem('viewableTasks', JSON.stringify(updatedTasks));
         console.log('✅ Task synced to database');
-        
-        return {
-          id: data.id,
+
+    return {
+      id: data.id,
           title: data.title,
           description: data.description || '',
           status: data.status as WorkspaceTask['status'],
@@ -510,8 +510,8 @@ export class WorkspaceTasksService {
           projectId: data.project_id,
           visibility: 'team' as const,
           subtasks: [],
-          createdAt: new Date(data.created_at),
-          updatedAt: new Date(data.updated_at),
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
         };
       }
     } catch (dbError) {
@@ -541,10 +541,10 @@ export class WorkspaceTasksService {
 
     // Try to delete from database in background
     try {
-      const { error } = await supabase
+    const { error } = await supabase
         .from('tasks')
-        .delete()
-        .eq('id', id);
+      .delete()
+      .eq('id', id);
 
       if (!error) {
         console.log('✅ Task deleted from database');
