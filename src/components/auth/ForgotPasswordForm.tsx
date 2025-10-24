@@ -30,7 +30,7 @@ export default function ForgotPasswordForm({ onBackToSignIn }: ForgotPasswordFor
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-        redirectTo: `https://nexusaisuite.com/auth/reset-password`
+        redirectTo: `${import.meta.env.VITE_SITE_URL || 'https://nexusaisuite.com'}/auth/reset-password`
       })
 
       if (error) {

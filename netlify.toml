@@ -17,8 +17,10 @@
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
   
   # Environment variables for the build
-  VITE_SUPABASE_URL = "https://qsqnmchshipnditksqnu.supabase.co"
-  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzcW5tY2hzaGlwbmRpdGtzcW51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxNTU5NTcsImV4cCI6MjA3NTczMTk1N30.Lb_7HXpxRfgGdtCdXClCd6fN_h75Al8TUb_wFQMK634"
+  VITE_SUPABASE_URL = "https://zxcdgyebqgyjzmheqbhy.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4Y2RneWVicWd5anptaGVxYmh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4NzA0MjUsImV4cCI6MjA3NjQ0NjQyNX0.t40U5ecUG2KoXLTp_AiJtHO_1wWbE5wa52vA2c40blY"
+  VITE_SITE_URL = "https://nexusaisuite.com"
+  VITE_REDIRECT_URL = "https://nexusaisuite.com"
   VITE_GEMINI_API_KEY = "AIzaSyBJXRO2wNi35NgDftgu-JUXqe-uIhZ2qhA"
   VITE_GEMINI_MODEL = "gemini-2.0-flash"
 
