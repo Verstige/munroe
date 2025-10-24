@@ -76,3 +76,4 @@ If you have access to your hosting platform's environment variables:
 VITE_SITE_URL=https://nexusaisuite.com
 VITE_REDIRECT_URL=https://nexusaisuite.com
 ```
+

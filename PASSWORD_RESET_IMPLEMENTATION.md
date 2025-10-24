@@ -66,3 +66,4 @@ Make sure your Supabase dashboard has:
 - **Redirect URLs**: `https://nexusaisuite.com/auth/reset-password`
 
 This ensures reset emails point to your production domain.
+
