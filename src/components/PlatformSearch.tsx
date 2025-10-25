@@ -259,7 +259,7 @@ export default function PlatformSearch({ onClose, className = "", onNavigateToTa
       // Handle navigation based on result type
       switch (result.type) {
         case 'project':
-          // Navigate to project map tab and highlight the project
+          // Navigate to business map tab and highlight the project
           onNavigateToTab?.('mindmap');
           toast({
             title: "Project Found",

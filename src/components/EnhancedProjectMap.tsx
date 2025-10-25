@@ -37,6 +37,8 @@ import {
   Minus,
   Maximize,
   Edit,
+  FolderOpen,
+  Building2,
   Trash2,
   Calendar,
   DollarSign,
@@ -63,13 +65,34 @@ import {
 } from 'lucide-react';
 
 // Custom Node Components
-const ProjectNode = ({ data, selected }: { data: any; selected: boolean }) => (
-  <div className={`px-4 py-3 shadow-lg rounded-lg bg-background border-2 min-w-[200px] max-w-[250px] ${
-    selected ? 'border-primary' : 'border-border'
-  }`}>
+const ProjectNode = ({ data, selected }: { data: any; selected: boolean }) => {
+  // Determine color based on node type from data
+  const getNodeStyles = () => {
+    if (data.nodeType === 'subproject') {
+      return {
+        borderColor: selected ? 'border-red-500' : 'border-border',
+        iconColor: 'text-red-500'
+      };
+    }
+    if (data.nodeType === 'business') {
+      return {
+        borderColor: selected ? 'border-blue-500' : 'border-border',
+        iconColor: 'text-blue-500'
+      };
+    }
+    return {
+      borderColor: selected ? 'border-primary' : 'border-border',
+      iconColor: 'text-primary'
+    };
+  };
+  
+  const styles = getNodeStyles();
+  
+  return (
+    <div className={`px-4 py-3 shadow-lg rounded-lg bg-background border-2 min-w-[200px] max-w-[250px] ${styles.borderColor}`}>
     <Handle type="target" position={Position.Top} className="w-3 h-3" />
     <div className="flex items-center gap-2 mb-2">
-      <Target className="w-4 h-4 text-primary" />
+        <Target className={`w-4 h-4 ${styles.iconColor}`} />
       <div className="font-bold text-sm text-foreground">{data.title}</div>
       <Badge className={`text-xs ${
         data.status === 'active' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
@@ -115,6 +138,7 @@ const ProjectNode = ({ data, selected }: { data: any; selected: boolean }) => (
     <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
   </div>
 );
+};
 
 const TaskNode = ({ data, selected }: { data: any; selected: boolean }) => (
   <div className={`px-3 py-2 shadow-md rounded-lg bg-background border-2 min-w-[160px] ${
@@ -214,11 +238,11 @@ const ResourceNode = ({ data, selected }: { data: any; selected: boolean }) => (
 
 const TeamNode = ({ data, selected }: { data: any; selected: boolean }) => (
   <div className={`px-3 py-2 shadow-md rounded-lg bg-background border-2 min-w-[160px] ${
-    selected ? 'border-indigo-500' : 'border-border'
+    selected ? 'border-orange-500' : 'border-border'
   }`}>
     <Handle type="target" position={Position.Top} className="w-3 h-3" />
     <div className="flex items-center gap-2 mb-1">
-      <Users2 className="w-4 h-4 text-indigo-500" />
+      <Users2 className="w-4 h-4 text-orange-500" />
       <div className="font-semibold text-sm text-foreground">{data.title}</div>
     </div>
     
@@ -238,21 +262,86 @@ const TeamNode = ({ data, selected }: { data: any; selected: boolean }) => (
   </div>
 );
 
+// Custom Edge Component with Delete Button and Source Node Color
+const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, style, markerEnd, source, target }: any) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // We'll use a different approach - store node colors in edge data
+  const getEdgeColor = () => {
+    // Try to get color from edge data first
+    if (style?.stroke) return style.stroke;
+    
+    // Default colors based on common node types
+    return '#6b7280'; // Default gray
+  };
+  
+  const edgeColor = getEdgeColor();
+  
+  return (
+    <>
+      <path
+        id={id}
+        style={{ ...style, stroke: edgeColor, strokeWidth: 2 }}
+        className="react-flow__edge-path"
+        d={`M ${sourceX},${sourceY} L ${targetX},${targetY}`}
+        markerEnd={markerEnd}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      />
+      {isHovered && (
+        <foreignObject
+          width={20}
+          height={20}
+          x={(sourceX + targetX) / 2 - 10}
+          y={(sourceY + targetY) / 2 - 10}
+          className="edgebutton-foreignobject"
+          requiredExtensions="http://www.w3.org/1999/xhtml"
+        >
+          <div className="flex items-center justify-center">
+            <button
+              className="w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs cursor-pointer border-none"
+              onClick={(event) => {
+                event.stopPropagation();
+                // Edge deletion is handled by ReactFlow's onEdgesChange
+              }}
+            >
+              ×
+            </button>
+          </div>
+        </foreignObject>
+      )}
+    </>
+  );
+};
+
 const nodeTypes: NodeTypes = {
   project: ProjectNode,
+  subproject: ProjectNode, // Use ProjectNode for subprojects
+  business: ProjectNode, // Use ProjectNode for businesses
   task: TaskNode,
   milestone: MilestoneNode,
   resource: ResourceNode,
   team: TeamNode,
 };
 
+const edgeTypes: EdgeTypes = {
+  default: CustomEdge,
+};
+
 const PROJECT_NODE_TEMPLATES = [
   {
-    type: 'project',
-    label: 'Main Project',
-    icon: <Target className="w-4 h-4" />,
+    type: 'business',
+    label: 'Business',
+    icon: <Building2 className="w-4 h-4" />,
     color: 'blue',
-    description: 'Primary business project'
+    description: 'Main business entity'
+  },
+  {
+    type: 'subproject',
+    label: 'Project',
+    icon: <FolderOpen className="w-4 h-4" />,
+    color: 'red',
+    description: 'Sub-project or component'
   },
   {
     type: 'task',
@@ -279,7 +368,7 @@ const PROJECT_NODE_TEMPLATES = [
     type: 'team',
     label: 'Team',
     icon: <Users2 className="w-4 h-4" />,
-    color: 'indigo',
+    color: 'orange',
     description: 'Team or department'
   }
 ];
@@ -315,12 +404,65 @@ function EnhancedProjectMapContent({
   const [isEcosystemClosed, setIsEcosystemClosed] = useState(false);
   const [isLayouting, setIsLayouting] = useState(false);
 
-  // Initialize with projects from props or database
+  // Get user ID for localStorage keys
+  const userId = 'current-user'; // You can get this from auth context if needed
+
+  // Load saved nodes and edges from localStorage on mount
+  useEffect(() => {
+    const savedNodes = localStorage.getItem(`reactflow_nodes_${userId}`);
+    const savedEdges = localStorage.getItem(`reactflow_edges_${userId}`);
+    
+    if (savedNodes) {
+      try {
+        const parsedNodes = JSON.parse(savedNodes);
+        console.log('🔄 Loading saved nodes from localStorage:', parsedNodes.length);
+        setNodes(parsedNodes);
+      } catch (error) {
+        console.error('❌ Error parsing saved nodes:', error);
+      }
+    }
+    
+    if (savedEdges) {
+      try {
+        const parsedEdges = JSON.parse(savedEdges);
+        console.log('🔄 Loading saved edges from localStorage:', parsedEdges.length);
+        setEdges(parsedEdges);
+      } catch (error) {
+        console.error('❌ Error parsing saved edges:', error);
+      }
+    }
+  }, []); // Only run on mount
+
+  // Save nodes to localStorage whenever they change
+  useEffect(() => {
+    if (nodes.length > 0) {
+      console.log('💾 Saving nodes to localStorage:', nodes.length);
+      localStorage.setItem(`reactflow_nodes_${userId}`, JSON.stringify(nodes));
+    }
+  }, [nodes]);
+
+  // Save edges to localStorage whenever they change
+  useEffect(() => {
+    if (edges.length > 0) {
+      console.log('💾 Saving edges to localStorage:', edges.length);
+      localStorage.setItem(`reactflow_edges_${userId}`, JSON.stringify(edges));
+    }
+  }, [edges]);
+
+  // Initialize with projects from props or database (only if no saved nodes exist)
   useEffect(() => {
     const loadProjects = async () => {
       try {
+        // Check if we already have saved nodes - if so, don't override them
+        const savedNodes = localStorage.getItem(`reactflow_nodes_${userId}`);
+        if (savedNodes) {
+          console.log('🔄 Saved nodes exist, skipping project initialization');
+          return;
+        }
+
         // First try to use projects from props
         console.log('🔍 EnhancedProjectMap - Projects from props:', projects);
+        console.log('📊 Projects length:', projects?.length || 0);
         if (projects && projects.length > 0) {
           const initialNodes: Node[] = [];
           
@@ -329,7 +471,7 @@ function EnhancedProjectMapContent({
             console.log(`📝 Creating node for project: ${project.name} (${project.id})`);
             initialNodes.push({
               id: project.id,
-              type: 'project',
+              type: 'business', // Use 'business' type for business nodes
               position: { 
                 x: 100 + (index % 3) * 300, 
                 y: 100 + Math.floor(index / 3) * 200 
@@ -342,7 +484,8 @@ function EnhancedProjectMapContent({
                 category: 'business',
                 progress: 0,
                 team: [],
-                tags: []
+                tags: [],
+                nodeType: 'business'
               }
             });
           });
@@ -352,40 +495,41 @@ function EnhancedProjectMapContent({
           console.log('✅ Loaded projects from props:', projects.length, 'nodes created:', initialNodes.length);
         } else {
           // Fallback to database if no props
-          const userProjects = await getUserProjects();
+        const userProjects = await getUserProjects();
+        
+        if (userProjects && userProjects.length > 0) {
+          const initialNodes: Node[] = [];
           
-          if (userProjects && userProjects.length > 0) {
-            const initialNodes: Node[] = [];
-            
-            // Add project nodes from database
-            userProjects.forEach((project, index) => {
-              initialNodes.push({
-                id: project.id,
-                type: 'project',
-                position: { 
-                  x: 100 + (index % 3) * 300, 
-                  y: 100 + Math.floor(index / 3) * 200 
-                },
-                data: {
-                  title: project.name,
-                  description: project.description,
-                  status: project.status,
-                  priority: project.priority,
-                  category: 'business',
-                  progress: 0,
-                  team: [],
-                  tags: []
-                }
-              });
+          // Add project nodes from database
+          userProjects.forEach((project, index) => {
+            initialNodes.push({
+              id: project.id,
+                type: 'business', // Use 'business' type for consistency
+              position: { 
+                x: 100 + (index % 3) * 300, 
+                y: 100 + Math.floor(index / 3) * 200 
+              },
+              data: {
+                title: project.name,
+                description: project.description,
+                status: project.status,
+                priority: project.priority,
+                category: 'business',
+                progress: 0,
+                team: [],
+                  tags: [],
+                  nodeType: 'business'
+              }
             });
-            
-            setNodes(initialNodes);
-            setEdges([]);
-            console.log('✅ Loaded projects from database:', userProjects.length);
-          } else {
-            // No projects, clear everything
-            setNodes([]);
-            setEdges([]);
+          });
+          
+          setNodes(initialNodes);
+          setEdges([]);
+          console.log('✅ Loaded projects from database:', userProjects.length);
+        } else {
+          // No projects, clear everything
+          setNodes([]);
+          setEdges([]);
             console.log('ℹ️ No projects found');
           }
         }
@@ -400,13 +544,29 @@ function EnhancedProjectMapContent({
   }, [projects]);
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge({
+    (params: Connection) => {
+      // Find the source node to determine its color
+      const sourceNode = nodes.find(node => node.id === params.source);
+      let edgeColor = '#6b7280'; // Default gray
+      
+      if (sourceNode) {
+        // Determine color based on source node type
+        if (sourceNode.data?.nodeType === 'subproject') edgeColor = '#ef4444'; // Red
+        else if (sourceNode.data?.nodeType === 'business') edgeColor = '#3b82f6'; // Blue
+        else if (sourceNode.type === 'task') edgeColor = '#10b981'; // Green
+        else if (sourceNode.type === 'milestone') edgeColor = '#8b5cf6'; // Purple
+        else if (sourceNode.type === 'resource') edgeColor = '#f59e0b'; // Orange
+        else if (sourceNode.type === 'team') edgeColor = '#f59e0b'; // Orange
+      }
+      
+      setEdges((eds) => addEdge({
       ...params,
-      type: 'smoothstep',
+        type: 'smoothstep', // Use curved edges
       animated: true,
-      style: { stroke: '#60a5fa', strokeWidth: 2 }
-    }, eds)),
-    [setEdges]
+        style: { stroke: edgeColor, strokeWidth: 2 }
+      }, eds));
+    },
+    [setEdges, nodes]
   );
 
   const addNode = useCallback(
@@ -416,19 +576,23 @@ function EnhancedProjectMapContent({
         type: nodeType,
         position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
         data: {
-          title: nodeType === 'project' ? 'New Business' : `New ${nodeType}`,
+          title: nodeType === 'project' ? 'New Project' : nodeType === 'subproject' ? 'New Project' : nodeType === 'business' ? 'New Business' : `New ${nodeType}`,
           description: `Description for new ${nodeType}`,
-          status: nodeType === 'project' ? 'planning' : nodeType === 'task' ? 'todo' : 'pending',
+          status: nodeType === 'project' ? 'planning' : nodeType === 'subproject' ? 'planning' : nodeType === 'business' ? 'planning' : nodeType === 'task' ? 'todo' : 'pending',
           priority: 'medium',
           category: 'business',
           progress: 0,
           team: [],
-          tags: []
+          tags: [],
+          nodeType: nodeType
         },
       };
 
-      // If it's a project node, save it to the database
-      if (nodeType === 'project') {
+      // Always create the node first (like other elements)
+      setNodes((nds) => [...nds, newNode]);
+
+      // Then optionally save to database for business/project types
+      if (nodeType === 'project' || nodeType === 'subproject' || nodeType === 'business') {
         try {
           const projectData = {
             name: newNode.data.title,
@@ -454,27 +618,38 @@ function EnhancedProjectMapContent({
           
           if (savedProject) {
             // Update the node with the database ID
-            newNode.id = savedProject.id;
-            newNode.data.title = savedProject.name;
-            newNode.data.description = savedProject.description;
+            setNodes((nds) => nds.map(n => 
+              n.id === newNode.id ? { ...n, id: savedProject.id } : n
+            ));
             console.log('✅ Project saved to database:', savedProject.id);
             
             // 🔥 Notify parent component that a new project was created
             if (onProjectCreated) {
               onProjectCreated();
             }
-          } else {
-            console.error('❌ Failed to save project to database');
           }
         } catch (error) {
           console.error('❌ Error saving project to database:', error);
+          // Node still exists locally even if database save fails
         }
       }
-      
-      setNodes((nds) => [...nds, newNode]);
     },
     [setNodes, onProjectCreated]
   );
+
+  // Function to clear saved nodes and edges (for debugging/reset)
+  const clearSavedData = useCallback(() => {
+    localStorage.removeItem(`reactflow_nodes_${userId}`);
+    localStorage.removeItem(`reactflow_edges_${userId}`);
+    setNodes([]);
+    setEdges([]);
+    console.log('🗑️ Cleared saved nodes and edges');
+  }, [setNodes, setEdges]);
+
+  // Make clear function available globally for debugging
+  useEffect(() => {
+    (window as any).clearReactFlowData = clearSavedData;
+  }, [clearSavedData]);
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
@@ -770,7 +945,7 @@ function EnhancedProjectMapContent({
       <div className="w-full lg:w-80 bg-background/80 backdrop-blur-sm border-r-0 lg:border-r border-b lg:border-b-0 border-border flex flex-col max-h-[200px] sm:max-h-[250px] lg:max-h-none overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-semibold mb-3 text-foreground">Project Map</h2>
+          <h2 className="text-lg font-semibold mb-3 text-foreground">Business Map</h2>
           
           {/* Search */}
           <div className="relative mb-3">
@@ -873,10 +1048,17 @@ function EnhancedProjectMapContent({
           onInit={setReactFlowInstance}
           onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           fitViewOptions={{ padding: 0.1 }}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
+          minZoom={0.1}
+          maxZoom={2}
           style={{ background: 'transparent' }}
+          deleteKeyCode="Delete"
+          elementsSelectable={true}
+          edgesUpdatable={true}
+          edgesFocusable={true}
         >
           <Background 
             variant={BackgroundVariant.Dots} 
@@ -884,6 +1066,34 @@ function EnhancedProjectMapContent({
             size={1} 
             color="rgba(255, 255, 255, 0.1)"
           />
+          
+          {/* Custom Zoom Controls */}
+          <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => reactFlowInstance?.zoomIn()}
+              className="w-8 h-8 p-0 bg-background/80 border-border hover:bg-background"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => reactFlowInstance?.zoomOut()}
+              className="w-8 h-8 p-0 bg-background/80 border-border hover:bg-background"
+            >
+              <Minus className="w-4 h-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => reactFlowInstance?.fitView()}
+              className="w-8 h-8 p-0 bg-background/80 border-border hover:bg-background"
+            >
+              <Maximize className="w-4 h-4" />
+            </Button>
+          </div>
         </ReactFlow>
         )}
 
@@ -1156,7 +1366,7 @@ function EnhancedProjectMapContent({
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <div className="text-sm font-medium text-foreground">
-                  {selectedNode ? `${selectedNode.data.title} - Ecosystem` : 'Business Ecosystem'}
+                  Business Ecosystem
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -1185,7 +1395,7 @@ function EnhancedProjectMapContent({
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Projects</span>
-                      <span className="text-foreground font-medium">{filteredNodes.filter(n => n.type === 'project').length}</span>
+                      <span className="text-foreground font-medium">{filteredNodes.filter(n => n.type === 'business' || n.type === 'subproject').length}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Tasks</span>

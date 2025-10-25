@@ -427,7 +427,7 @@ export default function EnhancedMindmap({
                           className="flex-1"
                         >
                           <Plus className="w-4 h-4 mr-2" />
-                          Add Business
+                          Add Project
                         </Button>
                         <Button 
                           variant="outline" 

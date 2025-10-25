@@ -46,20 +46,15 @@ export default function Sidebar({
   onNavigateToTab,
   projects = [], 
   isLoading = false, 
-  hasEverCreatedProject = false 
+  hasEverCreatedProject = false
 }: SidebarProps) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isAIBusinessSuiteMinimized, setIsAIBusinessSuiteMinimized] = useState(false);
   const [isBusinessToolsMinimized, setIsBusinessToolsMinimized] = useState(false);
 
   const toggleMinimize = () => {
     setIsMinimized(!isMinimized);
-  };
-
-  const toggleAIBusinessSuite = () => {
-    setIsAIBusinessSuiteMinimized(!isAIBusinessSuiteMinimized);
   };
 
   const toggleBusinessTools = () => {
@@ -74,7 +69,7 @@ export default function Sidebar({
         <div className="flex items-center gap-3">
             <div className={`${isMinimized ? 'w-12 h-12' : 'w-16 h-16'} rounded-xl overflow-hidden shadow-lg shadow-blue-500/25 transition-all duration-300`}>
               <img 
-                src="https://storage.googleapis.com/msgsndr/555cPqlZh4po0jGHqsnl/media/68f296a880dbce7deda676f5.png"
+                src="/nexus-logo.png"
                 alt="Nexus AI Logo"
                 className={`${isMinimized ? 'w-12 h-12' : 'w-16 h-16'} object-contain transition-all duration-300 logo-img`}
                 loading="eager"
@@ -107,6 +102,7 @@ export default function Sidebar({
         </div>
       </div>
 
+
       {/* Enhanced Platform Search */}
       {!isMinimized && (
         <div className="space-y-4 mb-6">
@@ -116,68 +112,8 @@ export default function Sidebar({
         <div className="space-y-2">
         </div>
         
-        {/* AI Business Suite Section */}
+        {/* Business Tools Section */}
         <div className="space-y-3">
-          {!isMinimized && (
-            <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-blue-400" />
-                <span className="text-sm font-semibold text-sidebar-foreground">AI Business Suite</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleAIBusinessSuite}
-                className="h-6 w-6 p-0 hover:bg-blue-500/10"
-              >
-                <ChevronDown className={`w-3 h-3 text-blue-400 transition-transform duration-200 ${isAIBusinessSuiteMinimized ? 'rotate-[-90deg]' : ''}`} />
-              </Button>
-            </div>
-          )}
-          
-          {!isAIBusinessSuiteMinimized && (
-            <div className="space-y-2">
-              <Button 
-                variant="ghost" 
-                className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
-                onClick={onProjectMap}
-                title={isMinimized ? "Business Map" : undefined}
-              >
-                <Map className="w-4 h-4 group-hover:text-primary transition-colors" />
-                {!isMinimized && <span className="font-medium">Business Map</span>}
-              </Button>
-              <Button 
-                variant="ghost" 
-                className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
-                onClick={() => navigate('/nexus')}
-                title={isMinimized ? "Nexus Agents" : undefined}
-              >
-                <Bot className="w-4 h-4 group-hover:text-primary transition-colors" />
-                {!isMinimized && <span className="font-medium">Nexus Agents</span>}
-              </Button>
-              <Button 
-                variant="ghost" 
-                className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
-                onClick={onDashboard}
-                title={isMinimized ? "App Library" : undefined}
-              >
-                <LayoutDashboard className="w-4 h-4 group-hover:text-primary transition-colors" />
-                {!isMinimized && <span className="font-medium">App Library</span>}
-              </Button>
-              <Button 
-                variant="ghost" 
-                className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
-                onClick={() => navigate('/settings')}
-                title={isMinimized ? "My Account" : undefined}
-              >
-                <Settings className="w-4 h-4 group-hover:text-primary transition-colors" />
-                {!isMinimized && <span className="font-medium">My Account</span>}
-              </Button>
-            </div>
-          )}
-            
-            {/* Business Tools within AI Business Suite */}
-            <div className="space-y-2 mt-4">
               {!isMinimized && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -197,6 +133,16 @@ export default function Sidebar({
               
               {!isBusinessToolsMinimized && (
                 <div className="space-y-2">
+                  <Button 
+                    variant="ghost" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
+                    onClick={() => navigate('/nexus')}
+                    title={isMinimized ? "Nexus Agents" : undefined}
+                  >
+                    <Bot className="w-4 h-4 group-hover:text-primary transition-colors" />
+                    {!isMinimized && <span className="font-medium">Nexus Agents</span>}
+                  </Button>
+                  
                   <Button 
                     variant="ghost" 
                     className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
@@ -276,10 +222,19 @@ export default function Sidebar({
                     <CalendarDays className="w-4 h-4 group-hover:text-primary transition-colors" />
                     {!isMinimized && <span className="font-medium">Bookings</span>}
                   </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
+                    onClick={() => navigate('/settings')}
+                    title={isMinimized ? "My Account" : undefined}
+                  >
+                    <Settings className="w-4 h-4 group-hover:text-primary transition-colors" />
+                    {!isMinimized && <span className="font-medium">My Account</span>}
+                  </Button>
                 </div>
               )}
-            </div>
-          </div>
+        </div>
         </div>
       )}
 
@@ -311,9 +266,9 @@ export default function Sidebar({
                   <span className="text-sidebar-foreground/60">Planning</span>
                   <span className="font-semibold text-yellow-400">{projects.filter(p => p.status === "Planning").length}</span>
                 </div>
-          </div>
-        </div>
-      ) : null}
+              </div>
+            </div>
+          ) : null}
         </>
       )}
 

@@ -5,11 +5,17 @@
  * Falls back to email if full_name is not available
  * Falls back to "User" if nothing is available
  */
-export function getUserDisplayName(profile: { full_name?: string | null; email?: string | null } | null): string {
+export function getUserDisplayName(profile: { full_name?: string | null; email?: string | null; user_metadata?: any } | null): string {
   if (!profile) return "User";
   
+  // Check for full_name in profile object (for direct profile objects)
   if (profile.full_name && profile.full_name.trim()) {
     return profile.full_name.trim();
+  }
+  
+  // Check for full_name in user_metadata (for Supabase User objects)
+  if (profile.user_metadata?.full_name && profile.user_metadata.full_name.trim()) {
+    return profile.user_metadata.full_name.trim();
   }
   
   if (profile.email && profile.email.trim()) {
@@ -24,11 +30,11 @@ export function getUserDisplayName(profile: { full_name?: string | null; email?:
 /**
  * Get the user's first name only
  */
-export function getUserFirstName(profile: { full_name?: string | null; email?: string | null } | null): string {
+export function getUserFirstName(profile: { full_name?: string | null; email?: string | null; user_metadata?: any } | null): string {
   const displayName = getUserDisplayName(profile);
   
   // If it's an email-derived name, return as is
-  if (profile?.email && !profile.full_name) {
+  if (profile?.email && !profile.full_name && !profile.user_metadata?.full_name) {
     return displayName;
   }
   
@@ -40,7 +46,7 @@ export function getUserFirstName(profile: { full_name?: string | null; email?: s
 /**
  * Get a personalized greeting for the user
  */
-export function getPersonalizedGreeting(profile: { full_name?: string | null; email?: string | null } | null): string {
+export function getPersonalizedGreeting(profile: { full_name?: string | null; email?: string | null; user_metadata?: any } | null): string {
   const firstName = getUserFirstName(profile);
   return `Good to see you, ${firstName}.`;
 }

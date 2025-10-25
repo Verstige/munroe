@@ -62,7 +62,7 @@ export default function Index() {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Add some mock projects to demonstrate the enhanced project map
+      // Add some mock projects to demonstrate the enhanced business map
       const mockProjects = [
         {
           id: '1',
@@ -279,11 +279,11 @@ export default function Index() {
                     <div className="w-16 h-16 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                       <Sparkles className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Create Your First Business</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Create Your First Project</h3>
                     <p className="text-muted-foreground mb-4">Start building your business ecosystem by creating your first project</p>
                     <Button onClick={() => setIsNewProjectOpen(true)} className="mt-4">
                       <Plus className="w-4 h-4 mr-2" />
-                      Create Business
+                      Create Project
                     </Button>
                   </div>
                 )
@@ -346,11 +346,11 @@ export default function Index() {
                     <div className="w-16 h-16 bg-gradient-to-r from-primary to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                       <Sparkles className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Create Your First Business</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Create Your First Project</h3>
                     <p className="text-muted-foreground mb-4">Start building your business ecosystem by creating your first project</p>
                     <Button onClick={() => setIsNewProjectOpen(true)} className="mt-4">
                       <Plus className="w-4 h-4 mr-2" />
-                      Create Business
+                      Create Project
                     </Button>
                   </div>
                 </div>
@@ -425,19 +425,19 @@ export default function Index() {
       <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
         <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle>Create Your First Business</DialogTitle>
+            <DialogTitle>Create Your First Project</DialogTitle>
             <DialogDescription>
-              Start building your business ecosystem by creating your first business
+              Start building your business ecosystem by creating your first project
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label htmlFor="name">Business Name</Label>
+              <Label htmlFor="name">Project Name</Label>
               <Input
                 id="name"
                 value={newProject.name}
                 onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                placeholder="e.g., My Business"
+                placeholder="e.g., My Project"
                 className="bg-secondary border-border mt-1"
               />
             </div>
@@ -447,7 +447,7 @@ export default function Index() {
                 id="description"
                 value={newProject.description}
                 onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                placeholder="Brief overview of your business..."
+                placeholder="Brief overview of your project..."
                 className="bg-secondary border-border mt-1"
               />
             </div>
@@ -471,7 +471,7 @@ export default function Index() {
               onClick={handleCreateProject} 
               className="w-full gradient-primary text-white shadow-primary"
             >
-              Create Business
+              Create Project
             </Button>
           </div>
         </DialogContent>

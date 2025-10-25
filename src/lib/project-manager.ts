@@ -354,7 +354,7 @@ export class ProjectManager {
     }
   }
 
-  // Get project map layout data
+  // Get business map layout data
   public async getProjectMapLayout(
     userId: string,
     teamId?: string
@@ -459,12 +459,12 @@ export class ProjectManager {
 
       return { nodes, edges };
     } catch (error) {
-      console.error('Error getting project map layout:', error);
+      console.error('Error getting business map layout:', error);
       return { nodes: [], edges: [] };
     }
   }
 
-  // Save project map layout
+  // Save business map layout
   public async saveProjectMapLayout(
     layoutData: {
       nodes: any[];
@@ -486,7 +486,7 @@ export class ProjectManager {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error saving project map layout:', error);
+      console.error('Error saving business map layout:', error);
       return false;
     }
   }

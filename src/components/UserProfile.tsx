@@ -19,12 +19,12 @@ import {
 } from 'lucide-react'
 
 export default function UserProfile() {
-  const { user, profile, signOut, updateProfile } = useAuth()
+  const { user, signOut, updateProfile } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || '',
-    email: profile?.email || ''
+    full_name: user?.user_metadata?.full_name || '',
+    email: user?.email || ''
   })
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -96,22 +96,22 @@ export default function UserProfile() {
           {/* Avatar and Basic Info */}
           <div className="flex items-center gap-4">
             <Avatar className="w-20 h-20">
-              <AvatarImage src={profile?.avatar_url || ''} />
+              <AvatarImage src={user?.user_metadata?.avatar_url || ''} />
               <AvatarFallback className="text-lg">
-                {getInitials(profile?.full_name)}
+                {getInitials(user?.user_metadata?.full_name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <h3 className="text-xl font-semibold">
-                {profile?.full_name || 'No name set'}
+                {user?.user_metadata?.full_name || 'No name set'}
               </h3>
               <p className="text-muted-foreground flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                {profile?.email}
+                {user?.email}
               </p>
               <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
                 <Calendar className="w-4 h-4" />
-                Joined {profile?.created_at && formatDate(profile.created_at)}
+                Joined {user?.created_at && formatDate(user.created_at)}
               </p>
             </div>
             <Button
@@ -188,22 +188,22 @@ export default function UserProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
-                  <p className="text-sm">{profile?.full_name || 'Not set'}</p>
+                  <p className="text-sm">{user?.user_metadata?.full_name || 'Not set'}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                  <p className="text-sm">{profile?.email}</p>
+                  <p className="text-sm">{user?.email}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Member Since</Label>
                   <p className="text-sm">
-                    {profile?.created_at && formatDate(profile.created_at)}
+                    {user?.created_at && formatDate(user.created_at)}
                   </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Last Updated</Label>
                   <p className="text-sm">
-                    {profile?.updated_at && formatDate(profile.updated_at)}
+                    {user?.updated_at && formatDate(user.updated_at)}
                   </p>
                 </div>
               </div>

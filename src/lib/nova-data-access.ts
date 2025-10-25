@@ -340,8 +340,9 @@ export class NovaDataAccess {
 
   // Get all projects data
   private async getProjectsData(): Promise<ProjectData[]> {
-    // Load from localStorage only
-    const savedProjects = localStorage.getItem('userProjects');
+    // Load from localStorage with user-specific key (same as main app)
+    const userId = this.userId || 'anonymous';
+    const savedProjects = localStorage.getItem(`userProjects_${userId}`);
     const projects = savedProjects ? JSON.parse(savedProjects) : [];
     
     // Convert to ProjectData format
@@ -746,11 +747,12 @@ export class NovaDataAccess {
       subtasks: task.subtasks || []
     };
     
-    // Save to localStorage
-    const savedTasks = localStorage.getItem('userTasks');
+    // Save to localStorage with user-specific key
+    const userId = this.userId || 'anonymous';
+    const savedTasks = localStorage.getItem(`userTasks_${userId}`);
     const tasks = savedTasks ? JSON.parse(savedTasks) : [];
     tasks.push(newTask);
-    localStorage.setItem('userTasks', JSON.stringify(tasks));
+    localStorage.setItem(`userTasks_${userId}`, JSON.stringify(tasks));
     
     // Invalidate cache
     this.userData = null;
@@ -775,11 +777,12 @@ export class NovaDataAccess {
       sharedWith: note.sharedWith || []
     };
     
-    // Save to localStorage
-    const savedNotes = localStorage.getItem('userNotes');
+    // Save to localStorage with user-specific key
+    const userId = this.userId || 'anonymous';
+    const savedNotes = localStorage.getItem(`userNotes_${userId}`);
     const notes = savedNotes ? JSON.parse(savedNotes) : [];
     notes.push(newNote);
-    localStorage.setItem('userNotes', JSON.stringify(notes));
+    localStorage.setItem(`userNotes_${userId}`, JSON.stringify(notes));
     
     // Invalidate cache
     this.userData = null;
@@ -811,11 +814,12 @@ export class NovaDataAccess {
       risks: project.risks || []
     };
     
-    // Save to localStorage
-    const savedProjects = localStorage.getItem('userProjects');
+    // Save to localStorage with user-specific key
+    const userId = this.userId || 'anonymous';
+    const savedProjects = localStorage.getItem(`userProjects_${userId}`);
     const projects = savedProjects ? JSON.parse(savedProjects) : [];
     projects.push(newProject);
-    localStorage.setItem('userProjects', JSON.stringify(projects));
+    localStorage.setItem(`userProjects_${userId}`, JSON.stringify(projects));
     
     // Invalidate cache
     this.userData = null;
@@ -826,7 +830,8 @@ export class NovaDataAccess {
   }
   
   async updateTask(taskId: string, updates: Partial<TaskData>): Promise<TaskData | null> {
-    const savedTasks = localStorage.getItem('userTasks');
+    const userId = this.userId || 'anonymous';
+    const savedTasks = localStorage.getItem(`userTasks_${userId}`);
     if (!savedTasks) return null;
     
     const tasks = JSON.parse(savedTasks);
@@ -834,7 +839,7 @@ export class NovaDataAccess {
     if (taskIndex === -1) return null;
     
     tasks[taskIndex] = { ...tasks[taskIndex], ...updates, updatedAt: new Date() };
-    localStorage.setItem('userTasks', JSON.stringify(tasks));
+    localStorage.setItem(`userTasks_${userId}`, JSON.stringify(tasks));
     
     // Invalidate cache
     this.userData = null;
@@ -845,7 +850,8 @@ export class NovaDataAccess {
   }
   
   async updateProject(projectId: string, updates: Partial<ProjectData>): Promise<ProjectData | null> {
-    const savedProjects = localStorage.getItem('userProjects');
+    const userId = this.userId || 'anonymous';
+    const savedProjects = localStorage.getItem(`userProjects_${userId}`);
     if (!savedProjects) return null;
     
     const projects = JSON.parse(savedProjects);
@@ -853,7 +859,7 @@ export class NovaDataAccess {
     if (projectIndex === -1) return null;
     
     projects[projectIndex] = { ...projects[projectIndex], ...updates, updatedAt: new Date() };
-    localStorage.setItem('userProjects', JSON.stringify(projects));
+    localStorage.setItem(`userProjects_${userId}`, JSON.stringify(projects));
     
     // Invalidate cache
     this.userData = null;
@@ -864,7 +870,8 @@ export class NovaDataAccess {
   }
   
   async deleteTask(taskId: string): Promise<boolean> {
-    const savedTasks = localStorage.getItem('userTasks');
+    const userId = this.userId || 'anonymous';
+    const savedTasks = localStorage.getItem(`userTasks_${userId}`);
     if (!savedTasks) return false;
     
     const tasks = JSON.parse(savedTasks);
@@ -872,7 +879,7 @@ export class NovaDataAccess {
     
     if (filtered.length === tasks.length) return false;
     
-    localStorage.setItem('userTasks', JSON.stringify(filtered));
+    localStorage.setItem(`userTasks_${userId}`, JSON.stringify(filtered));
     
     // Invalidate cache
     this.userData = null;

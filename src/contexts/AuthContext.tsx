@@ -190,6 +190,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .eq('id', user.id);
 
     if (error) throw error;
+
+    // Update the user metadata in Supabase Auth
+    const { error: authError } = await supabase.auth.updateUser({
+      data: updates
+    });
+
+    if (authError) {
+      console.error('Error updating user metadata:', authError);
+      // Don't throw here as the profile update was successful
+    }
   };
 
   const value: AuthContextType = {

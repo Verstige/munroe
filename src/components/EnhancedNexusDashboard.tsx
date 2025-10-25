@@ -255,7 +255,10 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Loading dashboard data...');
+      
       const allAgents = await agentManager.getAllAgents();
+      console.log('📊 Loaded agents:', allAgents);
       setAgents(allAgents);
       
       // TODO: Load workflows and connectors
@@ -263,7 +266,31 @@ export default function EnhancedNexusDashboard({ className }: EnhancedNexusDashb
       // const allConnectors = await connectorManager.getAllConnectors();
       
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      console.error('❌ Error loading dashboard data:', error);
+      // Set fallback agents data
+      const fallbackAgents: AIAgent[] = [
+        {
+          id: 'aurora-1',
+          name: 'Aurora',
+          role: 'aurora',
+          description: 'AI Marketing Assistant',
+          systemPrompt: 'You are Aurora, an AI marketing assistant...',
+          model: { provider: 'gemini', model: 'gemini-pro' },
+          memory: { type: 'conversation', maxTokens: 1000 },
+          permissions: { canRead: true, canWrite: true, canExecute: true },
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastActivity: new Date(),
+          metrics: {
+            totalInteractions: 0,
+            successfulTasks: 0,
+            averageResponseTime: 0,
+            uptime: 100
+          }
+        }
+      ];
+      setAgents(fallbackAgents);
     } finally {
       setLoading(false);
     }

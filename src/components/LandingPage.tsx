@@ -174,7 +174,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img 
-              src="https://storage.googleapis.com/msgsndr/555cPqlZh4po0jGHqsnl/media/68f296a880dbce7deda676f5.png"
+              src="/nexus-logo.png"
               alt="Nexus AI Logo"
               className="w-20 h-20 sm:w-24 sm:h-24 object-contain logo-img"
               loading="eager"
@@ -224,7 +224,7 @@ const LandingPage = () => {
               Transform your business operations with intelligent 
               <span className="text-blue-400 font-semibold"> AI agents</span>, 
               <span className="text-blue-500 font-semibold"> workflow automation</span>, and 
-              <span className="text-blue-600 font-semibold"> visual project mapping</span>.
+              <span className="text-blue-600 font-semibold"> visual business mapping</span>.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16 px-4">
@@ -300,7 +300,7 @@ const LandingPage = () => {
       {/* Nova AI Showcase */}
       <NovaShowcase />
 
-      {/* Enhanced Project Map Section */}
+      {/* Enhanced Business Map Section */}
       <section className="relative z-10 px-4 sm:px-6 py-12 sm:py-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 sm:mb-16">
@@ -311,7 +311,7 @@ const LandingPage = () => {
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
               Drag & Drop
               <span className="block bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                Project Mapping
+                Business Mapping
               </span>
             </h2>
             <p className="text-base sm:text-xl text-gray-300 max-w-3xl mx-auto px-4">
@@ -843,7 +843,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center space-x-2 mb-3 sm:mb-4">
             <img 
-              src="https://storage.googleapis.com/msgsndr/555cPqlZh4po0jGHqsnl/media/68f296a880dbce7deda676f5.png"
+              src="/nexus-logo.png"
               alt="Nexus AI Logo"
               className="w-16 h-16 sm:w-20 sm:h-20 object-contain logo-img"
               loading="eager"

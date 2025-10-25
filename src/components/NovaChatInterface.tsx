@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2, Send, Network } from "lucide-react";
+import { Plus, Mic, Volume2, Bot, User, Brain, MessageSquare, TrendingUp, Users, Target, AlertTriangle, Lightbulb, Trash2, Send, Network, LayoutDashboard } from "lucide-react";
+import AppLibrary from "./AppLibrary";
 import { cn } from "@/lib/utils";
 import { generateBusinessAssistantResponse, generateGeneralChatResponse, generateSmartSuggestions, type AssistantMode, type WorkspaceContext, type ConversationMemory } from "@/lib/gemini";
 import { debugEnvironment } from "@/lib/debug-env";
@@ -80,6 +81,8 @@ interface NovaChatInterfaceProps {
   userName?: string;
   workspaceContext?: WorkspaceContext;
   onSendMessage?: (message: string) => void;
+  onAppLibrary?: () => void;
+  onNavigateToTab?: (tab: string) => void;
   className?: string;
 }
 
@@ -87,12 +90,15 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   userName = "User",
   workspaceContext,
   onSendMessage,
+  onAppLibrary,
+  onNavigateToTab,
   className = ""
 }) => {
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [assistantMode, setAssistantMode] = useState<AssistantMode>('chat');
   const [showTeamMode, setShowTeamMode] = useState(false);
+  const [isAppLibraryOpen, setIsAppLibraryOpen] = useState(false);
   
   // Speech recognition
   const {
@@ -430,6 +436,17 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
 
   return (
     <div className={`w-full max-w-4xl mx-auto ${className}`}>
+      {/* App Library Button */}
+      <div className="flex justify-center mb-4 sm:mb-6">
+        <button
+          onClick={() => setIsAppLibraryOpen(true)}
+          className="flex items-center justify-center w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/25 group"
+          title="App Library"
+        >
+          <LayoutDashboard className="w-6 h-6 text-white group-hover:text-blue-300 transition-colors" />
+        </button>
+      </div>
+
       {/* Welcome Message */}
       <div className="text-center mb-4 sm:mb-6">
         <h2 className="text-lg sm:text-2xl font-medium text-white mb-2">
@@ -796,6 +813,19 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
         )}
         </div>
       )}
+
+      {/* App Library Modal */}
+      <AppLibrary
+        isOpen={isAppLibraryOpen}
+        onClose={() => setIsAppLibraryOpen(false)}
+        onNavigateToTab={(tab) => {
+          if (onNavigateToTab) {
+            onNavigateToTab(tab);
+          } else if (onAppLibrary) {
+            onAppLibrary();
+          }
+        }}
+      />
     </div>
   );
 };

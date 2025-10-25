@@ -26,9 +26,11 @@ import WorkspaceCalendar from "@/components/WorkspaceCalendar";
 import ResourcesSection from "@/components/ResourcesSection";
 import { type TeamMember, type ActivityItem } from "@/lib/collaboration";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { getUserDisplayName, getUserFirstName } from "@/lib/user-utils";
 import { useAIAgentIntegration } from "@/hooks/useAIAgentIntegration";
 import { getUserProjects } from "@/lib/projects-service";
+import BusinessSelector from "@/components/BusinessSelector";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +38,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Target, Menu, X, LogOut, Plus, Bot, Map, LayoutDashboard, Settings, Users, Calendar, CheckSquare, Mail, StickyNote, Clock, Sparkles } from "lucide-react";
+import { Search, Target, Menu, X, LogOut, Plus, Bot, Map, LayoutDashboard, Settings, Users, Calendar, CheckSquare, Mail, StickyNote, Clock, Sparkles, Building2 } from "lucide-react";
 import * as ProjectsService from "@/lib/projects-service";
 
 interface Business {
@@ -385,9 +387,11 @@ const mindmapEdges = [
 
 export default function Index() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
   const [activeBusiness, setActiveBusiness] = useState<Business | null>(null);
+  const [isBusinessSelectorOpen, setIsBusinessSelectorOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<any[]>([]);
@@ -561,8 +565,10 @@ export default function Index() {
           console.log(`✅ Loaded ${localProjects.length} projects from Supabase`);
           
           setProjects(localProjects);
+          setBusinesses(localProjects); // Set businesses state
           setFilteredBusinesses(localProjects);
           setHasEverCreatedProject(localProjects.length > 0);
+          console.log('📊 Businesses set in state:', localProjects.length, 'businesses');
           
           // Load mindmap nodes from localStorage (will be migrated to Supabase later)
           const userId = user?.id || 'anonymous';
@@ -592,10 +598,12 @@ export default function Index() {
             console.log('⚠️ Falling back to localStorage projects');
             const projects = JSON.parse(savedProjects);
             setProjects(projects);
+            setBusinesses(projects); // Set businesses state
             setFilteredBusinesses(projects);
             setHasEverCreatedProject(projects.length > 0);
           } else {
             setProjects([]);
+            setBusinesses([]); // Set businesses state
             setFilteredBusinesses([]);
             setHasEverCreatedProject(false);
           }
@@ -608,7 +616,7 @@ export default function Index() {
         }
       } finally {
         if (mounted) {
-          setIsLoading(false);
+      setIsLoading(false);
         }
       }
     };
@@ -737,6 +745,82 @@ export default function Index() {
     setActiveProject(null);
   };
 
+  const handleSearch = (query: string) => {
+    if (query.trim() === '') {
+      setFilteredBusinesses(businesses);
+    } else {
+      const filtered = businesses.filter(business =>
+        business.name.toLowerCase().includes(query.toLowerCase()) ||
+        business.description.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredBusinesses(filtered);
+    }
+  };
+
+  // Mobile menu handlers
+  const onDashboard = () => setShowDashboard(true);
+  const onCalendar = () => setCurrentTab('calendar');
+  const onConnections = () => setCurrentTab('crm');
+  const onTasks = () => setCurrentTab('tasks');
+  const onEmail = () => setCurrentTab('email');
+  const onNotes = () => setCurrentTab('notes');
+  const onTimer = () => setCurrentTab('timer');
+  const onTeam = () => setCurrentTab('team');
+  const handleLogout = () => {
+    signOut();
+    navigate('/');
+  };
+
+  // Business selector handlers
+  const handleSelectBusiness = (business: Business) => {
+    setActiveBusiness(business);
+    setIsBusinessSelectorOpen(false);
+    // Load projects for this business
+    const businessProjects = projects.filter(p => p.businessId === business.id);
+    setProjects(businessProjects);
+  };
+
+  const handleCreateBusiness = async (businessData: Omit<Business, 'id'>) => {
+    try {
+      // Create business in database
+      const newBusiness = await ProjectsService.createProject({
+        name: businessData.name,
+        description: businessData.description,
+        status: businessData.status,
+        priority: businessData.priority,
+        location: businessData.location,
+        website: businessData.website,
+        industry: businessData.industry,
+        business_stage: businessData.businessStage,
+        revenue: businessData.revenue,
+        employees: businessData.employees,
+        products: '',
+        target_audience: '',
+        founded: '',
+        contact_email: '',
+        phone: '',
+        social_media: '',
+        additional_notes: ''
+      });
+
+      if (newBusiness) {
+        console.log('✅ Business created successfully:', newBusiness);
+        setBusinesses(prev => {
+          const updated = [...prev, newBusiness];
+          console.log('📊 Updated businesses list:', updated);
+          return updated;
+        });
+        setActiveBusiness(newBusiness);
+        setIsBusinessSelectorOpen(false); // Close the business selector modal
+        console.log('✅ Business created and added to state:', newBusiness.name);
+      } else {
+        console.error('❌ Business creation failed - no business returned');
+      }
+    } catch (error) {
+      console.error('❌ Error creating business:', error);
+    }
+  };
+
 
 
 
@@ -772,9 +856,9 @@ export default function Index() {
       
       if (!result) {
         console.error('❌ Failed to update project in Supabase');
-        return;
-      }
-      
+      return;
+    }
+
       console.log('✅ Business updated in Supabase');
       
       const updatedBusinesses = businesses.map(b => 
@@ -944,19 +1028,19 @@ export default function Index() {
               </div>
               <span className="font-semibold text-foreground text-sm sm:text-base">Nexus</span>
             </div>
-            <div className="flex items-center gap-2">
-              <ProfileDropdown />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 touch-manipulation active:scale-95"
-              >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
-            </div>
+                <div className="flex items-center gap-2">
+                  <ProfileDropdown />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 touch-manipulation active:scale-95"
+                  >
+                    {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                  </Button>
+                </div>
           </div>
-          
+
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
             <div className="bg-background/95 backdrop-blur-sm border-t border-border/50 p-4">
@@ -968,14 +1052,14 @@ export default function Index() {
                     className="flex-1"
                     onChange={(e) => handleSearch(e.target.value)}
                   />
-                </div>
-                
+          </div>
+
                 {/* AI Business Suite Section */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Bot className="w-4 h-4 text-blue-400" />
                     <span className="text-sm font-semibold text-foreground">AI Business Suite</span>
-                  </div>
+                </div>
                   <div className="grid grid-cols-1 gap-2 pl-4">
                     <Button
                       variant="outline"
@@ -1025,7 +1109,7 @@ export default function Index() {
                       <Settings className="w-4 h-4 mr-2" />
                       My Account
                     </Button>
-                  </div>
+                </div>
                 </div>
 
                 {/* Business Tools Section */}
@@ -1119,7 +1203,7 @@ export default function Index() {
                       <Users className="w-4 h-4 mr-2" />
                       Team
                     </Button>
-                  </div>
+              </div>
                 </div>
 
                 {/* Action Buttons */}
@@ -1137,77 +1221,10 @@ export default function Index() {
                   </Button>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Professional Hero Section */}
-        <div className="relative bg-gradient-to-br from-background via-background/95 to-background/90 border-b border-border/50">
-          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-          <div className="relative px-4 sm:px-6 py-8 sm:py-12 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-              <div className="text-center">
-                {/* Main Heading */}
-                <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6">
-                  <span className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
-                    Your Business
-                  </span>
-                  <br />
-                  <span className="text-foreground">
-                    Intelligence Hub
-                  </span>
-                </h1>
-                
-                {/* Subtitle */}
-                <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4">
-                  Streamline operations, manage projects, and unlock insights with our comprehensive AI-powered business suite. 
-                  Everything you need to scale your business, all in one place.
-                </p>
-                
-                {/* Stats Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto mb-6 sm:mb-8 px-4">
-                  <div className="bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 sm:p-6">
-                    <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-2">
-                      {businesses.length}
-                    </div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">
-                      Total Businesses
-                    </div>
-                  </div>
-                  <div className="bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 sm:p-6">
-                    <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">
-                      {businesses.filter(b => b.status === "Active").length}
-                    </div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">
-                      Active Projects
-                    </div>
-                  </div>
-                  <div className="bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 sm:p-6">
-                    <div className="text-2xl sm:text-3xl font-bold text-purple-400 mb-2">
-                      {projects.filter(p => p.priority === "high").length}
-                    </div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">
-                      High Priority
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Quick Actions */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="w-full sm:w-auto border-border/50 hover:bg-background/50 px-6 sm:px-8 py-3 rounded-xl transition-all duration-300"
-                    onClick={() => setCurrentTab('mindmap')}
-                  >
-                    <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    View Project Map
-                  </Button>
-                </div>
               </div>
-            </div>
+            )}
           </div>
-        </div>
+
         
         <div className="p-3 sm:p-4 md:p-6 lg:p-8">
           {/* Main workspace content */}
@@ -1217,7 +1234,7 @@ export default function Index() {
                 <div className="flex items-start justify-between">
                   <div>
                     {/* Profile dropdown removed */}
-                  </div>
+          </div>
                 </div>
           </div>
 
@@ -1227,11 +1244,11 @@ export default function Index() {
               userName={getUserDisplayName(user)}
               workspaceContext={{
                 projects: filteredBusinesses.map(p => ({
-                  id: p.id,
-                  name: p.name,
+              id: p.id,
+              name: p.name,
                   description: p.description || '',
-                  status: p.status,
-                  priority: p.priority,
+              status: p.status,
+              priority: p.priority,
                   // Enhanced business details for Nova AI
                   location: p.location,
                   website: p.website,
@@ -1263,6 +1280,8 @@ export default function Index() {
                 industry: 'technology' // TODO: Add industry selection
               }}
               onSendMessage={(message) => console.log("Nova AI Message:", message)}
+              onAppLibrary={() => setCurrentTab('mindmap')}
+              onNavigateToTab={(tab) => setCurrentTab(tab as any)}
             />
           </div>
 
@@ -1284,8 +1303,8 @@ export default function Index() {
                 />
               )
             }
-            notesContent={<BuiltInNotes projectId={activeProject?.id} currentUser={getUserDisplayName(user)} teamId={user?.id} />}
-            tasksContent={<ViewableTasks projectId={activeProject?.id} currentUser={getUserDisplayName(user)} teamId={user?.id} />}
+            notesContent={<BuiltInNotes />}
+            tasksContent={<ViewableTasks />}
             teamContent={<TeamManagement />}
             timerContent={
               <TimeTracker 
@@ -1349,8 +1368,8 @@ export default function Index() {
                   onDeleteProject={handleDeleteProject}
                 />
               </div>
-            </div>
-          </div>
+        </div>
+      </div>
 
           {/* Resources Section - below the project overview */}
           <div className="mt-8 animate-fade-in" style={{ animationDelay: "0.35s" }}>
@@ -1370,12 +1389,12 @@ export default function Index() {
               teamMembers={teamMembers}
                 maxHeight="400px"
                 showFilters={true}
-            />
-              </div>
-          </div>
+              />
+            </div>
+            </div>
 
             </>
-      </div>
+          </div>
 
 
 
@@ -1402,6 +1421,16 @@ export default function Index() {
             )}
         </>
       </div>
+
+      {/* Business Selector */}
+      <BusinessSelector
+        isOpen={isBusinessSelectorOpen}
+        onClose={() => setIsBusinessSelectorOpen(false)}
+        onSelectBusiness={handleSelectBusiness}
+        onCreateBusiness={handleCreateBusiness}
+        businesses={businesses}
+        selectedBusiness={activeBusiness}
+      />
     </div>
   );
 }

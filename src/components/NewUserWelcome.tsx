@@ -21,7 +21,7 @@ interface NewUserWelcomeProps {
   userName?: string;
 }
 
-// Mini Project Mapping Animation Component
+// Mini Business Mapping Animation Component
 const MiniProjectMapAnimation = ({ isAnimating }: { isAnimating: boolean }) => {
   const [currentStep, setCurrentStep] = useState(0);
   
@@ -197,7 +197,7 @@ export default function NewUserWelcome({
               <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <Layers className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold">Project Mapping</h3>
+              <h3 className="text-lg font-semibold">Business Mapping</h3>
               <p className="text-sm text-muted-foreground">
                 Visualize your business ecosystem with interactive project maps
               </p>
@@ -217,7 +217,7 @@ export default function NewUserWelcome({
           </Card>
         </div>
         
-        {/* Mini Project Map Preview */}
+        {/* Mini Business Map Preview */}
         {showAnimation && (
           <div className="space-y-4 animate-fade-in">
             <div className="text-center">
