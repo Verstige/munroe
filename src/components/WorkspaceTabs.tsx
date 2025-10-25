@@ -326,35 +326,6 @@ export default function WorkspaceTabs({
         </div>
       </div>
 
-      {/* Quick Navigation Pills */}
-      <div className="flex items-center justify-center mt-6">
-        <div className="flex items-center gap-2 bg-muted/20 p-2 rounded-full">
-          <span className="text-xs text-muted-foreground px-2">Quick Jump:</span>
-          {availableTabs.length > 0 ? availableTabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            
-            return (
-              <button
-                key={`quick-${tab.id}`}
-                onClick={() => handleTabClick(tab.id)}
-                className={cn(
-                  "p-2 rounded-full transition-all duration-200",
-                  "hover:bg-background/50 focus:outline-none",
-                  isActive 
-                    ? "bg-primary text-primary-foreground" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                title={tab.label}
-              >
-                <Icon className="w-4 h-4" />
-              </button>
-            );
-          }) : (
-            <span className="text-xs text-muted-foreground px-2">No quick navigation available</span>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

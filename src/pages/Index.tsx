@@ -24,6 +24,8 @@ import TimeTracker from "@/components/TimeTracker";
 import NovaChatInterface from "@/components/NovaChatInterface";
 import WorkspaceCalendar from "@/components/WorkspaceCalendar";
 import ResourcesSection from "@/components/ResourcesSection";
+import MobileLayout from "@/components/MobileLayout";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { type TeamMember, type ActivityItem } from "@/lib/collaboration";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -388,6 +390,7 @@ const mindmapEdges = [
 export default function Index() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
   const [activeBusiness, setActiveBusiness] = useState<Business | null>(null);
@@ -414,6 +417,10 @@ export default function Index() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dynamicMindmapNodes, setDynamicMindmapNodes] = useState([]);
   const [hasEverCreatedProject, setHasEverCreatedProject] = useState(false);
+  
+  // Mobile-specific state
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [isLayouting, setIsLayouting] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
 
   // Handle new project creation
@@ -771,6 +778,39 @@ export default function Index() {
     navigate('/');
   };
 
+  // Mobile-specific handlers
+  const handleMobileElementCreate = (element: any) => {
+    console.log('Creating mobile element:', element);
+    // TODO: Implement mobile element creation
+    // This would integrate with the existing project creation logic
+  };
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev * 1.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev / 1.2, 0.1));
+  };
+
+  const handleReset = () => {
+    setZoomLevel(1);
+  };
+
+  const handleLayout = async () => {
+    setIsLayouting(true);
+    // TODO: Implement layout logic
+    setTimeout(() => setIsLayouting(false), 2000);
+  };
+
+  const handleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen();
+    }
+  };
+
   // Business selector handlers
   const handleSelectBusiness = (business: Business) => {
     setActiveBusiness(business);
@@ -986,37 +1026,50 @@ export default function Index() {
   (window as any).debugLoadingState = debugLoadingState;
 
   return (
-    <div className="flex h-screen bg-gradient-subtle overflow-hidden">
-      {/* Sidebar */}
-      <div className="hidden lg:block">
-      <Sidebar 
-        onDashboard={() => setShowDashboard(true)}
-        onConnections={() => {
-          setCurrentTab('crm');
-        }}
-        onEmail={() => {
-          setCurrentTab('email');
-        }}
-        onProjectMap={handleProjectMap}
-        onCalendar={() => {
-          setCurrentTab('calendar');
-        }}
-        onNotes={handleNotes}
-        onTasks={handleTasks}
-        onTeam={handleTeam}
-        onTimer={handleTimer}
-        onBookings={() => {
-          setCurrentTab('bookings');
-        }}
-        onNavigateToTab={(tab) => setCurrentTab(tab as WorkspaceTab)}
-        projects={projects}
-        isLoading={isLoading}
-        hasEverCreatedProject={hasEverCreatedProject}
-      />
-      </div>
+    <MobileLayout
+      currentTab={currentTab}
+      onTabChange={setCurrentTab}
+      onElementCreate={handleMobileElementCreate}
+      onZoomIn={handleZoomIn}
+      onZoomOut={handleZoomOut}
+      onReset={handleReset}
+      onLayout={handleLayout}
+      onSearch={() => setIsQuickSwitcherOpen(true)}
+      onFullscreen={handleFullscreen}
+      zoomLevel={zoomLevel}
+      isLayouting={isLayouting}
+    >
+      <div className="flex h-screen bg-gradient-subtle overflow-hidden">
+        {/* Sidebar */}
+        <div className="hidden lg:block">
+        <Sidebar 
+          onDashboard={() => setShowDashboard(true)}
+          onConnections={() => {
+            setCurrentTab('crm');
+          }}
+          onEmail={() => {
+            setCurrentTab('email');
+          }}
+          onProjectMap={handleProjectMap}
+          onCalendar={() => {
+            setCurrentTab('calendar');
+          }}
+          onNotes={handleNotes}
+          onTasks={handleTasks}
+          onTeam={handleTeam}
+          onTimer={handleTimer}
+          onBookings={() => {
+            setCurrentTab('bookings');
+          }}
+          onNavigateToTab={(tab) => setCurrentTab(tab as WorkspaceTab)}
+          projects={projects}
+          isLoading={isLoading}
+          hasEverCreatedProject={hasEverCreatedProject}
+        />
+        </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-gradient-subtle scrollbar-none">
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto bg-gradient-subtle scrollbar-none">
         {/* Main Dashboard Content */}
         <>
             {/* Mobile Header */}
@@ -1109,15 +1162,15 @@ export default function Index() {
                       <Settings className="w-4 h-4 mr-2" />
                       My Account
                     </Button>
-                </div>
-                </div>
+              </div>
+              </div>
 
                 {/* Business Tools Section */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Users className="w-4 h-4 text-green-400" />
                     <span className="text-sm font-semibold text-foreground">Business Tools</span>
-                  </div>
+          </div>
                   <div className="grid grid-cols-2 gap-2 pl-4">
                     <Button
                       variant="outline"
@@ -1203,8 +1256,8 @@ export default function Index() {
                       <Users className="w-4 h-4 mr-2" />
                       Team
                     </Button>
-              </div>
-                </div>
+        </div>
+      </div>
 
                 {/* Action Buttons */}
                 <div className="space-y-2 pt-4 border-t border-border/50">
@@ -1221,8 +1274,8 @@ export default function Index() {
                   </Button>
                 </div>
               </div>
-              </div>
-            )}
+          </div>
+        )}
           </div>
 
         
@@ -1300,11 +1353,18 @@ export default function Index() {
                   selectedProjectId={activeBusiness?.id}
                   projects={businesses}
                   onProjectCreated={refreshBusinesses}
+                  onMobileElementCreate={handleMobileElementCreate}
                 />
               )
             }
             notesContent={<BuiltInNotes />}
-            tasksContent={<ViewableTasks />}
+            tasksContent={
+              <ViewableTasks 
+                projectId={activeProject?.id}
+                currentUser={user?.user_metadata?.full_name || user?.email || "Current User"}
+                teamId={user?.id}
+              />
+            }
             teamContent={<TeamManagement />}
             timerContent={
               <TimeTracker 
@@ -1431,7 +1491,8 @@ export default function Index() {
         businesses={businesses}
         selectedBusiness={activeBusiness}
       />
-    </div>
+      </div>
+    </MobileLayout>
   );
 }
 

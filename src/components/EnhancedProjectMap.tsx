@@ -18,6 +18,9 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { createProject, updateProject, deleteProject, getUserProjects } from '@/lib/projects-service';
+import MobileMindmapAddButton from './MobileMindmapAddButton';
+import MobileMindmapHeader from './MobileMindmapHeader';
+import MobileStickyAddButton from './MobileStickyAddButton';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -384,13 +387,15 @@ interface EnhancedProjectMapProps {
     priority: "low" | "medium" | "high";
   }>;
   onProjectCreated?: () => void;
+  onMobileElementCreate?: (element: any) => void;
 }
 
 function EnhancedProjectMapContent({ 
   onProjectSelect, 
   selectedProjectId, 
   projects = [],
-  onProjectCreated
+  onProjectCreated,
+  onMobileElementCreate
 }: EnhancedProjectMapProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -569,17 +574,25 @@ function EnhancedProjectMapContent({
     [setEdges, nodes]
   );
 
+  // Handle mobile element creation
+  const handleMobileElementCreate = useCallback((element: any) => {
+    if (onMobileElementCreate) {
+      onMobileElementCreate(element);
+    }
+    addNode(element.type, element);
+  }, [onMobileElementCreate]);
+
   const addNode = useCallback(
-    async (nodeType: string) => {
+    async (nodeType: string, elementData?: any) => {
       const newNode: Node = {
         id: `${nodeType}_${Date.now()}`,
         type: nodeType,
         position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
         data: {
-          title: nodeType === 'project' ? 'New Project' : nodeType === 'subproject' ? 'New Project' : nodeType === 'business' ? 'New Business' : `New ${nodeType}`,
-          description: `Description for new ${nodeType}`,
-          status: nodeType === 'project' ? 'planning' : nodeType === 'subproject' ? 'planning' : nodeType === 'business' ? 'planning' : nodeType === 'task' ? 'todo' : 'pending',
-          priority: 'medium',
+          title: elementData?.title || (nodeType === 'project' ? 'New Project' : nodeType === 'subproject' ? 'New Project' : nodeType === 'business' ? 'New Business' : `New ${nodeType}`),
+          description: elementData?.description || `Description for new ${nodeType}`,
+          status: elementData?.status || (nodeType === 'project' ? 'planning' : nodeType === 'subproject' ? 'planning' : nodeType === 'business' ? 'planning' : nodeType === 'task' ? 'todo' : 'pending'),
+          priority: elementData?.priority || 'medium',
           category: 'business',
           progress: 0,
           team: [],
@@ -939,7 +952,28 @@ function EnhancedProjectMapContent({
   // Always show the project map system, even when no projects exist
 
   return (
-    <div className="flex flex-col lg:flex-row h-[500px] sm:h-[600px] lg:h-[600px] bg-chatgpt-card rounded-2xl sm:rounded-3xl shadow-glass border border-border">
+    <div className="flex flex-col h-[500px] sm:h-[600px] lg:h-[600px] bg-chatgpt-card rounded-2xl sm:rounded-3xl shadow-glass border border-border">
+      {/* Mobile Header */}
+      <MobileMindmapHeader
+        onAddElement={() => {
+          // Trigger the mobile add button
+          const addButton = document.querySelector('[data-mobile-add-button]') as HTMLButtonElement;
+          if (addButton) addButton.click();
+        }}
+        onSearch={() => {
+          // Focus on search input
+          const searchInput = document.querySelector('input[placeholder="Search projects..."]') as HTMLInputElement;
+          if (searchInput) searchInput.focus();
+        }}
+        onFilter={() => {
+          // Toggle filter dropdown
+          console.log('Filter clicked');
+        }}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+      
+      <div className="flex flex-col lg:flex-row flex-1">
       {/* Sidebar - Only show in overview mode */}
       {viewMode === 'overview' && (
       <div className="w-full lg:w-80 bg-background/80 backdrop-blur-sm border-r-0 lg:border-r border-b lg:border-b-0 border-border flex flex-col max-h-[200px] sm:max-h-[250px] lg:max-h-none overflow-hidden">
@@ -1505,6 +1539,10 @@ function EnhancedProjectMapContent({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Add Button */}
+      <MobileStickyAddButton onElementAdd={addNode} />
+      </div>
     </div>
   );
 }

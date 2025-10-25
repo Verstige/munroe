@@ -319,12 +319,13 @@ export class WorkspaceNotesService {
 
 export class WorkspaceTasksService {
   static async getTasks(teamId: string, projectId?: string): Promise<WorkspaceTask[]> {
-    // Return immediately from localStorage (no async delay)
-    const savedTasks = localStorage.getItem('viewableTasks');
+    // Return immediately from localStorage (no async delay) with user-specific key
+    const userSpecificKey = `viewableTasks_${teamId}`;
+    const savedTasks = localStorage.getItem(userSpecificKey);
     let localTasks: WorkspaceTask[] = [];
     if (savedTasks) {
       localTasks = JSON.parse(savedTasks);
-      console.log('📝 Loaded tasks from localStorage:', localTasks.length);
+      console.log('📝 Loaded tasks from localStorage for user:', teamId, 'Count:', localTasks.length);
     }
 
     // Try database in background (don't wait for it)
@@ -360,9 +361,9 @@ export class WorkspaceTasksService {
       updatedAt: new Date(task.updated_at),
           }));
           
-          // Update localStorage with database data
-          localStorage.setItem('viewableTasks', JSON.stringify(dbTasks));
-          console.log('✅ Synced tasks from database to localStorage');
+          // Update localStorage with database data using user-specific key
+          localStorage.setItem(userSpecificKey, JSON.stringify(dbTasks));
+          console.log('✅ Synced tasks from database to localStorage for user:', teamId);
         }
       } catch (dbError) {
         console.warn('Database not available, using localStorage:', dbError);
@@ -373,7 +374,7 @@ export class WorkspaceTasksService {
   }
 
   static async createTask(task: Omit<WorkspaceTask, 'id' | 'createdAt' | 'updatedAt'>, teamId: string, userId: string): Promise<WorkspaceTask> {
-    // Always create in localStorage first for immediate response
+    // Always create in localStorage first for immediate response with user-specific key
     const newTask = {
       id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       ...task,
@@ -381,11 +382,12 @@ export class WorkspaceTasksService {
       updatedAt: new Date()
     };
     
-    const savedTasks = localStorage.getItem('viewableTasks');
+    const userSpecificKey = `viewableTasks_${teamId}`;
+    const savedTasks = localStorage.getItem(userSpecificKey);
     const tasks = savedTasks ? JSON.parse(savedTasks) : [];
     tasks.unshift(newTask);
-    localStorage.setItem('viewableTasks', JSON.stringify(tasks));
-    console.log('✅ Task saved to localStorage');
+    localStorage.setItem(userSpecificKey, JSON.stringify(tasks));
+    console.log('✅ Task saved to localStorage for user:', teamId, 'Task ID:', newTask.id);
 
     // Try to save to database in background
     try {
@@ -405,14 +407,14 @@ export class WorkspaceTasksService {
       .single();
 
       if (!error && data) {
-        // Update localStorage with database ID
+        // Update localStorage with database ID using user-specific key
         const updatedTasks = tasks.map(t => 
           t.id === newTask.id 
             ? { ...t, id: data.id, createdAt: new Date(data.created_at), updatedAt: new Date(data.updated_at) }
             : t
         );
-        localStorage.setItem('viewableTasks', JSON.stringify(updatedTasks));
-        console.log('✅ Task synced to database');
+        localStorage.setItem(userSpecificKey, JSON.stringify(updatedTasks));
+        console.log('✅ Task synced to database for user:', teamId);
 
     return {
       id: data.id,
@@ -439,9 +441,10 @@ export class WorkspaceTasksService {
     return newTask;
   }
 
-  static async updateTask(id: string, updates: Partial<WorkspaceTask>): Promise<WorkspaceTask> {
-    // Update localStorage first
-    const savedTasks = localStorage.getItem('viewableTasks');
+  static async updateTask(id: string, updates: Partial<WorkspaceTask>, teamId?: string): Promise<WorkspaceTask> {
+    // Update localStorage first with user-specific key
+    const userSpecificKey = teamId ? `viewableTasks_${teamId}` : 'viewableTasks';
+    const savedTasks = localStorage.getItem(userSpecificKey);
     let tasks: WorkspaceTask[] = [];
     if (savedTasks) {
       tasks = JSON.parse(savedTasks);
@@ -455,8 +458,8 @@ export class WorkspaceTasksService {
         updatedAt: new Date()
       };
       tasks[taskIndex] = updatedTask;
-      localStorage.setItem('viewableTasks', JSON.stringify(tasks));
-      console.log('✅ Task updated in localStorage');
+      localStorage.setItem(userSpecificKey, JSON.stringify(tasks));
+      console.log('✅ Task updated in localStorage for user:', teamId || 'default');
     }
 
     // Try to update in database in background
@@ -493,8 +496,8 @@ export class WorkspaceTasksService {
               }
             : task
         );
-        localStorage.setItem('viewableTasks', JSON.stringify(updatedTasks));
-        console.log('✅ Task synced to database');
+        localStorage.setItem(userSpecificKey, JSON.stringify(updatedTasks));
+        console.log('✅ Task synced to database for user:', teamId || 'default');
 
     return {
       id: data.id,
@@ -527,17 +530,18 @@ export class WorkspaceTasksService {
     throw new Error('Task not found');
   }
 
-  static async deleteTask(id: string): Promise<void> {
-    // Delete from localStorage first
-    const savedTasks = localStorage.getItem('viewableTasks');
+  static async deleteTask(id: string, teamId?: string): Promise<void> {
+    // Delete from localStorage first with user-specific key
+    const userSpecificKey = teamId ? `viewableTasks_${teamId}` : 'viewableTasks';
+    const savedTasks = localStorage.getItem(userSpecificKey);
     let tasks: WorkspaceTask[] = [];
     if (savedTasks) {
       tasks = JSON.parse(savedTasks);
     }
     
     const filteredTasks = tasks.filter(task => task.id !== id);
-    localStorage.setItem('viewableTasks', JSON.stringify(filteredTasks));
-    console.log('✅ Task deleted from localStorage');
+    localStorage.setItem(userSpecificKey, JSON.stringify(filteredTasks));
+    console.log('✅ Task deleted from localStorage for user:', teamId || 'default');
 
     // Try to delete from database in background
     try {
@@ -832,6 +836,337 @@ export class ActivityFeedService {
       id: data.id,
       createdAt: new Date(data.created_at),
     };
+  }
+}
+
+// ============================================
+// CALENDAR EVENTS SERVICE
+// ============================================
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description?: string;
+  eventDate: Date;
+  eventTime?: string;
+  durationMinutes: number;
+  eventType: 'task' | 'meeting' | 'deadline' | 'reminder';
+  priority: 'low' | 'medium' | 'high';
+  attendees: string[];
+  location?: string;
+  projectId?: string;
+  taskId?: string;
+  teamId: string;
+  createdBy: string;
+  visibility: 'public' | 'team' | 'private';
+  isRecurring: boolean;
+  recurrencePattern?: any;
+  reminderMinutes: number[];
+  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  metadata?: any;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class CalendarEventsService {
+  static async getEvents(teamId: string, startDate?: Date, endDate?: Date): Promise<CalendarEvent[]> {
+    // Return immediately from localStorage with user-specific key
+    const userSpecificKey = `calendarEvents_${teamId}`;
+    const savedEvents = localStorage.getItem(userSpecificKey);
+    let localEvents: CalendarEvent[] = [];
+    if (savedEvents) {
+      localEvents = JSON.parse(savedEvents);
+      console.log('📅 Loaded calendar events from localStorage for user:', teamId, 'Count:', localEvents.length);
+    }
+
+    // Try database in background (don't wait for it)
+    setTimeout(async () => {
+      try {
+        let query = supabase
+          .from('calendar_events')
+          .select('*')
+          .eq('team_id', teamId)
+          .order('event_date', { ascending: true });
+
+        if (startDate) {
+          query = query.gte('event_date', startDate.toISOString().split('T')[0]);
+        }
+        if (endDate) {
+          query = query.lte('event_date', endDate.toISOString().split('T')[0]);
+        }
+
+        const { data, error } = await query;
+        if (!error && data) {
+          const dbEvents = data.map(event => ({
+            id: event.id,
+            title: event.title,
+            description: event.description || '',
+            eventDate: new Date(event.event_date),
+            eventTime: event.event_time,
+            durationMinutes: event.duration_minutes || 60,
+            eventType: event.event_type as CalendarEvent['eventType'],
+            priority: event.priority as CalendarEvent['priority'],
+            attendees: event.attendees || [],
+            location: event.location,
+            projectId: event.project_id,
+            taskId: event.task_id,
+            teamId: event.team_id,
+            createdBy: event.created_by,
+            visibility: event.visibility as CalendarEvent['visibility'],
+            isRecurring: event.is_recurring || false,
+            recurrencePattern: event.recurrence_pattern,
+            reminderMinutes: event.reminder_minutes || [],
+            status: event.status as CalendarEvent['status'],
+            metadata: event.metadata || {},
+            createdAt: new Date(event.created_at),
+            updatedAt: new Date(event.updated_at)
+          }));
+          
+          // Update localStorage with database data using user-specific key
+          localStorage.setItem(userSpecificKey, JSON.stringify(dbEvents));
+          console.log('✅ Synced calendar events from database to localStorage for user:', teamId);
+        }
+      } catch (dbError) {
+        console.warn('Database not available, using localStorage:', dbError);
+      }
+    }, 0);
+
+    return localEvents;
+  }
+
+  static async createEvent(event: Omit<CalendarEvent, 'id' | 'createdAt' | 'updatedAt'>, teamId: string, userId: string): Promise<CalendarEvent> {
+    // Always create in localStorage first for immediate response with user-specific key
+    const newEvent = {
+      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...event,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const userSpecificKey = `calendarEvents_${teamId}`;
+    const savedEvents = localStorage.getItem(userSpecificKey);
+    const events = savedEvents ? JSON.parse(savedEvents) : [];
+    events.push(newEvent);
+    localStorage.setItem(userSpecificKey, JSON.stringify(events));
+    console.log('✅ Calendar event saved to localStorage for user:', teamId, 'Event ID:', newEvent.id);
+
+    // Try to save to database in background
+    try {
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .insert({
+          title: event.title,
+          description: event.description,
+          event_date: event.eventDate.toISOString().split('T')[0],
+          event_time: event.eventTime,
+          duration_minutes: event.durationMinutes,
+          event_type: event.eventType,
+          priority: event.priority,
+          attendees: event.attendees,
+          location: event.location,
+          project_id: event.projectId,
+          task_id: event.taskId,
+          team_id: teamId,
+          created_by: userId,
+          visibility: event.visibility,
+          is_recurring: event.isRecurring,
+          recurrence_pattern: event.recurrencePattern,
+          reminder_minutes: event.reminderMinutes,
+          status: event.status,
+          metadata: event.metadata || {}
+        })
+        .select()
+        .single();
+
+      if (!error && data) {
+        // Update localStorage with database ID
+        const updatedEvents = events.map(e => 
+          e.id === newEvent.id 
+            ? { ...e, id: data.id, createdAt: new Date(data.created_at), updatedAt: new Date(data.updated_at) }
+            : e
+        );
+        localStorage.setItem(userSpecificKey, JSON.stringify(updatedEvents));
+        console.log('✅ Calendar event synced to database for user:', teamId);
+
+        return {
+          id: data.id,
+          title: data.title,
+          description: data.description || '',
+          eventDate: new Date(data.event_date),
+          eventTime: data.event_time,
+          durationMinutes: data.duration_minutes || 60,
+          eventType: data.event_type as CalendarEvent['eventType'],
+          priority: data.priority as CalendarEvent['priority'],
+          attendees: data.attendees || [],
+          location: data.location,
+          projectId: data.project_id,
+          taskId: data.task_id,
+          teamId: data.team_id,
+          createdBy: data.created_by,
+          visibility: data.visibility as CalendarEvent['visibility'],
+          isRecurring: data.is_recurring || false,
+          recurrencePattern: data.recurrence_pattern,
+          reminderMinutes: data.reminder_minutes || [],
+          status: data.status as CalendarEvent['status'],
+          metadata: data.metadata || {},
+          createdAt: new Date(data.created_at),
+          updatedAt: new Date(data.updated_at)
+        };
+      }
+    } catch (dbError) {
+      console.warn('Database save failed, using localStorage only:', dbError);
+    }
+
+    return newEvent;
+  }
+
+  static async updateEvent(id: string, updates: Partial<CalendarEvent>, teamId?: string): Promise<CalendarEvent> {
+    // Update localStorage first with user-specific key
+    const userSpecificKey = teamId ? `calendarEvents_${teamId}` : 'calendarEvents';
+    const savedEvents = localStorage.getItem(userSpecificKey);
+    let events: CalendarEvent[] = [];
+    if (savedEvents) {
+      events = JSON.parse(savedEvents);
+    }
+    
+    const eventIndex = events.findIndex(event => event.id === id);
+    if (eventIndex !== -1) {
+      const updatedEvent = {
+        ...events[eventIndex],
+        ...updates,
+        updatedAt: new Date()
+      };
+      events[eventIndex] = updatedEvent;
+      localStorage.setItem(userSpecificKey, JSON.stringify(events));
+      console.log('✅ Calendar event updated in localStorage for user:', teamId || 'default');
+    }
+
+    // Try to update in database in background
+    try {
+      const updateData: any = {};
+      if (updates.title) updateData.title = updates.title;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.eventDate) updateData.event_date = updates.eventDate.toISOString().split('T')[0];
+      if (updates.eventTime !== undefined) updateData.event_time = updates.eventTime;
+      if (updates.durationMinutes !== undefined) updateData.duration_minutes = updates.durationMinutes;
+      if (updates.eventType) updateData.event_type = updates.eventType;
+      if (updates.priority) updateData.priority = updates.priority;
+      if (updates.attendees) updateData.attendees = updates.attendees;
+      if (updates.location !== undefined) updateData.location = updates.location;
+      if (updates.projectId !== undefined) updateData.project_id = updates.projectId;
+      if (updates.taskId !== undefined) updateData.task_id = updates.taskId;
+      if (updates.visibility) updateData.visibility = updates.visibility;
+      if (updates.isRecurring !== undefined) updateData.is_recurring = updates.isRecurring;
+      if (updates.recurrencePattern) updateData.recurrence_pattern = updates.recurrencePattern;
+      if (updates.reminderMinutes) updateData.reminder_minutes = updates.reminderMinutes;
+      if (updates.status) updateData.status = updates.status;
+      if (updates.metadata) updateData.metadata = updates.metadata;
+
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (!error && data) {
+        // Update localStorage with database data
+        const updatedEvents = events.map(event => 
+          event.id === id 
+            ? {
+                ...event,
+                id: data.id,
+                title: data.title,
+                description: data.description || '',
+                eventDate: new Date(data.event_date),
+                eventTime: data.event_time,
+                durationMinutes: data.duration_minutes || 60,
+                eventType: data.event_type as CalendarEvent['eventType'],
+                priority: data.priority as CalendarEvent['priority'],
+                attendees: data.attendees || [],
+                location: data.location,
+                projectId: data.project_id,
+                taskId: data.task_id,
+                teamId: data.team_id,
+                createdBy: data.created_by,
+                visibility: data.visibility as CalendarEvent['visibility'],
+                isRecurring: data.is_recurring || false,
+                recurrencePattern: data.recurrence_pattern,
+                reminderMinutes: data.reminder_minutes || [],
+                status: data.status as CalendarEvent['status'],
+                metadata: data.metadata || {},
+                createdAt: new Date(data.created_at),
+                updatedAt: new Date(data.updated_at)
+              }
+            : event
+        );
+        localStorage.setItem(userSpecificKey, JSON.stringify(updatedEvents));
+        console.log('✅ Calendar event synced to database for user:', teamId || 'default');
+
+        return {
+          id: data.id,
+          title: data.title,
+          description: data.description || '',
+          eventDate: new Date(data.event_date),
+          eventTime: data.event_time,
+          durationMinutes: data.duration_minutes || 60,
+          eventType: data.event_type as CalendarEvent['eventType'],
+          priority: data.priority as CalendarEvent['priority'],
+          attendees: data.attendees || [],
+          location: data.location,
+          projectId: data.project_id,
+          taskId: data.task_id,
+          teamId: data.team_id,
+          createdBy: data.created_by,
+          visibility: data.visibility as CalendarEvent['visibility'],
+          isRecurring: data.is_recurring || false,
+          recurrencePattern: data.recurrence_pattern,
+          reminderMinutes: data.reminder_minutes || [],
+          status: data.status as CalendarEvent['status'],
+          metadata: data.metadata || {},
+          createdAt: new Date(data.created_at),
+          updatedAt: new Date(data.updated_at)
+        };
+      }
+    } catch (dbError) {
+      console.warn('Database update failed, using localStorage only:', dbError);
+    }
+
+    // Return updated event from localStorage
+    const updatedEvent = events.find(event => event.id === id);
+    if (updatedEvent) {
+      return updatedEvent;
+    }
+    
+    throw new Error('Calendar event not found');
+  }
+
+  static async deleteEvent(id: string, teamId?: string): Promise<void> {
+    // Delete from localStorage first with user-specific key
+    const userSpecificKey = teamId ? `calendarEvents_${teamId}` : 'calendarEvents';
+    const savedEvents = localStorage.getItem(userSpecificKey);
+    let events: CalendarEvent[] = [];
+    if (savedEvents) {
+      events = JSON.parse(savedEvents);
+    }
+    
+    const filteredEvents = events.filter(event => event.id !== id);
+    localStorage.setItem(userSpecificKey, JSON.stringify(filteredEvents));
+    console.log('✅ Calendar event deleted from localStorage for user:', teamId || 'default');
+
+    // Try to delete from database in background
+    try {
+      const { error } = await supabase
+        .from('calendar_events')
+        .delete()
+        .eq('id', id);
+
+      if (!error) {
+        console.log('✅ Calendar event deleted from database');
+      }
+    } catch (dbError) {
+      console.warn('Database delete failed, using localStorage only:', dbError);
+    }
   }
 }
 

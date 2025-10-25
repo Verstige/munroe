@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import mobile-specific styles */
+@import './styles/mobile.css';
+
 /* High-quality image rendering for logos */
 .logo-img {
   image-rendering: -webkit-optimize-contrast;

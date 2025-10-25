@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CalendarEventsService, type CalendarEvent } from '@/lib/workspace-persistence';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -25,22 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  description?: string;
-  date: Date;
-  time?: string;
-  duration?: number; // in minutes
-  type: 'task' | 'meeting' | 'deadline' | 'reminder';
-  priority?: 'low' | 'medium' | 'high';
-  attendees?: string[];
-  location?: string;
-  projectId?: string;
-  taskId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Using CalendarEvent from workspace-persistence.ts
 
 interface WorkspaceCalendarProps {
   tasks?: Array<{
@@ -54,12 +41,14 @@ interface WorkspaceCalendarProps {
 }
 
 export default function WorkspaceCalendar({ tasks = [], onEventClick }: WorkspaceCalendarProps) {
+  const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isViewEventOpen, setIsViewEventOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -72,75 +61,108 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
     location: ''
   });
 
-  // Load events from localStorage on component mount
+  // Load events from database
   useEffect(() => {
-    const savedEvents = localStorage.getItem('workspaceCalendarEvents');
-    if (savedEvents) {
-      const parsedEvents = JSON.parse(savedEvents).map((event: any) => ({
-        ...event,
-        date: new Date(event.date),
-        createdAt: new Date(event.createdAt),
-        updatedAt: new Date(event.updatedAt)
-      }));
-      setEvents(parsedEvents);
-    }
-  }, []);
+    const loadEvents = async () => {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        console.log('📅 Loading calendar events...');
+        
+        const teamId = user.id; // Use user ID as team ID for now
+        const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        
+        const calendarEvents = await CalendarEventsService.getEvents(teamId, startDate, endDate);
+        setEvents(calendarEvents);
+        console.log('✅ Calendar events loaded:', calendarEvents.length);
+        
+      } catch (error) {
+        console.error('Error loading calendar events:', error);
+        setEvents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, [user, currentDate]);
 
   // Generate calendar events from tasks and bookings
   useEffect(() => {
-    const loadCalendarEvents = () => {
-      const taskEvents: CalendarEvent[] = tasks
-        .filter(task => task.dueDate)
-        .map(task => ({
-          id: `task-${task.id}`,
-          title: task.title,
-          description: `Task: ${task.title}`,
-          date: new Date(task.dueDate!),
-          type: 'task' as const,
-          priority: task.priority as 'low' | 'medium' | 'high',
-          projectId: task.id,
-          taskId: task.id,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }));
+    const loadCalendarEvents = async () => {
+      if (!user) return;
+      
+      try {
+        const teamId = user.id;
+        const taskEvents: CalendarEvent[] = tasks
+          .filter(task => task.dueDate)
+          .map(task => ({
+            id: `task-${task.id}`,
+            title: task.title,
+            description: `Task: ${task.title}`,
+            eventDate: new Date(task.dueDate!),
+            eventType: 'task' as const,
+            priority: task.priority as 'low' | 'medium' | 'high',
+            attendees: [],
+            teamId: teamId,
+            createdBy: user.id,
+            visibility: 'team' as const,
+            isRecurring: false,
+            reminderMinutes: [],
+            status: 'scheduled' as const,
+            durationMinutes: 60,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }));
 
-      // Load bookings and convert to calendar events
-      const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-      const bookingEvents: CalendarEvent[] = bookings
-        .filter((booking: any) => booking.status !== 'cancelled')
-        .map((booking: any) => ({
-          id: `booking-${booking.id}`,
-          title: `Meeting with ${booking.customerName}`,
-          description: `${booking.meetingType} meeting - ${booking.customerEmail}`,
-          date: new Date(booking.startTime),
-          time: new Date(booking.startTime).toTimeString().slice(0, 5),
-          duration: booking.duration,
-          type: 'meeting' as const,
-          priority: 'medium' as const,
-          attendees: [booking.customerEmail],
-          location: booking.location,
-          projectId: booking.templateId,
-          createdAt: new Date(booking.createdAt),
-          updatedAt: new Date(booking.updatedAt)
-        }));
+        // Load bookings and convert to calendar events
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        const bookingEvents: CalendarEvent[] = bookings
+          .filter((booking: any) => booking.status !== 'cancelled')
+          .map((booking: any) => ({
+            id: `booking-${booking.id}`,
+            title: `Meeting with ${booking.customerName}`,
+            description: `${booking.meetingType} meeting - ${booking.customerEmail}`,
+            eventDate: new Date(booking.startTime),
+            eventTime: new Date(booking.startTime).toTimeString().slice(0, 5),
+            durationMinutes: booking.duration,
+            eventType: 'meeting' as const,
+            priority: 'medium' as const,
+            attendees: [booking.customerEmail],
+            location: booking.location,
+            projectId: booking.templateId,
+            teamId: teamId,
+            createdBy: user.id,
+            visibility: 'team' as const,
+            isRecurring: false,
+            reminderMinutes: [],
+            status: 'scheduled' as const,
+            createdAt: new Date(booking.createdAt),
+            updatedAt: new Date(booking.updatedAt)
+          }));
 
-      // Combine with existing events, avoiding duplicates
-      setEvents(prev => {
-        // Remove old task and booking events
-        const nonTaskBookingEvents = prev.filter(e => 
-          !e.id.startsWith('task-') && !e.id.startsWith('booking-')
-        );
-        
-        // Add new task events
-        const existingTaskIds = prev.filter(e => e.type === 'task').map(e => e.taskId);
-        const newTaskEvents = taskEvents.filter(te => !existingTaskIds.includes(te.taskId));
-        
-        // Add new booking events
-        const existingBookingIds = prev.filter(e => e.id.startsWith('booking-')).map(e => e.id);
-        const newBookingEvents = bookingEvents.filter(be => !existingBookingIds.includes(be.id));
-        
-        return [...nonTaskBookingEvents, ...newTaskEvents, ...newBookingEvents];
-      });
+        // Combine with existing events, avoiding duplicates
+        setEvents(prev => {
+          // Remove old task and booking events
+          const nonTaskBookingEvents = prev.filter(e => 
+            !e.id.startsWith('task-') && !e.id.startsWith('booking-')
+          );
+          
+          // Add new task events
+          const existingTaskIds = prev.filter(e => e.eventType === 'task').map(e => e.taskId);
+          const newTaskEvents = taskEvents.filter(te => !existingTaskIds.includes(te.taskId));
+          
+          // Add new booking events
+          const existingBookingIds = prev.filter(e => e.id.startsWith('booking-')).map(e => e.id);
+          const newBookingEvents = bookingEvents.filter(be => !existingBookingIds.includes(be.id));
+          
+          return [...nonTaskBookingEvents, ...newTaskEvents, ...newBookingEvents];
+        });
+      } catch (error) {
+        console.error('Error loading calendar events from tasks/bookings:', error);
+      }
     };
 
     loadCalendarEvents();
@@ -155,12 +177,9 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
     return () => {
       window.removeEventListener('bookingsUpdated', handleBookingUpdate);
     };
-  }, [tasks]);
+  }, [tasks, user]);
 
-  // Save events to localStorage whenever events change
-  useEffect(() => {
-    localStorage.setItem('workspaceCalendarEvents', JSON.stringify(events));
-  }, [events]);
+  // Events are now managed by the database service
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -187,12 +206,12 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
 
   const getEventsForDate = (date: Date) => {
     return events.filter(event => 
-      event.date.toDateString() === date.toDateString()
+      event.eventDate.toDateString() === date.toDateString()
     );
   };
 
-  const getEventTypeColor = (type: string) => {
-    switch (type) {
+  const getEventTypeColor = (eventType: string) => {
+    switch (eventType) {
       case 'task':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
       case 'meeting':
@@ -219,46 +238,71 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
     }
   };
 
-  const handleAddEvent = () => {
-    if (!newEvent.title.trim()) {
+  const handleAddEvent = async () => {
+    if (!newEvent.title.trim() || !user) {
       alert('Please enter an event title');
       return;
     }
 
-    const event: CalendarEvent = {
-      id: `event-${Date.now()}`,
-      title: newEvent.title,
-      description: newEvent.description,
-      date: newEvent.date,
-      time: newEvent.time,
-      duration: newEvent.duration,
-      type: newEvent.type,
-      priority: newEvent.priority,
-      attendees: newEvent.attendees ? newEvent.attendees.split(',').map(email => email.trim()) : [],
-      location: newEvent.location,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    try {
+      setIsLoading(true);
+      
+      const eventData = {
+        title: newEvent.title,
+        description: newEvent.description,
+        eventDate: newEvent.date,
+        eventTime: newEvent.time,
+        durationMinutes: newEvent.duration,
+        eventType: newEvent.type,
+        priority: newEvent.priority,
+        attendees: newEvent.attendees ? newEvent.attendees.split(',').map(email => email.trim()) : [],
+        location: newEvent.location,
+        teamId: user.id,
+        createdBy: user.id,
+        visibility: 'team' as const,
+        isRecurring: false,
+        reminderMinutes: [],
+        status: 'scheduled' as const
+      };
 
-    setEvents(prev => [...prev, event]);
-    setIsAddEventOpen(false);
-    setNewEvent({
-      title: '',
-      description: '',
-      date: new Date(),
-      time: '',
-      duration: 60,
-      type: 'task',
-      priority: 'medium',
-      attendees: '',
-      location: ''
-    });
+      const createdEvent = await CalendarEventsService.createEvent(eventData, user.id, user.id);
+      
+      setEvents(prev => [...prev, createdEvent]);
+      setIsAddEventOpen(false);
+      setNewEvent({
+        title: '',
+        description: '',
+        date: new Date(),
+        time: '',
+        duration: 60,
+        type: 'task',
+        priority: 'medium',
+        attendees: '',
+        location: ''
+      });
+    } catch (error) {
+      console.error('Error creating calendar event:', error);
+      alert('Failed to create event. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteEvent = (eventId: string) => {
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!user) return;
+    
     if (window.confirm('Are you sure you want to delete this event?')) {
-      setEvents(prev => prev.filter(event => event.id !== eventId));
-      setIsViewEventOpen(false);
+      try {
+        setIsLoading(true);
+        await CalendarEventsService.deleteEvent(eventId, user.id);
+        setEvents(prev => prev.filter(event => event.id !== eventId));
+        setIsViewEventOpen(false);
+      } catch (error) {
+        console.error('Error deleting calendar event:', error);
+        alert('Failed to delete event. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -273,7 +317,7 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
     onEventClick?.(event);
   };
 
-  const formatTime = (timeString: string) => {
+  const formatTime = (timeString?: string) => {
     if (!timeString) return '';
     const [hours, minutes] = timeString.split(':');
     const hour = parseInt(hours);
@@ -376,7 +420,7 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
                         key={event.id}
                         className={cn(
                           "text-xs p-1 rounded cursor-pointer truncate",
-                          getEventTypeColor(event.type)
+                          getEventTypeColor(event.eventType)
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -429,18 +473,18 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
                         <div className="flex items-center gap-2 mb-1">
                           {getEventPriorityIcon(event.priority || 'medium')}
                           <h3 className="font-medium text-foreground">{event.title}</h3>
-                          <Badge className={cn("text-xs", getEventTypeColor(event.type))}>
-                            {event.type}
+                          <Badge className={cn("text-xs", getEventTypeColor(event.eventType))}>
+                            {event.eventType}
                           </Badge>
                         </div>
                         {event.description && (
                           <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
                         )}
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          {event.time && (
+                          {event.eventTime && (
                             <div className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {formatTime(event.time)}
+                              {formatTime(event.eventTime)}
                             </div>
                           )}
                           {event.location && (
@@ -496,6 +540,9 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
         <DialogContent className="max-w-2xl bg-chatgpt-card border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">Add New Event</DialogTitle>
+            <DialogDescription>
+              Create a new calendar event to track your schedule and important dates.
+            </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
@@ -618,10 +665,11 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
               </Button>
               <Button 
                 onClick={handleAddEvent}
+                disabled={isLoading}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Event
+                {isLoading ? 'Creating...' : 'Add Event'}
               </Button>
             </div>
           </div>
@@ -633,6 +681,9 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
         <DialogContent className="max-w-2xl bg-chatgpt-card border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">Event Details</DialogTitle>
+            <DialogDescription>
+              View and manage your calendar event details.
+            </DialogDescription>
           </DialogHeader>
           
           {selectedEvent && (
@@ -645,8 +696,8 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
                   <div className="flex items-center gap-2 mb-2">
                     {getEventPriorityIcon(selectedEvent.priority || 'medium')}
                     <h3 className="text-xl font-semibold text-foreground">{selectedEvent.title}</h3>
-                    <Badge className={cn("text-xs", getEventTypeColor(selectedEvent.type))}>
-                      {selectedEvent.type}
+                    <Badge className={cn("text-xs", getEventTypeColor(selectedEvent.eventType))}>
+                      {selectedEvent.eventType}
                     </Badge>
                   </div>
                   <p className="text-muted-foreground">{selectedEvent.description}</p>
@@ -657,15 +708,15 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
                 <div className="space-y-4">
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Date</Label>
-                    <p className="text-foreground">{selectedEvent.date.toLocaleDateString()}</p>
+                    <p className="text-foreground">{selectedEvent.eventDate.toLocaleDateString()}</p>
                   </div>
                   
-                  {selectedEvent.time && (
+                  {selectedEvent.eventTime && (
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Time</Label>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-muted-foreground" />
-                        <p className="text-foreground">{formatTime(selectedEvent.time)}</p>
+                        <p className="text-foreground">{formatTime(selectedEvent.eventTime)}</p>
                       </div>
                     </div>
                   )}
@@ -690,10 +741,10 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
                     </div>
                   </div>
                   
-                  {selectedEvent.duration && (
+                  {selectedEvent.durationMinutes && (
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
-                      <p className="text-foreground">{selectedEvent.duration} minutes</p>
+                      <p className="text-foreground">{selectedEvent.durationMinutes} minutes</p>
                     </div>
                   )}
                   
@@ -720,10 +771,11 @@ export default function WorkspaceCalendar({ tasks = [], onEventClick }: Workspac
                 <Button 
                   variant="destructive"
                   onClick={() => handleDeleteEvent(selectedEvent.id)}
+                  disabled={isLoading}
                   className="text-red-600 hover:text-red-700 hover:bg-red-500/10"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Event
+                  {isLoading ? 'Deleting...' : 'Delete Event'}
                 </Button>
               </div>
             </div>

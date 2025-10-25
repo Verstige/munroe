@@ -69,7 +69,7 @@ export default function ViewableTasks({ projectId, currentUser = "Current User",
         
         const currentTeamId = teamId || user.id;
         
-        // The service now returns immediately from localStorage
+        // The service now returns immediately from localStorage with user-specific keys
         const tasks = await WorkspaceTasksService.getTasks(currentTeamId, projectId);
         setTasks(tasks);
         console.log('✅ Tasks loaded:', tasks.length);
