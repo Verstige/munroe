@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, ArrowUp, ArrowDown } from "lucide-react";
@@ -77,6 +77,10 @@ export default function QuickSwitcher({ isOpen, onClose, projects, onSelectProje
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-card border-border p-0 max-w-2xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Quick Switcher</DialogTitle>
+          <DialogDescription>Search and select a project to switch to</DialogDescription>
+        </DialogHeader>
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">

@@ -677,10 +677,15 @@ export default function Index() {
   };
 
   const handleProjectMapSelect = (projectId: string) => {
+    console.log('🎯 Project selected from map:', projectId);
+    console.log('📊 Available projects:', projects.length);
     const project = projects.find(p => p.id === projectId);
     if (project) {
+      console.log('✅ Project found:', project.name);
       setSelectedProjectFromMap(project);
       setActiveProject(project); // Also set as active project
+    } else {
+      console.log('❌ Project not found with ID:', projectId);
     }
   };
 

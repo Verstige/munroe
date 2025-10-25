@@ -313,17 +313,18 @@ function EnhancedProjectMapContent({
   const [isEcosystemClosed, setIsEcosystemClosed] = useState(false);
   const [isLayouting, setIsLayouting] = useState(false);
 
-  // Initialize with projects from database
+  // Initialize with projects from props or database
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const userProjects = await getUserProjects();
-        
-        if (userProjects && userProjects.length > 0) {
+        // First try to use projects from props
+        console.log('🔍 EnhancedProjectMap - Projects from props:', projects);
+        if (projects && projects.length > 0) {
           const initialNodes: Node[] = [];
           
-          // Add project nodes from database
-          userProjects.forEach((project, index) => {
+          // Add project nodes from props
+          projects.forEach((project, index) => {
+            console.log(`📝 Creating node for project: ${project.name} (${project.id})`);
             initialNodes.push({
               id: project.id,
               type: 'project',
@@ -346,22 +347,55 @@ function EnhancedProjectMapContent({
           
           setNodes(initialNodes);
           setEdges([]);
-          console.log('✅ Loaded projects from database:', userProjects.length);
+          console.log('✅ Loaded projects from props:', projects.length, 'nodes created:', initialNodes.length);
         } else {
-          // No projects, clear everything
-          setNodes([]);
-          setEdges([]);
-          console.log('ℹ️ No projects found in database');
+          // Fallback to database if no props
+          const userProjects = await getUserProjects();
+          
+          if (userProjects && userProjects.length > 0) {
+            const initialNodes: Node[] = [];
+            
+            // Add project nodes from database
+            userProjects.forEach((project, index) => {
+              initialNodes.push({
+                id: project.id,
+                type: 'project',
+                position: { 
+                  x: 100 + (index % 3) * 300, 
+                  y: 100 + Math.floor(index / 3) * 200 
+                },
+                data: {
+                  title: project.name,
+                  description: project.description,
+                  status: project.status,
+                  priority: project.priority,
+                  category: 'business',
+                  progress: 0,
+                  team: [],
+                  tags: []
+                }
+              });
+            });
+            
+            setNodes(initialNodes);
+            setEdges([]);
+            console.log('✅ Loaded projects from database:', userProjects.length);
+          } else {
+            // No projects, clear everything
+            setNodes([]);
+            setEdges([]);
+            console.log('ℹ️ No projects found');
+          }
         }
       } catch (error) {
-        console.error('❌ Error loading projects from database:', error);
+        console.error('❌ Error loading projects:', error);
         setNodes([]);
         setEdges([]);
       }
     };
     
     loadProjects();
-  }, []);
+  }, [projects]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({
