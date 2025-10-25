@@ -28,6 +28,7 @@ import { type TeamMember, type ActivityItem } from "@/lib/collaboration";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserDisplayName, getUserFirstName } from "@/lib/user-utils";
 import { useAIAgentIntegration } from "@/hooks/useAIAgentIntegration";
+import { getUserProjects } from "@/lib/projects-service";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -676,10 +677,29 @@ export default function Index() {
     }
   };
 
-  const handleProjectMapSelect = (projectId: string) => {
+  // Function to refresh projects from database
+  const refreshProjects = async () => {
+    try {
+      console.log('🔄 Refreshing projects from database...');
+      const userProjects = await getUserProjects();
+      setProjects(userProjects);
+      setFilteredProjects(userProjects);
+      console.log('✅ Projects refreshed:', userProjects.length);
+      return userProjects;
+    } catch (error) {
+      console.error('❌ Error refreshing projects:', error);
+      return [];
+    }
+  };
+
+  const handleProjectMapSelect = async (projectId: string) => {
     console.log('🎯 Project selected from map:', projectId);
-    console.log('📊 Available projects:', projects.length);
-    const project = projects.find(p => p.id === projectId);
+    
+    // 🔥 Refresh projects first to get the latest data
+    const refreshedProjects = await refreshProjects();
+    console.log('📊 Available projects after refresh:', refreshedProjects.length);
+    
+    const project = refreshedProjects.find(p => p.id === projectId);
     if (project) {
       console.log('✅ Project found:', project.name);
       setSelectedProjectFromMap(project);
@@ -1237,6 +1257,7 @@ export default function Index() {
                   onProjectSelect={handleProjectMapSelect}
                   selectedProjectId={selectedProjectFromMap?.id}
                   projects={projects}
+                  onProjectCreated={refreshProjects}
                 />
               )
             }

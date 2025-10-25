@@ -294,12 +294,14 @@ interface EnhancedProjectMapProps {
     status: string;
     priority: "low" | "medium" | "high";
   }>;
+  onProjectCreated?: () => void;
 }
 
 function EnhancedProjectMapContent({ 
   onProjectSelect, 
   selectedProjectId, 
-  projects = [] 
+  projects = [],
+  onProjectCreated
 }: EnhancedProjectMapProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -456,6 +458,11 @@ function EnhancedProjectMapContent({
             newNode.data.title = savedProject.name;
             newNode.data.description = savedProject.description;
             console.log('✅ Project saved to database:', savedProject.id);
+            
+            // 🔥 Notify parent component that a new project was created
+            if (onProjectCreated) {
+              onProjectCreated();
+            }
           } else {
             console.error('❌ Failed to save project to database');
           }
@@ -466,7 +473,7 @@ function EnhancedProjectMapContent({
       
       setNodes((nds) => [...nds, newNode]);
     },
-    [setNodes]
+    [setNodes, onProjectCreated]
   );
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
