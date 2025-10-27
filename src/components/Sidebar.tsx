@@ -6,7 +6,7 @@ import { SidebarStatsSkeleton } from "./LoadingSkeleton";
 import PlatformSearch from "./PlatformSearch";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
 
 interface SidebarProps {
   onNewProject?: () => void;
@@ -48,7 +48,7 @@ export default function Sidebar({
   isLoading = false, 
   hasEverCreatedProject = false
 }: SidebarProps) {
-  const { signOut } = useAuth();
+  const { logout } = useFirebaseAuth();
   const navigate = useNavigate();
   const [isMinimized, setIsMinimized] = useState(false);
   const [isBusinessToolsMinimized, setIsBusinessToolsMinimized] = useState(false);
@@ -313,7 +313,7 @@ export default function Sidebar({
             console.log('🔴 Sign out button clicked');
             try {
               console.log('🔄 Calling signOut...');
-              await signOut();
+              await logout();
               console.log('✅ Sign out successful');
               
               // Clear any local storage data

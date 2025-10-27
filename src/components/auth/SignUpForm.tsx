@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, CheckCircle, AlertCircle, Eye, EyeOff, Sparkles, FolderPlus, Users, Brain, Zap, Target, ArrowRight } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useFirebaseAuth } from '@/contexts/FirebaseAuthContext'
 
 interface SignUpFormProps {
   onSuccess?: () => void
@@ -14,7 +14,7 @@ interface SignUpFormProps {
 }
 
 export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
-  const { signUp } = useAuth()
+  const { signUp } = useFirebaseAuth()
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',

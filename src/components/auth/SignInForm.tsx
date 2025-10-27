@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useFirebaseAuth } from '@/contexts/FirebaseAuthContext'
 
 interface SignInFormProps {
   onSwitchToSignUp?: () => void
@@ -13,7 +13,7 @@ interface SignInFormProps {
 }
 
 export default function SignInForm({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) {
-  const { signIn } = useAuth()
+  const { signIn } = useFirebaseAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: ''

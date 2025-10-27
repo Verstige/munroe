@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarEventsService, type CalendarEvent } from '@/lib/workspace-persistence';
-import { useAuth } from '@/contexts/AuthContext';
+import { useFirebaseAuth } from '@/contexts/FirebaseAuthContext';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -41,7 +41,7 @@ interface WorkspaceCalendarProps {
 }
 
 export default function WorkspaceCalendar({ tasks = [], onEventClick }: WorkspaceCalendarProps) {
-  const { user } = useAuth();
+  const { user } = useFirebaseAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);

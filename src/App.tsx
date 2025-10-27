@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { FirebaseAuthProvider } from "@/contexts/FirebaseAuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./components/LandingPage";
@@ -44,55 +43,53 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <FirebaseAuthProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter
-              future={{
-                v7_startTransition: true,
-                v7_relativeSplatPath: true
-              }}
-            >
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/workspace" element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              } />
-              <Route path="/nexus" element={
-                <ProtectedRoute>
-                  <EnhancedNexusDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/crm" element={
-                <ProtectedRoute>
-                  <CRMDashboard />
-                </ProtectedRoute>
-              } />
-          <Route path="/email" element={
-            <ProtectedRoute>
-              <EmailDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <SettingsDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/auth/gmail/callback" element={<GmailCallback />} />
-          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/book/:templateId" element={<PublicBookingPage />} />
-              <Route path="/demo" element={<DemoWorkspace />} />
-              <Route path="/nexus-demo" element={<NexusDemo />} />
-              <Route path="/home" element={<LandingPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}
+          >
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/workspace" element={
+              <ProtectedRoute>
+                <Index />
+              </ProtectedRoute>
+            } />
+            <Route path="/nexus" element={
+              <ProtectedRoute>
+                <EnhancedNexusDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/crm" element={
+              <ProtectedRoute>
+                <CRMDashboard />
+              </ProtectedRoute>
+            } />
+        <Route path="/email" element={
+          <ProtectedRoute>
+            <EmailDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <SettingsDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/auth/gmail/callback" element={<GmailCallback />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/book/:templateId" element={<PublicBookingPage />} />
+            <Route path="/demo" element={<DemoWorkspace />} />
+            <Route path="/nexus-demo" element={<NexusDemo />} />
+            <Route path="/home" element={<LandingPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
     </FirebaseAuthProvider>
   </QueryClientProvider>
   );

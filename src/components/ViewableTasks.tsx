@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WorkspaceTasksService, MigrationService, type WorkspaceTask } from "@/lib/workspace-persistence";
-import { useAuth } from "@/contexts/AuthContext";
+import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
 import { toast } from "@/hooks/use-toast";
 
 interface ViewableTasksProps {
@@ -36,7 +36,7 @@ interface ViewableTasksProps {
 }
 
 export default function ViewableTasks({ projectId, currentUser = "Current User", teamId }: ViewableTasksProps) {
-  const { user } = useAuth();
+  const { user } = useFirebaseAuth();
   const [tasks, setTasks] = useState<WorkspaceTask[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<WorkspaceTask[]>([]);
   const [searchQuery, setSearchQuery] = useState("");

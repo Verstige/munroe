@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useFirebaseAuth } from '@/contexts/FirebaseAuthContext'
 import AuthPage from '@/pages/AuthPage'
 
 interface ProtectedRouteProps {
@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading } = useAuth()
+  const { user, loading } = useFirebaseAuth()
 
   if (loading) {
     return (

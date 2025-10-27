@@ -23,11 +23,12 @@ import WorkspaceCalendar from "@/components/WorkspaceCalendar";
 import MobileLayout from "@/components/MobileLayout";
 import FloatingAppDrawer from "@/components/FloatingAppDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/contexts/AuthContext";
+import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
 import { useNavigate } from "react-router-dom";
 import { getUserDisplayName, getUserFirstName } from "@/lib/user-utils";
 import { useAIAgentIntegration } from "@/hooks/useAIAgentIntegration";
 import { getUserProjects } from "@/lib/projects-service";
+import { runDataPersistenceTest } from "@/lib/test-data-persistence";
 import BusinessSelector from "@/components/BusinessSelector";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -384,9 +385,16 @@ const mindmapEdges = [
 ];
 
 export default function Index() {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useFirebaseAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  // Test data persistence for julylan@vitatechhealing.com
+  useEffect(() => {
+    if (user) {
+      runDataPersistenceTest(user);
+    }
+  }, [user]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
   const [activeBusiness, setActiveBusiness] = useState<Business | null>(null);
@@ -449,7 +457,7 @@ export default function Index() {
     setDynamicMindmapNodes(updatedNodes);
     
     // Save to localStorage with user-specific keys
-    const userId = user?.id || 'anonymous';
+    const userId = user?.uid || 'anonymous';
     localStorage.setItem(`userProjects_${userId}`, JSON.stringify(updatedProjects));
     localStorage.setItem(`userMindmapNodes_${userId}`, JSON.stringify(updatedNodes));
     localStorage.setItem(`hasEverCreatedProject_${userId}`, 'true'); // Mark that user has created a project
@@ -570,7 +578,7 @@ export default function Index() {
           console.log('📊 Businesses set in state:', localProjects.length, 'businesses');
           
           // Load mindmap nodes from localStorage (will be migrated to Supabase later)
-          const userId = user?.id || 'anonymous';
+          const userId = user?.uid || 'anonymous';
           const savedMindmapNodes = localStorage.getItem(`userMindmapNodes_${userId}`);
           if (savedMindmapNodes) {
             setDynamicMindmapNodes(JSON.parse(savedMindmapNodes));
@@ -588,7 +596,7 @@ export default function Index() {
         console.error('❌ Error loading projects from Supabase:', error);
         
         // Fallback to localStorage if Supabase fails
-        const userId = user?.id || 'anonymous';
+        const userId = user?.uid || 'anonymous';
         const savedProjects = localStorage.getItem(`userProjects_${userId}`);
         const savedMindmapNodes = localStorage.getItem(`userMindmapNodes_${userId}`);
         
@@ -634,12 +642,12 @@ export default function Index() {
       mounted = false;
       clearTimeout(timeout);
     };
-  }, [user?.id]); // Add user.id as dependency
+  }, [user?.uid]); // Add user.id as dependency
 
   // Load active project from localStorage on mount
   useEffect(() => {
-    if (projects.length > 0 && user?.id) {
-      const userId = user.id;
+    if (projects.length > 0 && user?.uid) {
+      const userId = user.uid;
       const savedActiveProjectId = localStorage.getItem(`activeProjectId_${userId}`);
       if (savedActiveProjectId) {
         const savedProject = projects.find(p => p.id === savedActiveProjectId);
@@ -648,18 +656,18 @@ export default function Index() {
         }
       }
     }
-  }, [projects, user?.id]);
+  }, [projects, user?.uid]);
 
   // Save active project to localStorage when it changes
   useEffect(() => {
-    if (activeProject && user?.id) {
-      const userId = user.id;
+    if (activeProject && user?.uid) {
+      const userId = user.uid;
       localStorage.setItem(`activeProjectId_${userId}`, activeProject.id);
-    } else if (!activeProject && user?.id) {
-      const userId = user.id;
+    } else if (!activeProject && user?.uid) {
+      const userId = user.uid;
       localStorage.removeItem(`activeProjectId_${userId}`);
     }
-  }, [activeProject, user?.id]);
+  }, [activeProject, user?.uid]);
 
   // Load tasks from localStorage
   useEffect(() => {
@@ -766,7 +774,7 @@ export default function Index() {
   const onTimer = () => setCurrentTab('timer');
   const onTeam = () => setCurrentTab('team');
   const handleLogout = () => {
-    signOut();
+    logout();
     navigate('/');
   };
 
@@ -901,7 +909,7 @@ export default function Index() {
       setActiveBusiness(updatedBusiness);
       
       // Also save to localStorage as backup
-      const userId = user?.id || 'anonymous';
+      const userId = user?.uid || 'anonymous';
       localStorage.setItem(`userBusinesses_${userId}`, JSON.stringify(updatedBusinesses));
     } catch (error) {
       console.error('❌ Error updating project:', error);
@@ -940,7 +948,7 @@ export default function Index() {
       }
       
       // Also save to localStorage as backup
-      const userId = user?.id || 'anonymous';
+      const userId = user?.uid || 'anonymous';
       localStorage.setItem(`userProjects_${userId}`, JSON.stringify(updatedProjects));
     } catch (error) {
       console.error('❌ Error deleting project:', error);
@@ -985,7 +993,7 @@ export default function Index() {
 
   // Debug function to clear localStorage (can be called from console)
   const clearUserData = () => {
-    const userId = user?.id || 'anonymous';
+    const userId = user?.uid || 'anonymous';
     localStorage.removeItem(`userProjects_${userId}`);
     localStorage.removeItem(`userMindmapNodes_${userId}`);
     localStorage.removeItem(`activeProjectId_${userId}`);
@@ -1005,7 +1013,7 @@ export default function Index() {
     console.log('filteredBusinesses.length:', filteredBusinesses.length);
     console.log('dynamicMindmapNodes.length:', dynamicMindmapNodes.length);
     console.log('activeProject:', activeProject);
-    const userId = user?.id || 'anonymous';
+    const userId = user?.uid || 'anonymous';
     console.log('localStorage userProjects:', localStorage.getItem(`userProjects_${userId}`) ? 'exists' : 'missing');
     console.log('localStorage userMindmapNodes:', localStorage.getItem(`userMindmapNodes_${userId}`) ? 'exists' : 'missing');
     console.log('localStorage activeProjectId:', localStorage.getItem(`activeProjectId_${userId}`));
@@ -1163,14 +1171,14 @@ export default function Index() {
             tasksContent={
               <ViewableTasks 
                 projectId={activeProject?.id}
-                currentUser={user?.user_metadata?.full_name || user?.email || "Current User"}
-                teamId={user?.id}
+                currentUser={user?.displayName || user?.email || "Current User"}
+                teamId={user?.uid}
               />
             }
             teamContent={<TeamManagement />}
             timerContent={
               <TimeTracker 
-                userId={user?.id || "current-user"} 
+                userId={user?.uid || "current-user"} 
                 projects={projects.map(p => ({
                   id: p.id,
                   name: p.name,

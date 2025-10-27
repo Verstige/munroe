@@ -19,7 +19,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useFirebaseAuth } from '@/contexts/FirebaseAuthContext';
 
 interface ProfileDropdownProps {
   className?: string;
@@ -28,11 +28,11 @@ interface ProfileDropdownProps {
 export default function ProfileDropdown({ className = "" }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, logout } = useFirebaseAuth();
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await logout();
       navigate('/home');
     } catch (error) {
       console.error('Error signing out:', error);

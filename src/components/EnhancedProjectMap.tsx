@@ -20,8 +20,8 @@ import 'reactflow/dist/style.css';
 import { createProject, updateProject, deleteProject, getUserProjects } from '@/lib/projects-service';
 import MobileMindmapHeader from './MobileMindmapHeader';
 import { 
-  BusinessMapNodesService, 
-  BusinessMapEdgesService, 
+  BusinessMapNodesService,
+  BusinessMapEdgesService,
   BusinessMapLayoutService,
   BusinessMapNode,
   BusinessMapEdge 
@@ -573,7 +573,7 @@ function EnhancedProjectMapContent({
     };
 
     loadFirebaseData();
-  }, [user, userId, teamId]);
+  }, [user]);
 
   // Subscribe to real-time updates for nodes
   useEffect(() => {
@@ -621,7 +621,7 @@ function EnhancedProjectMapContent({
       unsubscribeNodes();
       unsubscribeEdges();
     };
-  }, [user, userId, teamId]);
+  }, [user]);
 
   // Initialize with projects from props or database (only if no saved nodes exist)
   useEffect(() => {
@@ -846,7 +846,7 @@ function EnhancedProjectMapContent({
       };
 
       try {
-        // Save to Firebase first
+        // Save to Firebase using bridge
         const firebaseNodeData = {
           userId,
           teamId,
@@ -917,7 +917,7 @@ function EnhancedProjectMapContent({
     } catch (error) {
       console.error('❌ Error clearing Firebase data:', error);
     }
-  }, [user, userId, teamId, setNodes, setEdges]);
+  }, [user, setNodes, setEdges]);
 
   // Make clear function available globally for debugging
   useEffect(() => {
