@@ -12,11 +12,12 @@ import {
   UserPlus,
   Mail,
   Calendar,
-  CalendarDays
+  CalendarDays,
+  LayoutGrid
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type WorkspaceTab = "mindmap" | "notes" | "tasks" | "team" | "timer" | "crm" | "email" | "calendar" | "bookings";
+export type WorkspaceTab = "mindmap" | "notes" | "tasks" | "team" | "timer" | "crm" | "email" | "calendar" | "bookings" | "projects";
 
 interface WorkspaceTabsProps {
   activeTab: WorkspaceTab;
@@ -34,6 +35,7 @@ interface WorkspaceTabsProps {
   emailContent: React.ReactNode;
   calendarContent: React.ReactNode;
   bookingsContent: React.ReactNode;
+  projectsContent?: React.ReactNode;
   // Notification counts
   taskNotifications?: number;
   teamNotifications?: number;
@@ -95,6 +97,12 @@ const tabConfig = [
     label: "Bookings",
     icon: CalendarDays,
     description: "Appointment booking management"
+  },
+  {
+    id: "projects" as WorkspaceTab,
+    label: "Projects",
+    icon: LayoutGrid,
+    description: "Project management with Kanban & Table views"
   }
 ];
 
@@ -113,6 +121,7 @@ export default function WorkspaceTabs({
   emailContent,
   calendarContent,
   bookingsContent,
+  projectsContent,
   taskNotifications = 0,
   teamNotifications = 0,
   timerNotifications = 0,
@@ -307,6 +316,12 @@ export default function WorkspaceTabs({
           {activeTab === "bookings" && (
             <div className="animate-fade-in">
               {bookingsContent}
+            </div>
+          )}
+          
+          {activeTab === "projects" && (
+            <div className="animate-fade-in h-full">
+              {projectsContent}
             </div>
           )}
           

@@ -98,22 +98,36 @@ export class FirebaseWorkspaceTasksService {
     return collection(db, 'tasks');
   }
 
+  // Helper function to remove undefined values from object
+  private static cleanDataForFirebase(data: any): any {
+    const cleaned: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined && value !== null) {
+        cleaned[key] = value;
+      } else if (value === null) {
+        // Keep null values (Firebase accepts null)
+        cleaned[key] = null;
+      }
+      // Skip undefined values
+    }
+    return cleaned;
+  }
+
   static async getTasks(userId: string, teamId: string, projectId?: string): Promise<FirebaseWorkspaceTask[]> {
     try {
       console.log('🔄 FirebaseWorkspaceTasksService.getTasks called with:', { userId, teamId, projectId });
       
+      // Remove orderBy to avoid composite index requirement - we'll sort client-side
       let q = query(
         this.getCollection(userId, teamId),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', userId)
       );
 
       if (projectId) {
         q = query(
           this.getCollection(userId, teamId),
           where('userId', '==', userId),
-          where('projectId', '==', projectId),
-          orderBy('createdAt', 'desc')
+          where('projectId', '==', projectId)
         );
       }
 
@@ -143,6 +157,13 @@ export class FirebaseWorkspaceTasksService {
         } as FirebaseWorkspaceTask;
       });
       
+      // Sort client-side by createdAt descending (newest first)
+      tasks.sort((a, b) => {
+        const dateA = a.createdAt.getTime();
+        const dateB = b.createdAt.getTime();
+        return dateB - dateA; // Descending order
+      });
+      
       console.log('✅ Returning tasks:', tasks.length);
       return tasks;
     } catch (error) {
@@ -163,7 +184,7 @@ export class FirebaseWorkspaceTasksService {
         status: task.status,
         priority: task.priority,
         assignee: task.assignee,
-        assigneeAvatar: task.assigneeAvatar,
+        assigneeAvatar: task.assigneeAvatar || null, // Convert undefined to null
         dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : null,
         startDate: task.startDate ? Timestamp.fromDate(task.startDate) : null,
         tags: task.tags || [],
@@ -174,10 +195,13 @@ export class FirebaseWorkspaceTasksService {
         updatedAt: serverTimestamp()
       };
 
-      console.log('🔄 Task data to save:', firebaseTaskData);
+      // Clean the data to remove undefined values
+      const cleanedTaskData = this.cleanDataForFirebase(firebaseTaskData);
+
+      console.log('🔄 Task data to save:', cleanedTaskData);
       console.log('🔄 Collection path: tasks');
       
-      const docRef = await addDoc(this.getCollection(userId, teamId), firebaseTaskData);
+      const docRef = await addDoc(this.getCollection(userId, teamId), cleanedTaskData);
       console.log('✅ Task document created with ID:', docRef.id);
 
       return {
@@ -219,17 +243,25 @@ export class FirebaseWorkspaceTasksService {
         updatedAt: serverTimestamp()
       };
 
-      // Convert dates to Firebase timestamps
-      if (updates.dueDate) {
-        firebaseUpdates.dueDate = Timestamp.fromDate(updates.dueDate);
+      // Convert dates to Firebase timestamps (handle undefined)
+      if (updates.dueDate !== undefined) {
+        firebaseUpdates.dueDate = updates.dueDate ? Timestamp.fromDate(updates.dueDate) : null;
       }
-      if (updates.startDate) {
-        firebaseUpdates.startDate = Timestamp.fromDate(updates.startDate);
+      if (updates.startDate !== undefined) {
+        firebaseUpdates.startDate = updates.startDate ? Timestamp.fromDate(updates.startDate) : null;
       }
+      
+      // Convert undefined assigneeAvatar to null if it's being updated
+      if (updates.assigneeAvatar !== undefined) {
+        firebaseUpdates.assigneeAvatar = updates.assigneeAvatar || null;
+      }
+
+      // Clean the data to remove undefined values
+      const cleanedUpdates = this.cleanDataForFirebase(firebaseUpdates);
 
       const taskRef = doc(db, 'tasks', id);
       
-      await updateDoc(taskRef, firebaseUpdates);
+      await updateDoc(taskRef, cleanedUpdates);
       console.log('✅ Task updated successfully');
 
       // Get the updated task to return
@@ -269,10 +301,10 @@ export class FirebaseWorkspaceTasksService {
 
   // Subscribe to tasks for real-time updates
   static subscribeToTasks(userId: string, teamId: string, callback: (tasks: FirebaseWorkspaceTask[]) => void): () => void {
+    // Remove orderBy to avoid composite index requirement - we'll sort client-side
     const q = query(
       this.getCollection(userId, teamId),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
 
     return onSnapshot(q, (querySnapshot) => {
@@ -296,6 +328,14 @@ export class FirebaseWorkspaceTasksService {
           updatedAt: data.updatedAt?.toDate() || new Date()
         };
       });
+      
+      // Sort client-side by createdAt descending (newest first)
+      tasks.sort((a, b) => {
+        const dateA = a.createdAt.getTime();
+        const dateB = b.createdAt.getTime();
+        return dateB - dateA; // Descending order
+      });
+      
       callback(tasks);
     });
   }

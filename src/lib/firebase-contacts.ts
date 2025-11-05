@@ -7,7 +7,6 @@ import {
   getDocs, 
   query, 
   where, 
-  orderBy, 
   serverTimestamp,
   doc,
   getDoc
@@ -53,10 +52,10 @@ export class FirebaseContactsService {
     try {
       console.log('🔄 FirebaseContactsService.getContacts called with:', { userId, teamId });
       
+      // Remove orderBy to avoid composite index requirement - we'll sort client-side
       const q = query(
         this.getCollection(userId, teamId),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', userId)
       );
 
       console.log('🔄 Querying contacts collection');
@@ -72,6 +71,13 @@ export class FirebaseContactsService {
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date()
         } as Contact;
+      });
+      
+      // Sort client-side by createdAt descending (newest first)
+      contacts.sort((a, b) => {
+        const dateA = a.createdAt.getTime();
+        const dateB = b.createdAt.getTime();
+        return dateB - dateA; // Descending order
       });
       
       console.log('✅ Returning contacts:', contacts.length);

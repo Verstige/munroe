@@ -64,6 +64,7 @@ export interface GmailSyncResult {
 class GmailIntegrationService {
   private authConfig: GmailAuthConfig | null = null;
   private connectedAccounts: Map<string, GmailAccount> = new Map();
+  private currentUserId: string | null = null;
 
   constructor() {
     this.loadAuthConfig();
@@ -76,10 +77,60 @@ class GmailIntegrationService {
     this.saveAuthConfig();
   }
 
+  // Check if service is initialized
+  isInitialized(): boolean {
+    return this.authConfig !== null && 
+           this.authConfig.clientId !== null && 
+           this.authConfig.clientId.trim() !== '';
+  }
+
+  // Set current user ID for per-user configs
+  setCurrentUser(userId: string | null): void {
+    this.currentUserId = userId;
+  }
+
+  // Initialize with user-specific config from Firebase
+  async initializeWithUserConfig(userId: string): Promise<void> {
+    try {
+      // Dynamic import to avoid circular dependencies
+      const { FirebaseGmailConfigService } = await import('./firebase-gmail-config');
+      const userConfig = await FirebaseGmailConfigService.getConfig(userId);
+      
+      if (userConfig && userConfig.clientId && userConfig.clientId.trim() !== '') {
+        this.initialize({
+          clientId: userConfig.clientId,
+          clientSecret: userConfig.clientSecret,
+          redirectUri: userConfig.redirectUri || `${window.location.origin}/auth/gmail/callback`,
+          scopes: [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.send',
+            'https://www.googleapis.com/auth/gmail.modify',
+            'https://www.googleapis.com/auth/gmail.labels'
+          ]
+        });
+        this.currentUserId = userId;
+        console.log('✅ Initialized Gmail service with user config');
+      } else {
+        console.log('ℹ️ No user config found, will use global config if available');
+      }
+    } catch (error) {
+      console.error('❌ Error initializing with user config:', error);
+      throw error;
+    }
+  }
+
   // Get Gmail OAuth authorization URL
   getAuthUrl(accountId?: string): string {
     if (!this.authConfig) {
-      throw new Error('Gmail integration not initialized');
+      throw new Error('Gmail integration not initialized. Please configure Gmail OAuth credentials in settings.');
+    }
+
+    if (!this.authConfig.clientId || this.authConfig.clientId.trim() === '') {
+      throw new Error('Gmail Client ID is not configured. Please set your Gmail OAuth credentials in settings.');
+    }
+
+    if (!this.authConfig.redirectUri || this.authConfig.redirectUri.trim() === '') {
+      throw new Error('Gmail Redirect URI is not configured.');
     }
 
     const params = new URLSearchParams({
@@ -503,15 +554,18 @@ class GmailIntegrationService {
 // Export singleton instance
 export const gmailService = new GmailIntegrationService();
 
-// Initialize with default configuration
-gmailService.initialize({
-  clientId: import.meta.env.VITE_GMAIL_CLIENT_ID || '',
-  clientSecret: import.meta.env.VITE_GMAIL_CLIENT_SECRET || '',
-  redirectUri: `${window.location.origin}/auth/gmail/callback`,
-  scopes: [
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/gmail.send',
-    'https://www.googleapis.com/auth/gmail.modify',
-    'https://www.googleapis.com/auth/gmail.labels'
-  ]
-});
+// Initialize with default configuration (global fallback)
+// This will be used if no user-specific config is found
+// The component will handle loading user-specific configs
+const gmailClientId = import.meta.env.VITE_GMAIL_CLIENT_ID;
+const gmailClientSecret = import.meta.env.VITE_GMAIL_CLIENT_SECRET;
+
+// Note: Global config initialization is now handled by the component
+// This allows per-user configs to take precedence
+if (gmailClientId && gmailClientId.trim() !== '') {
+  // Store for potential use, but don't auto-initialize
+  // The component will initialize with user config or global config as needed
+  console.log('ℹ️ Global Gmail OAuth credentials detected. Will use as fallback if no user config is set.');
+} else {
+  console.warn('⚠️ Global Gmail integration not configured: VITE_GMAIL_CLIENT_ID is not set. Users can set their own credentials in settings.');
+}

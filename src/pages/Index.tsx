@@ -17,6 +17,7 @@ import BuiltInNotes from "@/components/BuiltInNotes";
 import ViewableTasks from "@/components/ViewableTasks";
 import BookingManager from "@/components/BookingManager";
 import TeamManagement from "@/components/TeamManagement";
+import ProjectManagement from "@/components/ProjectManagement";
 import TimeTracker from "@/components/TimeTracker";
 import NovaChatInterface from "@/components/NovaChatInterface";
 import WorkspaceCalendar from "@/components/WorkspaceCalendar";
@@ -933,6 +934,9 @@ export default function Index() {
           onCalendar={() => {
             setCurrentTab('calendar');
           }}
+          onProjects={() => {
+            setCurrentTab('projects');
+          }}
           onNotes={handleNotes}
           onTasks={handleTasks}
           onTeam={handleTeam}
@@ -1052,7 +1056,7 @@ export default function Index() {
               <ViewableTasks 
                 projectId={activeProject?.id}
                 currentUser={user?.displayName || user?.email || "Current User"}
-                teamId={user?.uid}
+                teamId="default-team"
               />
             }
             teamContent={<TeamManagement />}
@@ -1076,6 +1080,7 @@ export default function Index() {
               />
             }
             bookingsContent={<BookingManager />}
+            projectsContent={<ProjectManagement />}
             taskNotifications={0}
             teamNotifications={0}
             timerNotifications={0}

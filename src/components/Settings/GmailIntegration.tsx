@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { 
   Mail, 
   CheckCircle, 
@@ -13,9 +16,12 @@ import {
   User,
   Calendar,
   Shield,
-  Loader2
+  Loader2,
+  Settings
 } from 'lucide-react';
 import { gmailService, type GmailAccount } from '@/lib/gmail-integration';
+import { FirebaseGmailConfigService } from '@/lib/firebase-gmail-config';
+import { useFirebaseAuth } from '@/contexts/FirebaseAuthContext';
 import { toast } from '@/hooks/use-toast';
 
 interface GmailIntegrationProps {
@@ -23,14 +29,24 @@ interface GmailIntegrationProps {
 }
 
 export default function GmailIntegration({ onConnectionChange }: GmailIntegrationProps) {
+  const { user } = useFirebaseAuth();
   const [connectedAccounts, setConnectedAccounts] = useState<GmailAccount[]>([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfigDialog, setShowConfigDialog] = useState(false);
+  const [userConfig, setUserConfig] = useState({
+    clientId: '',
+    clientSecret: '',
+    redirectUri: `${window.location.origin}/auth/gmail/callback`
+  });
+  const [hasUserConfig, setHasUserConfig] = useState(false);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
   useEffect(() => {
     loadConnectedAccounts();
-  }, []);
+    loadUserConfig();
+  }, [user]);
 
   const loadConnectedAccounts = () => {
     const accounts = gmailService.getConnectedAccounts();
@@ -38,12 +54,186 @@ export default function GmailIntegration({ onConnectionChange }: GmailIntegratio
     onConnectionChange?.(accounts.length > 0);
   };
 
+  const loadUserConfig = async () => {
+    if (!user) {
+      setIsLoadingConfig(false);
+      return;
+    }
+    
+    setIsLoadingConfig(true);
+    try {
+      const config = await FirebaseGmailConfigService.getConfig(user.uid);
+      if (config && config.clientId) {
+        setUserConfig({
+          clientId: config.clientId,
+          clientSecret: config.clientSecret,
+          redirectUri: config.redirectUri
+        });
+        setHasUserConfig(true);
+        
+        // Initialize service with user config
+        await gmailService.initializeWithUserConfig(user.uid);
+        gmailService.setCurrentUser(user.uid);
+      } else {
+        // Check for global config
+        const globalClientId = import.meta.env.VITE_GMAIL_CLIENT_ID;
+        if (globalClientId && globalClientId.trim() !== '') {
+          setHasUserConfig(false);
+          // Initialize with global config
+          gmailService.initialize({
+            clientId: globalClientId,
+            clientSecret: import.meta.env.VITE_GMAIL_CLIENT_SECRET || '',
+            redirectUri: `${window.location.origin}/auth/gmail/callback`,
+            scopes: [
+              'https://www.googleapis.com/auth/gmail.readonly',
+              'https://www.googleapis.com/auth/gmail.send',
+              'https://www.googleapis.com/auth/gmail.modify',
+              'https://www.googleapis.com/auth/gmail.labels'
+            ]
+          });
+        } else {
+          setHasUserConfig(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user config:', error);
+      setHasUserConfig(false);
+    } finally {
+      setIsLoadingConfig(false);
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Please log in to save Gmail configuration.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!userConfig.clientId.trim()) {
+      toast({
+        title: "Error",
+        description: "Client ID is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await FirebaseGmailConfigService.saveConfig(user.uid, {
+        clientId: userConfig.clientId,
+        clientSecret: userConfig.clientSecret,
+        redirectUri: userConfig.redirectUri
+      });
+
+      // Reinitialize service with new config
+      await gmailService.initializeWithUserConfig(user.uid);
+      gmailService.setCurrentUser(user.uid);
+      
+      setHasUserConfig(true);
+      setShowConfigDialog(false);
+      
+      toast({
+        title: "Success",
+        description: "Gmail configuration saved successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save configuration.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteConfig = async () => {
+    if (!user) return;
+    
+    if (!confirm('Are you sure you want to delete your Gmail configuration? You will need to use the global configuration if available.')) {
+      return;
+    }
+
+    try {
+      await FirebaseGmailConfigService.deleteConfig(user.uid);
+      setUserConfig({
+        clientId: '',
+        clientSecret: '',
+        redirectUri: `${window.location.origin}/auth/gmail/callback`
+      });
+      setHasUserConfig(false);
+      
+      // Try to use global config
+      const globalClientId = import.meta.env.VITE_GMAIL_CLIENT_ID;
+      if (globalClientId && globalClientId.trim() !== '') {
+        gmailService.initialize({
+          clientId: globalClientId,
+          clientSecret: import.meta.env.VITE_GMAIL_CLIENT_SECRET || '',
+          redirectUri: `${window.location.origin}/auth/gmail/callback`,
+          scopes: [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.send',
+            'https://www.googleapis.com/auth/gmail.modify',
+            'https://www.googleapis.com/auth/gmail.labels'
+          ]
+        });
+      }
+      
+      toast({
+        title: "Success",
+        description: "Gmail configuration deleted. Using global configuration if available.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete configuration.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleConnectGmail = async () => {
     setIsConnecting(true);
     setError(null);
 
     try {
+      // Ensure service is initialized
+      if (!gmailService.isInitialized()) {
+        if (hasUserConfig && user) {
+          await gmailService.initializeWithUserConfig(user.uid);
+        } else {
+          // Try global config
+          const globalClientId = import.meta.env.VITE_GMAIL_CLIENT_ID;
+          if (globalClientId && globalClientId.trim() !== '') {
+            gmailService.initialize({
+              clientId: globalClientId,
+              clientSecret: import.meta.env.VITE_GMAIL_CLIENT_SECRET || '',
+              redirectUri: `${window.location.origin}/auth/gmail/callback`,
+              scopes: [
+                'https://www.googleapis.com/auth/gmail.readonly',
+                'https://www.googleapis.com/auth/gmail.send',
+                'https://www.googleapis.com/auth/gmail.modify',
+                'https://www.googleapis.com/auth/gmail.labels'
+              ]
+            });
+          } else {
+            throw new Error(
+              'Gmail integration is not configured. Please set up your Google OAuth credentials in the settings below.'
+            );
+          }
+        }
+      }
+
       const authUrl = gmailService.getAuthUrl();
+      
+      // Validate the URL contains client_id
+      if (!authUrl.includes('client_id=') || authUrl.includes('client_id=&')) {
+        throw new Error(
+          'Invalid Gmail OAuth configuration. Please check your Gmail OAuth credentials in settings.'
+        );
+      }
       
       // Open OAuth popup
       const popup = window.open(
@@ -70,8 +260,15 @@ export default function GmailIntegration({ onConnectionChange }: GmailIntegratio
       }, 1000);
 
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to connect Gmail');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect Gmail';
+      setError(errorMessage);
       setIsConnecting(false);
+      
+      toast({
+        title: "Gmail Connection Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -142,6 +339,70 @@ export default function GmailIntegration({ onConnectionChange }: GmailIntegratio
           </Alert>
         )}
 
+        {/* OAuth Configuration Section */}
+        <div className="p-4 border rounded-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                OAuth Configuration
+              </h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                {isLoadingConfig ? (
+                  "Loading configuration..."
+                ) : hasUserConfig ? (
+                  "Using your personal Gmail OAuth credentials"
+                ) : import.meta.env.VITE_GMAIL_CLIENT_ID ? (
+                  "Using global configuration"
+                ) : (
+                  "No configuration set. Add your credentials below."
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {hasUserConfig && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeleteConfig}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Remove
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (hasUserConfig && user) {
+                    // Load existing config into dialog
+                    const config = await FirebaseGmailConfigService.getConfig(user.uid);
+                    if (config) {
+                      setUserConfig({
+                        clientId: config.clientId,
+                        clientSecret: config.clientSecret,
+                        redirectUri: config.redirectUri
+                      });
+                    }
+                  } else {
+                    // Reset to default
+                    setUserConfig({
+                      clientId: '',
+                      clientSecret: '',
+                      redirectUri: `${window.location.origin}/auth/gmail/callback`
+                    });
+                  }
+                  setShowConfigDialog(true);
+                }}
+              >
+                <Settings className="w-4 h-4 mr-1" />
+                {hasUserConfig ? "Update Config" : "Set Your Own"}
+              </Button>
+            </div>
+          </div>
+        </div>
+
         {/* Connection Status */}
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-3">
@@ -167,7 +428,7 @@ export default function GmailIntegration({ onConnectionChange }: GmailIntegratio
             {connectedAccounts.length === 0 && (
               <Button 
                 onClick={handleConnectGmail}
-                disabled={isConnecting}
+                disabled={isConnecting || isLoadingConfig}
                 size="sm"
               >
                 {isConnecting ? (
@@ -276,6 +537,7 @@ export default function GmailIntegration({ onConnectionChange }: GmailIntegratio
           <div className="p-4 bg-muted/30 rounded-lg">
             <h4 className="font-medium text-sm mb-2">Getting Started</h4>
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+              <li>Set up your Gmail OAuth credentials (click "Set Your Own" above) or use global configuration</li>
               <li>Click "Connect Gmail" to start the OAuth process</li>
               <li>Sign in to your Google account and grant permissions</li>
               <li>Return to this page to see your connected account</li>
@@ -283,6 +545,84 @@ export default function GmailIntegration({ onConnectionChange }: GmailIntegratio
             </ol>
           </div>
         )}
+
+        {/* Configuration Dialog */}
+        <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Gmail OAuth Configuration</DialogTitle>
+              <DialogDescription>
+                Enter your Google OAuth 2.0 credentials. These will be stored securely and used only for your account.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="config-client-id">Client ID *</Label>
+                <Input
+                  id="config-client-id"
+                  type="text"
+                  value={userConfig.clientId}
+                  onChange={(e) => setUserConfig({ ...userConfig, clientId: e.target.value })}
+                  placeholder="xxxxx.apps.googleusercontent.com"
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Get this from Google Cloud Console
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="config-client-secret">Client Secret</Label>
+                <Input
+                  id="config-client-secret"
+                  type="password"
+                  value={userConfig.clientSecret}
+                  onChange={(e) => setUserConfig({ ...userConfig, clientSecret: e.target.value })}
+                  placeholder="GOCSPX-xxxxx"
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Optional but recommended for token refresh
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="config-redirect-uri">Redirect URI</Label>
+                <Input
+                  id="config-redirect-uri"
+                  type="text"
+                  value={userConfig.redirectUri}
+                  onChange={(e) => setUserConfig({ ...userConfig, redirectUri: e.target.value })}
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Must match the URI configured in Google Cloud Console
+                </p>
+              </div>
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                <p className="text-xs text-blue-800 dark:text-blue-300 font-medium mb-2">
+                  Setup Instructions:
+                </p>
+                <ol className="text-xs text-blue-700 dark:text-blue-400 space-y-1 list-decimal list-inside">
+                  <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="underline font-medium">Google Cloud Console</a></li>
+                  <li>Create a new project or select an existing one</li>
+                  <li>Enable the Gmail API</li>
+                  <li>Go to "APIs & Services" → "Credentials"</li>
+                  <li>Click "Create Credentials" → "OAuth 2.0 Client ID"</li>
+                  <li>Choose "Web application"</li>
+                  <li>Add authorized redirect URI: <code className="bg-blue-100 dark:bg-blue-900/30 px-1 rounded text-xs">{userConfig.redirectUri}</code></li>
+                  <li>Copy the Client ID and Secret here</li>
+                </ol>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveConfig}>
+                Save Configuration
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

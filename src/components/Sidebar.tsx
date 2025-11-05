@@ -1,4 +1,4 @@
-import { LayoutDashboard, Plus, Settings, Sparkles, Search, Bot, Users, Mail, Network, Database, Zap, Map, StickyNote, CheckSquare, Clock, ChevronLeft, ChevronRight, ChevronDown, Calendar, CalendarDays, LogOut } from "lucide-react";
+import { LayoutDashboard, Plus, Settings, Sparkles, Search, Bot, Users, Mail, Network, Database, Zap, Map, StickyNote, CheckSquare, Clock, ChevronLeft, ChevronRight, ChevronDown, Calendar, CalendarDays, LogOut, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ interface SidebarProps {
   onTimer?: () => void;
   onCalendar?: () => void;
   onBookings?: () => void;
+  onProjects?: () => void;
   onNavigateToTab?: (tab: string) => void;
   projects?: Array<{
     id: string;
@@ -43,6 +44,7 @@ export default function Sidebar({
   onTimer,
   onCalendar,
   onBookings,
+  onProjects,
   onNavigateToTab,
   projects = [], 
   isLoading = false, 
@@ -133,6 +135,16 @@ export default function Sidebar({
               
               {!isBusinessToolsMinimized && (
                 <div className="space-y-2">
+                  <Button 
+                    variant="ghost" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
+                    onClick={onProjects || (() => onNavigateToTab?.('projects'))}
+                    title={isMinimized ? "Projects" : undefined}
+                  >
+                    <LayoutGrid className="w-4 h-4 group-hover:text-primary transition-colors" />
+                    {!isMinimized && <span className="font-medium">Projects</span>}
+                  </Button>
+                  
                   <Button 
                     variant="ghost" 
                     className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}

@@ -48,10 +48,10 @@ export class FirebaseNotesService {
     try {
       console.log('🔄 FirebaseNotesService.getNotes called with:', { userId, teamId });
       
+      // Remove orderBy to avoid composite index requirement - we'll sort client-side
       const q = query(
         this.getCollection(userId, teamId),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', userId)
       );
 
       console.log('🔄 Querying notes collection');
@@ -70,6 +70,13 @@ export class FirebaseNotesService {
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date()
         } as Note;
+      });
+      
+      // Sort client-side by createdAt descending (newest first)
+      notes.sort((a, b) => {
+        const dateA = a.createdAt.getTime();
+        const dateB = b.createdAt.getTime();
+        return dateB - dateA; // Descending order
       });
       
       console.log('✅ Returning notes:', notes.length);
