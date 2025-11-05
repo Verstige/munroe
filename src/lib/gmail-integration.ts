@@ -162,8 +162,17 @@ class GmailIntegrationService {
       console.log('🔄 Exchanging code for tokens:', {
         clientId: this.authConfig.clientId.substring(0, 20) + '...',
         redirectUri: this.authConfig.redirectUri,
-        hasClientSecret: !!this.authConfig.clientSecret
+        hasClientSecret: !!this.authConfig.clientSecret,
+        codeLength: code.length,
+        codePrefix: code.substring(0, 10) + '...'
       });
+
+      // IMPORTANT: For web applications, client_secret is REQUIRED by Google OAuth
+      // If it's missing, the token exchange will fail
+      if (!this.authConfig.clientSecret || this.authConfig.clientSecret.trim() === '') {
+        console.warn('⚠️ Client Secret is missing! Google OAuth requires client_secret for web applications.');
+        console.warn('⚠️ If your OAuth app type is "Web application", you MUST provide a client secret.');
+      }
 
       const tokenParams: any = {
         client_id: this.authConfig.clientId,
@@ -172,10 +181,20 @@ class GmailIntegrationService {
         redirect_uri: this.authConfig.redirectUri,
       };
 
-      // Only include client_secret if it's provided (some OAuth flows don't require it for public clients)
+      // Include client_secret - it's required for web applications
       if (this.authConfig.clientSecret && this.authConfig.clientSecret.trim() !== '') {
         tokenParams.client_secret = this.authConfig.clientSecret;
+        console.log('✅ Client secret included in token request');
+      } else {
+        console.warn('⚠️ Client secret is empty - token exchange may fail for web applications');
       }
+
+      console.log('🔄 Token request params:', {
+        client_id: tokenParams.client_id.substring(0, 20) + '...',
+        redirect_uri: tokenParams.redirect_uri,
+        has_client_secret: !!tokenParams.client_secret,
+        grant_type: tokenParams.grant_type
+      });
 
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -186,17 +205,44 @@ class GmailIntegrationService {
       });
 
       if (!tokenResponse.ok) {
-        const errorData = await tokenResponse.json().catch(() => ({ error: 'Unknown error' }));
+        const responseText = await tokenResponse.text();
         console.error('❌ Token exchange failed:', {
           status: tokenResponse.status,
           statusText: tokenResponse.statusText,
-          error: errorData
+          responseText: responseText
         });
-        throw new Error(`Failed to exchange authorization code: ${errorData.error || errorData.error_description || tokenResponse.statusText}`);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch {
+          errorData = { error: responseText || 'Unknown error' };
+        }
+        
+        console.error('❌ Parsed error data:', errorData);
+        
+        // Provide more specific error messages
+        const errorMessage = errorData.error || errorData.error_description || tokenResponse.statusText;
+        let userFriendlyMessage = `Failed to exchange authorization code: ${errorMessage}`;
+        
+        if (errorData.error === 'invalid_grant') {
+          userFriendlyMessage = 'Authorization code expired or already used. Please try connecting again.';
+        } else if (errorData.error === 'invalid_client') {
+          userFriendlyMessage = 'Invalid OAuth client credentials. Please check your Client ID and Client Secret in settings.';
+        } else if (errorData.error === 'redirect_uri_mismatch') {
+          userFriendlyMessage = `Redirect URI mismatch. The redirect URI in your Google Cloud Console must exactly match: ${this.authConfig.redirectUri}`;
+        }
+        
+        throw new Error(userFriendlyMessage);
       }
 
       const tokens = await tokenResponse.json();
       console.log('✅ Token exchange successful');
+      console.log('✅ Tokens received:', {
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token,
+        expiresIn: tokens.expires_in
+      });
       
       if (!tokens.access_token) {
         throw new Error('No access token received from Google');

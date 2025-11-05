@@ -14,13 +14,23 @@ export default function GmailCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      console.log('🔄 GmailCallback component mounted');
+      console.log('🔄 Current URL:', window.location.href);
+      console.log('🔄 User:', user ? user.uid : 'No user');
+      
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
         const error = urlParams.get('error');
 
-        console.log('🔄 Gmail callback received:', { code: code ? 'present' : 'missing', state, error });
+        console.log('🔄 Gmail callback received:', { 
+          code: code ? 'present (' + code.substring(0, 20) + '...)' : 'missing', 
+          state, 
+          error,
+          hasCode: !!code,
+          hasError: !!error
+        });
 
         if (error) {
           console.error('❌ OAuth error from Google:', error);
@@ -33,13 +43,20 @@ export default function GmailCallback() {
 
         // Ensure service is initialized with user config before handling callback
         if (user) {
-          console.log('🔄 Initializing Gmail service with user config for callback');
+          console.log('🔄 Initializing Gmail service with user config for callback, userId:', user.uid);
           try {
             const userConfig = await FirebaseGmailConfigService.getConfig(user.uid);
-            if (userConfig && userConfig.clientId) {
-              console.log('✅ Found user config, initializing service');
+            console.log('🔄 User config result:', userConfig ? 'found' : 'not found');
+            
+            if (userConfig && userConfig.clientId && userConfig.clientId.trim() !== '') {
+              console.log('✅ Found user config:', {
+                hasClientId: !!userConfig.clientId,
+                hasClientSecret: !!userConfig.clientSecret,
+                redirectUri: userConfig.redirectUri
+              });
               await gmailService.initializeWithUserConfig(user.uid);
               gmailService.setCurrentUser(user.uid);
+              console.log('✅ Service initialized with user config');
             } else {
               // Try global config
               const globalClientId = import.meta.env.VITE_GMAIL_CLIENT_ID;
@@ -65,7 +82,7 @@ export default function GmailCallback() {
             // Try global config as fallback
             const globalClientId = import.meta.env.VITE_GMAIL_CLIENT_ID;
             if (globalClientId && globalClientId.trim() !== '') {
-              console.log('ℹ️ Using global config as fallback');
+              console.log('ℹ️ Using global config as fallback after error');
               gmailService.initialize({
                 clientId: globalClientId,
                 clientSecret: import.meta.env.VITE_GMAIL_CLIENT_SECRET || '',
@@ -102,6 +119,12 @@ export default function GmailCallback() {
           }
         }
 
+        // Verify service is initialized before proceeding
+        if (!gmailService.isInitialized()) {
+          throw new Error('Gmail service failed to initialize. Please check your OAuth configuration.');
+        }
+        console.log('✅ Service is initialized, proceeding with token exchange');
+
         console.log('🔄 Exchanging authorization code for tokens...');
         // Exchange code for tokens
         const account = await gmailService.handleAuthCallback(code, state || '');
@@ -110,11 +133,25 @@ export default function GmailCallback() {
         setStatus('success');
         setMessage(`Gmail account ${account.email} connected successfully!`);
         
-        // Close popup and redirect to settings
+        // Send message to parent window
+        if (window.opener) {
+          try {
+            window.opener.postMessage({ 
+              type: 'GMAIL_CONNECTED', 
+              account 
+            }, window.location.origin);
+            console.log('✅ Message sent to parent window');
+          } catch (e) {
+            console.error('❌ Error sending message to parent:', e);
+          }
+        }
+        
+        // Close popup after a short delay
         setTimeout(() => {
-          window.close();
-          if (window.opener) {
-            window.opener.postMessage({ type: 'GMAIL_CONNECTED', account }, '*');
+          try {
+            window.close();
+          } catch (e) {
+            console.log('ℹ️ Could not close window automatically (may be blocked by browser)');
           }
         }, 2000);
 
@@ -124,8 +161,25 @@ export default function GmailCallback() {
         setStatus('error');
         setMessage(errorMessage);
         
+        // Send error message to parent window
+        if (window.opener) {
+          try {
+            window.opener.postMessage({ 
+              type: 'GMAIL_CONNECTION_ERROR', 
+              error: errorMessage 
+            }, window.location.origin);
+            console.log('✅ Error message sent to parent window');
+          } catch (e) {
+            console.error('❌ Error sending error message to parent:', e);
+          }
+        }
+        
         setTimeout(() => {
-          window.close();
+          try {
+            window.close();
+          } catch (e) {
+            console.log('ℹ️ Could not close window automatically (may be blocked by browser)');
+          }
         }, 5000);
       }
     };

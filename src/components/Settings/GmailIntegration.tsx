@@ -246,16 +246,58 @@ export default function GmailIntegration({ onConnectionChange }: GmailIntegratio
         throw new Error('Popup blocked. Please allow popups for this site.');
       }
 
-      // Listen for popup completion
-      const checkClosed = setInterval(() => {
-        if (popup.closed) {
+      // Listen for popup completion via message passing (more reliable than window.closed)
+      const messageHandler = (event: MessageEvent) => {
+        // Accept messages from same origin only
+        if (event.origin !== window.location.origin) return;
+        
+        if (event.data.type === 'GMAIL_CONNECTED') {
+          console.log('✅ Gmail connection message received:', event.data);
+          window.removeEventListener('message', messageHandler);
           clearInterval(checkClosed);
           setIsConnecting(false);
           
           // Check if account was added
           setTimeout(() => {
             loadConnectedAccounts();
-          }, 1000);
+          }, 500);
+          
+          toast({
+            title: "Success",
+            description: `Gmail account ${event.data.account?.email || ''} connected successfully!`,
+          });
+        } else if (event.data.type === 'GMAIL_CONNECTION_ERROR') {
+          console.error('❌ Gmail connection error message received:', event.data);
+          window.removeEventListener('message', messageHandler);
+          clearInterval(checkClosed);
+          setIsConnecting(false);
+          
+          toast({
+            title: "Connection Failed",
+            description: event.data.error || "Failed to connect Gmail account",
+            variant: "destructive",
+          });
+        }
+      };
+
+      window.addEventListener('message', messageHandler);
+
+      // Fallback: Check if popup is closed (for browsers that allow it)
+      const checkClosed = setInterval(() => {
+        try {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            window.removeEventListener('message', messageHandler);
+            setIsConnecting(false);
+            
+            // Check if account was added (in case message wasn't received)
+            setTimeout(() => {
+              loadConnectedAccounts();
+            }, 1000);
+          }
+        } catch (e) {
+          // Cross-origin policy might block this, that's okay
+          // We rely on message passing instead
         }
       }, 1000);
 
