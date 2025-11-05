@@ -7,16 +7,23 @@ import { useFirebaseAuth } from '@/contexts/FirebaseAuthContext';
 import { FirebaseGmailConfigService } from '@/lib/firebase-gmail-config';
 
 export default function GmailCallback() {
-  const { user } = useFirebaseAuth();
+  const { user, loading } = useFirebaseAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Wait for Firebase Auth to finish loading before processing callback
+    if (loading) {
+      console.log('⏳ Waiting for Firebase Auth to initialize...');
+      return;
+    }
+
     const handleCallback = async () => {
       console.log('🔄 GmailCallback component mounted');
       console.log('🔄 Current URL:', window.location.href);
       console.log('🔄 User:', user ? user.uid : 'No user');
+      console.log('🔄 Auth loading:', loading);
       
       try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -185,7 +192,7 @@ export default function GmailCallback() {
     };
 
     handleCallback();
-  }, [user]);
+  }, [user, loading]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
