@@ -242,33 +242,85 @@ class GmailIntegrationService {
       console.log('✅ Token exchange successful');
       console.log('✅ Tokens received:', {
         hasAccessToken: !!tokens.access_token,
+        accessTokenType: typeof tokens.access_token,
+        accessTokenLength: tokens.access_token?.length || 0,
         hasRefreshToken: !!tokens.refresh_token,
-        expiresIn: tokens.expires_in
+        expiresIn: tokens.expires_in,
+        tokenType: tokens.token_type || 'Bearer',
+        scope: tokens.scope
       });
       
+      // Validate access token
       if (!tokens.access_token) {
+        console.error('❌ Access token is missing from token response:', tokens);
         throw new Error('No access token received from Google');
       }
       
+      if (typeof tokens.access_token !== 'string') {
+        console.error('❌ Access token is not a string:', typeof tokens.access_token, tokens.access_token);
+        throw new Error('Invalid access token type received from Google');
+      }
+      
+      const accessToken = tokens.access_token.trim();
+      if (accessToken === '') {
+        console.error('❌ Access token is empty string');
+        throw new Error('Empty access token received from Google');
+      }
+      
+      console.log('✅ Access token validated:', {
+        length: accessToken.length,
+        startsWith: accessToken.substring(0, 15) + '...',
+        tokenType: tokens.token_type || 'Bearer'
+      });
+      
       // Get user info
-      console.log('🔄 Fetching user information...');
+      console.log('🔄 Fetching user information from Google...');
       let userInfo;
       
       try {
-        const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        const userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
+        console.log('🔄 Userinfo URL:', userInfoUrl);
+        console.log('🔄 Authorization header:', `Bearer ${accessToken.substring(0, 20)}...`);
+        
+        const userResponse = await fetch(userInfoUrl, {
+          method: 'GET',
           headers: {
-            'Authorization': `Bearer ${tokens.access_token}`,
-            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json',
           },
         });
 
+        console.log('🔄 Userinfo response status:', userResponse.status, userResponse.statusText);
+        
         if (!userResponse.ok) {
           const errorText = await userResponse.text();
           console.error('❌ Failed to get user info:', {
             status: userResponse.status,
             statusText: userResponse.statusText,
-            errorText: errorText
+            errorText: errorText,
+            headers: Object.fromEntries(userResponse.headers.entries())
           });
+          
+          // Check if it's a 401 - authentication issue
+          if (userResponse.status === 401) {
+            console.error('❌ 401 Unauthorized - Access token may be invalid or expired');
+            console.error('❌ Token used:', {
+              length: accessToken.length,
+              firstChars: accessToken.substring(0, 20),
+              lastChars: accessToken.substring(accessToken.length - 10)
+            });
+            
+            // Try to parse error if it's JSON
+            let errorMessage = 'Authentication failed. The access token may be invalid or expired.';
+            try {
+              const errorData = JSON.parse(errorText);
+              errorMessage = errorData.error?.message || errorData.error_description || errorMessage;
+            } catch {
+              errorMessage = errorText || errorMessage;
+            }
+            
+            throw new Error(`Failed to get user information: ${errorMessage} (Status: ${userResponse.status})`);
+          }
           
           // Try to parse error if it's JSON
           let errorMessage = userResponse.statusText || 'Unknown error';
