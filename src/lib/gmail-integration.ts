@@ -568,6 +568,51 @@ class GmailIntegrationService {
     }
   }
 
+  // Modify Gmail message labels (star/unstar, add/remove labels)
+  async modifyMessageLabels(accountId: string, messageId: string, addLabelIds: string[] = [], removeLabelIds: string[] = []): Promise<void> {
+    const accessToken = await this.getValidAccessToken(accountId);
+    const account = this.connectedAccounts.get(accountId);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    try {
+      const response = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/${account.email}/messages/${messageId}/modify`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            addLabelIds,
+            removeLabelIds,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Failed to modify message labels: ${errorData.error?.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error modifying message labels:', error);
+      throw new Error('Failed to modify Gmail message labels');
+    }
+  }
+
+  // Toggle star on a message
+  async toggleStar(accountId: string, messageId: string, isStarred: boolean): Promise<void> {
+    if (isStarred) {
+      // Remove star
+      await this.modifyMessageLabels(accountId, messageId, [], ['STARRED']);
+    } else {
+      // Add star
+      await this.modifyMessageLabels(accountId, messageId, ['STARRED'], []);
+    }
+  }
+
   // Sync emails with local storage
   async syncEmails(accountId: string): Promise<GmailSyncResult> {
     const result: GmailSyncResult = {
