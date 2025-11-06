@@ -129,6 +129,23 @@ export default function EmailDashboard() {
     };
   }, []);
 
+  // Convert GmailMessage to Email format
+  const convertGmailToEmail = (gmailMessage: GmailMessage, folder: string = 'inbox'): Email => {
+    return {
+      id: gmailMessage.id,
+      from: gmailMessage.from,
+      to: gmailMessage.to,
+      subject: gmailMessage.subject || '(No Subject)',
+      content: gmailMessage.body || gmailMessage.htmlBody || '',
+      timestamp: gmailMessage.timestamp.toISOString(),
+      isRead: gmailMessage.isRead,
+      isStarred: gmailMessage.isStarred,
+      isImportant: gmailMessage.isImportant,
+      folder: folder,
+      tags: gmailMessage.labels || []
+    };
+  };
+
   const loadGmailData = async () => {
     try {
       const accounts = gmailService.getConnectedAccounts();
@@ -137,19 +154,79 @@ export default function EmailDashboard() {
 
       if (accounts.length > 0) {
         // Load emails from all connected accounts
-        const allEmails: GmailMessage[] = [];
+        const allGmailEmails: GmailMessage[] = [];
+        const allEmails: Email[] = [];
+        
         for (const account of accounts) {
           try {
-            const accountEmails = await gmailService.fetchEmails(account.id, 50);
-            allEmails.push(...accountEmails);
+            // First, try to load from localStorage (synced emails)
+            const storedEmails = gmailService.getStoredEmailsForAccount(account.id);
+            
+            if (storedEmails.length > 0) {
+              console.log(`📧 Loading ${storedEmails.length} stored emails for ${account.email}`);
+              // Convert stored Gmail messages to Email format
+              storedEmails.forEach((gmailMsg: GmailMessage) => {
+                // Determine folder based on labels
+                let folder = 'inbox';
+                if (gmailMsg.labels.includes('SENT')) folder = 'sent';
+                else if (gmailMsg.labels.includes('DRAFT')) folder = 'drafts';
+                else if (gmailMsg.labels.includes('STARRED')) folder = 'starred';
+                else if (gmailMsg.labels.includes('TRASH')) folder = 'trash';
+                else if (gmailMsg.labels.includes('ARCHIVE')) folder = 'archive';
+                
+                allEmails.push(convertGmailToEmail(gmailMsg, folder));
+                allGmailEmails.push(gmailMsg);
+              });
+            }
+            
+            // Also fetch fresh emails to ensure we have the latest
+            try {
+              const freshEmails = await gmailService.fetchEmails(account.id, 50);
+              console.log(`📧 Fetched ${freshEmails.length} fresh emails for ${account.email}`);
+              
+              // Merge with existing, avoiding duplicates
+              const existingIds = new Set(allEmails.map(e => e.id));
+              freshEmails.forEach((gmailMsg: GmailMessage) => {
+                if (!existingIds.has(gmailMsg.id)) {
+                  let folder = 'inbox';
+                  if (gmailMsg.labels.includes('SENT')) folder = 'sent';
+                  else if (gmailMsg.labels.includes('DRAFT')) folder = 'drafts';
+                  else if (gmailMsg.labels.includes('STARRED')) folder = 'starred';
+                  else if (gmailMsg.labels.includes('TRASH')) folder = 'trash';
+                  else if (gmailMsg.labels.includes('ARCHIVE')) folder = 'archive';
+                  
+                  allEmails.push(convertGmailToEmail(gmailMsg, folder));
+                  allGmailEmails.push(gmailMsg);
+                }
+              });
+            } catch (fetchError) {
+              console.error(`Failed to fetch fresh emails for ${account.email}:`, fetchError);
+              // Continue with stored emails if fetch fails
+            }
           } catch (error) {
             console.error(`Failed to load emails for account ${account.email}:`, error);
           }
         }
-        setGmailEmails(allEmails);
+        
+        // Sort by timestamp (newest first)
+        allEmails.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        
+        setGmailEmails(allGmailEmails);
+        setEmails(allEmails);
+        
+        console.log(`✅ Loaded ${allEmails.length} emails total`);
+      } else {
+        // No Gmail accounts, clear emails
+        setGmailEmails([]);
+        setEmails([]);
       }
     } catch (error) {
       console.error('Failed to load Gmail data:', error);
+      toast({
+        title: "Error Loading Emails",
+        description: "Failed to load Gmail emails. Please try syncing again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -162,9 +239,20 @@ export default function EmailDashboard() {
       let totalUpdated = 0;
 
       for (const account of gmailAccounts) {
-        const result = await gmailService.syncEmails(account.id);
-        totalAdded += result.messagesAdded;
-        totalUpdated += result.messagesUpdated;
+        try {
+          console.log(`🔄 Syncing emails for ${account.email}...`);
+          const result = await gmailService.syncEmails(account.id);
+          totalAdded += result.messagesAdded;
+          totalUpdated += result.messagesUpdated;
+          console.log(`✅ Sync complete for ${account.email}: ${result.messagesAdded} added, ${result.messagesUpdated} updated`);
+        } catch (error) {
+          console.error(`❌ Sync failed for ${account.email}:`, error);
+          toast({
+            title: "Sync Error",
+            description: `Failed to sync emails for ${account.email}. Please try again.`,
+            variant: "destructive"
+          });
+        }
       }
 
       toast({
@@ -172,9 +260,10 @@ export default function EmailDashboard() {
         description: `Added ${totalAdded} new emails, updated ${totalUpdated} emails.`,
       });
 
-      // Reload data
+      // Reload data after sync
       await loadGmailData();
     } catch (error) {
+      console.error('❌ Sync error:', error);
       toast({
         title: "Sync Failed",
         description: "Failed to sync Gmail emails. Please try again.",
@@ -758,25 +847,28 @@ Best,
 
         {/* Folders */}
         <div className="flex-1 p-4 space-y-1">
-          {folders.map((folder) => (
-            <button
-              key={folder.id}
-              onClick={() => setSelectedFolder(folder.id)}
-              className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
-                selectedFolder === folder.id
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                  : 'hover:bg-background/50 text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {folder.icon}
-                <span className="font-medium">{folder.name}</span>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {folder.count}
-              </Badge>
-            </button>
-          ))}
+          {folders.map((folder) => {
+            const folderCount = emails.filter(e => e.folder === folder.id).length;
+            return (
+              <button
+                key={folder.id}
+                onClick={() => setSelectedFolder(folder.id)}
+                className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
+                  selectedFolder === folder.id
+                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                    : 'hover:bg-background/50 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {folder.icon}
+                  <span className="font-medium">{folder.name}</span>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {folderCount}
+                </Badge>
+              </button>
+            );
+          })}
         </div>
 
         {/* Account Status */}
@@ -829,7 +921,33 @@ Best,
           {/* Email List */}
           <div className="w-1/3 border-r border-border bg-background">
             <div className="h-full overflow-y-auto">
-              {filteredEmails.map((email) => (
+              {filteredEmails.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No Emails</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {isGmailConnected 
+                      ? "Click the sync button to load your Gmail emails."
+                      : "Connect Gmail in Settings to sync emails."}
+                  </p>
+                  {isGmailConnected && (
+                    <Button onClick={handleSyncGmail} disabled={isSyncing} variant="outline">
+                      {isSyncing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Sync Emails
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                filteredEmails.map((email) => (
                 <div
                   key={email.id}
                   onClick={() => handleEmailSelect(email)}
@@ -874,7 +992,8 @@ Best,
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           </div>
 

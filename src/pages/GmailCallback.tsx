@@ -158,7 +158,7 @@ export default function GmailCallback() {
         // Close popup after a short delay
         setTimeout(() => {
           try {
-            window.close();
+          window.close();
           } catch (e) {
             console.log('ℹ️ Could not close window automatically (may be blocked by browser)');
           }
@@ -185,7 +185,7 @@ export default function GmailCallback() {
         
         setTimeout(() => {
           try {
-            window.close();
+          window.close();
           } catch (e) {
             console.log('ℹ️ Could not close window automatically (may be blocked by browser)');
           }

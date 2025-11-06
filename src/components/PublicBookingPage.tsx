@@ -64,9 +64,9 @@ export default function PublicBookingPage() {
 
   useEffect(() => {
     const loadTemplate = async () => {
-      console.log('=== Template Loading DEBUG ===');
-      console.log('Template ID:', templateId);
-      
+    console.log('=== Template Loading DEBUG ===');
+    console.log('Template ID:', templateId);
+    
       if (!templateId) {
         console.log('No template ID provided');
         return;
@@ -92,62 +92,62 @@ export default function PublicBookingPage() {
 
         // Fallback to localStorage
         console.log('🔄 Searching localStorage for template...');
-        let foundTemplate: BookingTemplate | null = null;
-        
-        // First try the current user's templates
+    let foundTemplate: BookingTemplate | null = null;
+    
+    // First try the current user's templates
         const userId = user?.uid || 'anonymous';
-        const userTemplates = JSON.parse(localStorage.getItem(`bookingTemplates_${userId}`) || '[]');
-        console.log('User templates:', userTemplates);
-        foundTemplate = userTemplates.find((t: BookingTemplate) => t.id === templateId);
-        
-        // If not found in current user's templates, search all localStorage keys
-        if (!foundTemplate) {
-          console.log('Template not found in user templates, searching all keys...');
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('bookingTemplates_')) {
-              const templates = JSON.parse(localStorage.getItem(key) || '[]');
-              foundTemplate = templates.find((t: BookingTemplate) => t.id === templateId);
-              if (foundTemplate) {
-                console.log(`Found template in key: ${key}`);
-                break;
-              }
-            }
+    const userTemplates = JSON.parse(localStorage.getItem(`bookingTemplates_${userId}`) || '[]');
+    console.log('User templates:', userTemplates);
+    foundTemplate = userTemplates.find((t: BookingTemplate) => t.id === templateId);
+    
+    // If not found in current user's templates, search all localStorage keys
+    if (!foundTemplate) {
+      console.log('Template not found in user templates, searching all keys...');
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('bookingTemplates_')) {
+          const templates = JSON.parse(localStorage.getItem(key) || '[]');
+          foundTemplate = templates.find((t: BookingTemplate) => t.id === templateId);
+          if (foundTemplate) {
+            console.log(`Found template in key: ${key}`);
+            break;
           }
         }
-        
+      }
+    }
+    
         console.log('Found template in localStorage:', foundTemplate);
-        
-        if (foundTemplate) {
-          const loadedTemplate = {
-            ...foundTemplate,
-            createdAt: new Date(foundTemplate.createdAt),
-            updatedAt: new Date(foundTemplate.updatedAt)
-          };
+    
+    if (foundTemplate) {
+      const loadedTemplate = {
+        ...foundTemplate,
+        createdAt: new Date(foundTemplate.createdAt),
+        updatedAt: new Date(foundTemplate.updatedAt)
+      };
           console.log('Setting template from localStorage:', loadedTemplate);
-          setTemplate(loadedTemplate);
-        } else {
-          // If no template found, create a default one for testing
-          console.log('No template found, creating default');
-          const defaultTemplate: BookingTemplate = {
-            id: templateId || 'default_template',
-            userId: 'current-user',
-            name: 'Consultation Call',
-            description: 'A consultation to discuss your needs and how we can help.',
-            duration: 60,
-            bufferTime: 15,
-            meetingType: 'video-call',
-            videoLink: 'https://zoom.us/j/123456789',
-            instructions: 'Please have your questions ready and ensure you have a stable internet connection.',
-            price: 150,
-            currency: 'USD',
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          };
-          console.log('Created default template:', defaultTemplate);
-          setTemplate(defaultTemplate);
-        }
+      setTemplate(loadedTemplate);
+    } else {
+      // If no template found, create a default one for testing
+      console.log('No template found, creating default');
+      const defaultTemplate: BookingTemplate = {
+        id: templateId || 'default_template',
+        userId: 'current-user',
+        name: 'Consultation Call',
+        description: 'A consultation to discuss your needs and how we can help.',
+        duration: 60,
+        bufferTime: 15,
+        meetingType: 'video-call',
+        videoLink: 'https://zoom.us/j/123456789',
+        instructions: 'Please have your questions ready and ensure you have a stable internet connection.',
+        price: 150,
+        currency: 'USD',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      console.log('Created default template:', defaultTemplate);
+      setTemplate(defaultTemplate);
+    }
       } catch (error) {
         console.error('Error loading template:', error);
         // Create a fallback template
@@ -181,44 +181,44 @@ export default function PublicBookingPage() {
       
       // Load settings
       const savedSettings = localStorage.getItem(`bookingSettings_${userId}`);
-      if (savedSettings) {
+    if (savedSettings) {
         setSettings(JSON.parse(savedSettings));
-      } else {
+    } else {
         // Create default settings
-        const defaultSettings = {
-          userId: 'current-user',
-          timezone: 'America/New_York',
-          workingHours: {
-            monday: { start: '09:00', end: '17:00', enabled: true },
-            tuesday: { start: '09:00', end: '17:00', enabled: true },
-            wednesday: { start: '09:00', end: '17:00', enabled: true },
-            thursday: { start: '09:00', end: '17:00', enabled: true },
-            friday: { start: '09:00', end: '17:00', enabled: true },
-            saturday: { start: '10:00', end: '16:00', enabled: false },
-            sunday: { start: '10:00', end: '16:00', enabled: false }
-          },
-          advanceBookingDays: 30,
-          minNoticeHours: 2,
-          maxBookingsPerDay: 8,
-          allowWeekendBookings: false,
-          allowHolidayBookings: false,
-          autoConfirmBookings: true,
-          requirePayment: false,
-          emailReminders: true,
-          smsReminders: false,
-          reminderTimings: {
-            email24h: true,
-            email1h: true,
-            sms24h: false,
-            sms1h: false
-          },
-          cancellationPolicy: {
-            allowCancellation: true,
-            minHoursNotice: 24,
-            refundPercentage: 100
-          }
-        };
-        setSettings(defaultSettings);
+      const defaultSettings = {
+        userId: 'current-user',
+        timezone: 'America/New_York',
+        workingHours: {
+          monday: { start: '09:00', end: '17:00', enabled: true },
+          tuesday: { start: '09:00', end: '17:00', enabled: true },
+          wednesday: { start: '09:00', end: '17:00', enabled: true },
+          thursday: { start: '09:00', end: '17:00', enabled: true },
+          friday: { start: '09:00', end: '17:00', enabled: true },
+          saturday: { start: '10:00', end: '16:00', enabled: false },
+          sunday: { start: '10:00', end: '16:00', enabled: false }
+        },
+        advanceBookingDays: 30,
+        minNoticeHours: 2,
+        maxBookingsPerDay: 8,
+        allowWeekendBookings: false,
+        allowHolidayBookings: false,
+        autoConfirmBookings: true,
+        requirePayment: false,
+        emailReminders: true,
+        smsReminders: false,
+        reminderTimings: {
+          email24h: true,
+          email1h: true,
+          sms24h: false,
+          sms1h: false
+        },
+        cancellationPolicy: {
+          allowCancellation: true,
+          minHoursNotice: 24,
+          refundPercentage: 100
+        }
+      };
+      setSettings(defaultSettings);
       }
 
       // Load bookings
@@ -572,7 +572,7 @@ export default function PublicBookingPage() {
       // Send confirmation email and schedule reminders
       let emailSent = false;
       if (createdBooking) {
-        const reminderSystem = ReminderSystem.getInstance();
+      const reminderSystem = ReminderSystem.getInstance();
         emailSent = await reminderSystem.sendBookingConfirmation(createdBooking, template);
         reminderSystem.scheduleReminders(createdBooking, settings);
       }
@@ -631,7 +631,7 @@ export default function PublicBookingPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading booking form...</p>
-        </div>
+      </div>
       </div>
     );
   }

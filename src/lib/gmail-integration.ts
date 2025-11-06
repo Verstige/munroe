@@ -731,6 +731,11 @@ class GmailIntegrationService {
     const stored = localStorage.getItem(`gmail_emails_${accountId}`);
     return stored ? JSON.parse(stored) : [];
   }
+
+  // Public method to get stored emails
+  getStoredEmailsForAccount(accountId: string): GmailMessage[] {
+    return this.getStoredEmails(accountId);
+  }
 }
 
 // Export singleton instance
