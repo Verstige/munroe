@@ -65,6 +65,13 @@ export interface WorkspaceContext {
     content: string;
     projectId: string;
   }>;
+  contacts?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    company?: string;
+  }>;
   currentUser: {
     name: string;
     email: string;
@@ -108,6 +115,11 @@ BUSINESS ECOSYSTEM DATA:
 - Projects: ${workspaceContext.projects.length} active projects
 - Team: ${workspaceContext.teamMembers.length} members
 - Tasks: ${workspaceContext.tasks.length} total tasks
+- Notes: ${(workspaceContext as any).notes?.length || 0} notes
+- Contacts: ${(workspaceContext as any).contacts?.length || 0} contacts
+- Calendar Events: ${(workspaceContext as any).calendarEvents?.length || 0} events
+- Bookings: ${(workspaceContext as any).bookings?.length || 0} bookings
+- Expenses: ${(workspaceContext as any).expenses?.length || 0} expenses
 - Business Stage: ${workspaceContext.businessStage || 'Not specified'}
 - Industry: ${workspaceContext.industry || 'Not specified'}
 
@@ -126,6 +138,34 @@ ${workspaceContext.tasks.map(t =>
   `- ${t.title}: ${t.description} (Status: ${t.status}${t.assignee ? `, Assigned to: ${t.assignee}` : ''})`
 ).join('\n') || 'No tasks yet'}
 
+NOTES:
+${(workspaceContext as any).notes?.map((n: any) => 
+  `- ${n.title}: ${n.content.substring(0, 100)}${n.content.length > 100 ? '...' : ''}`
+).join('\n') || 'No notes yet'}
+
+CONTACTS:
+${(workspaceContext as any).contacts?.map((c: any) => 
+  `- ${c.name}${c.email ? ` (${c.email})` : ''}${c.company ? ` - ${c.company}` : ''}${c.phone ? ` - ${c.phone}` : ''}`
+).join('\n') || 'No contacts yet'}
+
+CALENDAR EVENTS:
+${(workspaceContext as any).calendarEvents?.map((e: any) => {
+  const eventDate = e.eventDate instanceof Date ? e.eventDate : (e.eventDate ? new Date(e.eventDate) : null);
+  return `- ${e.title}${eventDate ? ` on ${eventDate.toLocaleDateString()}` : ''}${e.startTime ? ` at ${e.startTime}` : ''}${e.location ? ` - ${e.location}` : ''}`;
+}).join('\n') || 'No calendar events yet'}
+
+BOOKINGS:
+${(workspaceContext as any).bookings?.map((b: any) => {
+  const scheduledDate = b.scheduledDate instanceof Date ? b.scheduledDate : (b.scheduledDate ? new Date(b.scheduledDate) : null);
+  return `- ${b.customerName}${b.customerEmail ? ` (${b.customerEmail})` : ''}${scheduledDate ? ` - ${scheduledDate.toLocaleDateString()}` : ''} (Status: ${b.status})`;
+}).join('\n') || 'No bookings yet'}
+
+EXPENSES:
+${(workspaceContext as any).expenses?.map((e: any) => {
+  const expenseDate = e.date instanceof Date ? e.date : (e.date ? new Date(e.date) : null);
+  return `- ${e.description}: ${e.currency || 'USD'} ${e.amount} (${e.type}, ${e.category}, Status: ${e.status})${expenseDate ? ` on ${expenseDate.toLocaleDateString()}` : ''}`;
+}).join('\n') || 'No expenses yet'}
+
 YOUR ROLE:
 You are a strategic business advisor who:
 1. Analyzes the user's entire business ecosystem
@@ -138,6 +178,31 @@ You are a strategic business advisor who:
 8. Provides deep analysis of project portfolios and team performance
 9. Identifies risks and opportunities in the business ecosystem
 10. Suggests resource allocation and optimization strategies
+11. Answers questions about tasks, notes, contacts, calendar events, bookings, and expenses
+12. Provides insights across all workspace data including financial (expenses), scheduling (calendar, bookings), and relationships (contacts)
+13. CAN PERFORM ACTIONS: When the user asks you to create, delete, or modify items, use the following action format:
+    
+    ACTION FORMAT: [ACTION:action_type:{"key":"value"}]
+    
+    Available actions:
+    - create_task: [ACTION:create_task:{"title":"Task title","description":"Task description","status":"todo","priority":"medium","assignee":"User Name"}]
+    - delete_task: [ACTION:delete_task:{"id":"task_id"}] (use task ID from the task list)
+    - create_note: [ACTION:create_note:{"title":"Note title","content":"Note content"}]
+    - delete_note: [ACTION:delete_note:{"id":"note_id"}] (use note ID from the notes list)
+    - create_contact: [ACTION:create_contact:{"name":"Contact name","email":"email@example.com","phone":"123-456-7890","company":"Company"}]
+    - delete_contact: [ACTION:delete_contact:{"id":"contact_id"}] (use contact ID from the contacts list)
+    - create_calendar_event: [ACTION:create_calendar_event:{"title":"Event title","description":"Event description","eventDate":"2024-01-15","startTime":"10:00","endTime":"11:00","location":"Location"}]
+    - delete_calendar_event: [ACTION:delete_calendar_event:{"id":"event_id"}] (use event ID from the calendar events list)
+    - create_expense: [ACTION:create_expense:{"type":"business","category":"office-supplies","amount":100,"currency":"USD","description":"Office supplies","date":"2024-01-15"}]
+    - delete_expense: [ACTION:delete_expense:{"id":"expense_id"}] (use expense ID from the expenses list)
+    
+    IMPORTANT RULES FOR ACTIONS:
+    - Always include the action command in your response, but also provide a natural confirmation message
+    - For dates, use format "YYYY-MM-DD" (e.g., "2024-01-15")
+    - For delete actions, you MUST use the exact ID from the workspace data provided above
+    - If the user asks to delete something but doesn't specify which one, ask for clarification
+    - After performing an action, confirm what you did in a natural, conversational way
+    - If you're unsure about an ID or details, ask the user for clarification before performing the action
 
 CONVERSATION CONTEXT:
 ${conversationHistory.slice(-5).map(c => `${c.role}: ${c.content}`).join('\n') || 'No previous context'}

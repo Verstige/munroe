@@ -83,6 +83,10 @@ interface NovaChatInterfaceProps {
   onAppLibrary?: () => void;
   onNavigateToTab?: (tab: string) => void;
   className?: string;
+  onAction?: (action: {
+    type: 'create_task' | 'delete_task' | 'create_note' | 'delete_note' | 'create_contact' | 'delete_contact' | 'create_calendar_event' | 'delete_calendar_event' | 'create_expense' | 'delete_expense';
+    data: any;
+  }) => Promise<void>;
 }
 
 const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
@@ -91,11 +95,12 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
   onSendMessage,
   onAppLibrary,
   onNavigateToTab,
+  onAction,
   className = ""
 }) => {
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [assistantMode, setAssistantMode] = useState<AssistantMode>('chat');
+  const [assistantMode, setAssistantMode] = useState<AssistantMode>('assistant');
   const [showTeamMode, setShowTeamMode] = useState(false);
   
   // Speech recognition
@@ -301,6 +306,38 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
         );
       }
 
+      // Parse for action commands in the response
+      let finalResponse = response;
+      const actionRegex = /\[ACTION:(\w+):({[^}]+})\]/g;
+      const actions: Array<{type: string, data: any}> = [];
+      let match;
+
+      while ((match = actionRegex.exec(response)) !== null) {
+        try {
+          const actionType = match[1];
+          const actionData = JSON.parse(match[2]);
+          actions.push({ type: actionType, data: actionData });
+          // Remove action command from response
+          finalResponse = finalResponse.replace(match[0], '').trim();
+        } catch (error) {
+          console.error('Error parsing action:', error, match);
+        }
+      }
+
+      // Execute actions if handler is provided
+      if (actions.length > 0 && onAction) {
+        for (const action of actions) {
+          try {
+            console.log('🔄 Executing Nova action:', action);
+            await onAction(action as any);
+            console.log('✅ Action executed successfully:', action.type);
+          } catch (error) {
+            console.error('❌ Error executing action:', error);
+            finalResponse += `\n\n⚠️ I encountered an error while performing the action: ${error.message}`;
+          }
+        }
+      }
+
       // Update conversation memory
       const userMemory: ConversationMemory = {
         id: Date.now().toString(),
@@ -314,7 +351,7 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
       const aiMemory: ConversationMemory = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: response,
+        content: finalResponse,
         mode: assistantMode,
         timestamp: new Date(),
         importance: 'medium'
@@ -323,7 +360,7 @@ const NovaChatInterface: React.FC<NovaChatInterfaceProps> = ({
       setConversationMemory(prev => [...prev.slice(-20), userMemory, aiMemory]); // Keep last 20 messages
       setIsTyping(false);
       
-      return { response, suggestions };
+      return { response: finalResponse, suggestions };
     } catch (error) {
       console.error('AI Response Error:', error);
       console.error('Error details:', {

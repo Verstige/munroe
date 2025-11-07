@@ -1,4 +1,4 @@
-import { LayoutDashboard, Plus, Settings, Sparkles, Search, Bot, Users, Mail, Network, Database, Zap, Map, StickyNote, CheckSquare, Clock, ChevronLeft, ChevronRight, ChevronDown, Calendar, CalendarDays, LogOut, LayoutGrid } from "lucide-react";
+import { LayoutDashboard, Plus, Settings, Sparkles, Search, Bot, Users, Mail, Network, Database, Zap, Map, StickyNote, CheckSquare, Clock, ChevronLeft, ChevronRight, ChevronDown, Calendar, CalendarDays, LogOut, LayoutGrid, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ interface SidebarProps {
   onCalendar?: () => void;
   onBookings?: () => void;
   onProjects?: () => void;
+  onExpenses?: () => void;
   onNavigateToTab?: (tab: string) => void;
   projects?: Array<{
     id: string;
@@ -45,6 +46,7 @@ export default function Sidebar({
   onCalendar,
   onBookings,
   onProjects,
+  onExpenses,
   onNavigateToTab,
   projects = [], 
   isLoading = false, 
@@ -233,6 +235,16 @@ export default function Sidebar({
                   >
                     <CalendarDays className="w-4 h-4 group-hover:text-primary transition-colors" />
                     {!isMinimized && <span className="font-medium">Bookings</span>}
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    className={`w-full ${isMinimized ? 'justify-center' : 'justify-start gap-3'} text-sidebar-foreground hover:text-foreground hover:bg-primary/15 hover:scale-102 transition-all duration-300 h-10 border-0 shadow-none group`}
+                    onClick={onExpenses || (() => onNavigateToTab?.('expenses'))}
+                    title={isMinimized ? "Expenses" : undefined}
+                  >
+                    <DollarSign className="w-4 h-4 group-hover:text-primary transition-colors" />
+                    {!isMinimized && <span className="font-medium">Expenses</span>}
                   </Button>
                   
                   <Button 

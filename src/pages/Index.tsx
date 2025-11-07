@@ -21,13 +21,22 @@ import ProjectManagement from "@/components/ProjectManagement";
 import TimeTracker from "@/components/TimeTracker";
 import NovaChatInterface from "@/components/NovaChatInterface";
 import WorkspaceCalendar from "@/components/WorkspaceCalendar";
+import ExpensesDashboard from "@/components/ExpensesDashboard";
 import MobileLayout from "@/components/MobileLayout";
 import FloatingAppDrawer from "@/components/FloatingAppDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
 import { useNavigate } from "react-router-dom";
 import { getUserDisplayName, getUserFirstName } from "@/lib/user-utils";
+import { toast } from "@/hooks/use-toast";
 import { useAIAgentIntegration } from "@/hooks/useAIAgentIntegration";
+import { FirebaseWorkspaceTasksService, type FirebaseWorkspaceTask } from "@/lib/firebase-business-map";
+import { FirebaseNotesService, type Note } from "@/lib/firebase-notes";
+import { FirebaseContactsService, type Contact } from "@/lib/firebase-contacts";
+import { FirebaseCalendarEventsService, type CalendarEvent } from "@/lib/firebase-calendar";
+import { FirebaseBookingTemplatesService, FirebaseBookingsService } from "@/lib/firebase-booking";
+import type { BookingTemplate, Booking } from "@/types/booking";
+import { FirebaseExpensesService, type Expense } from "@/lib/firebase-expenses";
 import BusinessSelector from "@/components/BusinessSelector";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -400,7 +409,12 @@ export default function Index() {
   const [isBusinessSelectorOpen, setIsBusinessSelectorOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<FirebaseWorkspaceTask[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isQuickSwitcherOpen, setIsQuickSwitcherOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -421,6 +435,183 @@ export default function Index() {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isLayouting, setIsLayouting] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+
+  // Load tasks from Firebase for Nova AI
+  useEffect(() => {
+    if (!user?.uid) {
+      setTasks([]);
+      return;
+    }
+
+    const teamId = 'default-team';
+    console.log('🔄 Loading tasks for Nova AI...');
+
+    const unsubscribe = FirebaseWorkspaceTasksService.subscribeToTasks(
+      user.uid,
+      teamId,
+      (loadedTasks) => {
+        console.log('✅ Tasks loaded for Nova AI:', loadedTasks.length);
+        setTasks(loadedTasks);
+      }
+    );
+
+    return () => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        console.error('❌ Error unsubscribing from tasks:', error);
+      }
+    };
+  }, [user?.uid]);
+
+  // Load notes from Firebase for Nova AI
+  useEffect(() => {
+    if (!user?.uid) {
+      setNotes([]);
+      return;
+    }
+
+    const teamId = 'default-team';
+    console.log('🔄 Loading notes for Nova AI...');
+
+    const loadNotes = async () => {
+      try {
+        const loadedNotes = await FirebaseNotesService.getNotes(user.uid, teamId);
+        console.log('✅ Notes loaded for Nova AI:', loadedNotes.length);
+        setNotes(loadedNotes);
+      } catch (error) {
+        console.error('❌ Error loading notes:', error);
+        setNotes([]);
+      }
+    };
+
+    loadNotes();
+    // Reload every 30 seconds to keep notes updated
+    const interval = setInterval(loadNotes, 30 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [user?.uid]);
+
+  // Load contacts from Firebase for Nova AI
+  useEffect(() => {
+    if (!user?.uid) {
+      setContacts([]);
+      return;
+    }
+
+    const teamId = 'default-team';
+    console.log('🔄 Loading contacts for Nova AI...');
+
+    const loadContacts = async () => {
+      try {
+        const loadedContacts = await FirebaseContactsService.getContacts(user.uid, teamId);
+        console.log('✅ Contacts loaded for Nova AI:', loadedContacts.length);
+        setContacts(loadedContacts);
+      } catch (error) {
+        console.error('❌ Error loading contacts:', error);
+        setContacts([]);
+      }
+    };
+
+    loadContacts();
+    // Reload every 30 seconds to keep contacts updated
+    const interval = setInterval(loadContacts, 30 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [user?.uid]);
+
+  // Load calendar events from Firebase for Nova AI
+  useEffect(() => {
+    if (!user?.uid) {
+      setCalendarEvents([]);
+      return;
+    }
+
+    const teamId = 'default-team';
+    console.log('🔄 Loading calendar events for Nova AI...');
+
+    const loadEvents = async () => {
+      try {
+        const events = await FirebaseCalendarEventsService.getEvents(user.uid, teamId);
+        console.log('✅ Calendar events loaded for Nova AI:', events.length);
+        setCalendarEvents(events);
+      } catch (error) {
+        console.error('❌ Error loading calendar events:', error);
+        setCalendarEvents([]);
+      }
+    };
+
+    loadEvents();
+    // Reload every 5 minutes to keep calendar events updated
+    const interval = setInterval(loadEvents, 5 * 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [user?.uid]);
+
+  // Load bookings from Firebase for Nova AI
+  useEffect(() => {
+    if (!user?.uid) {
+      setBookings([]);
+      return;
+    }
+
+    const teamId = 'default-team';
+    console.log('🔄 Loading bookings for Nova AI...');
+
+    const loadBookings = async () => {
+      try {
+        const loadedBookings = await FirebaseBookingsService.getBookings(user.uid, teamId);
+        console.log('✅ Bookings loaded for Nova AI:', loadedBookings.length);
+        setBookings(loadedBookings);
+      } catch (error) {
+        console.error('❌ Error loading bookings:', error);
+        setBookings([]);
+      }
+    };
+
+    loadBookings();
+    // Reload every 2 minutes to keep bookings updated
+    const interval = setInterval(loadBookings, 2 * 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [user?.uid]);
+
+  // Load expenses from Firebase for Nova AI
+  useEffect(() => {
+    if (!user?.uid) {
+      setExpenses([]);
+      return;
+    }
+
+    const teamId = 'default-team';
+    console.log('🔄 Loading expenses for Nova AI...');
+
+    const unsubscribe = FirebaseExpensesService.subscribeToExpenses(
+      user.uid,
+      teamId,
+      undefined, // No filters - get all expenses
+      (loadedExpenses) => {
+        console.log('✅ Expenses loaded for Nova AI:', loadedExpenses.length);
+        setExpenses(loadedExpenses);
+      }
+    );
+
+    return () => {
+      try {
+        unsubscribe();
+      } catch (error) {
+        console.error('❌ Error unsubscribing from expenses:', error);
+      }
+    };
+  }, [user?.uid]);
 
   // Handle new project creation
   const handleAddNewProject = (projectData: { title: string; description: string }) => {
@@ -556,7 +747,7 @@ export default function Index() {
         console.error('❌ Error loading initial data:', error);
       } finally {
         if (mounted) {
-          setIsLoading(false);
+      setIsLoading(false);
         }
       }
     };
@@ -602,20 +793,185 @@ export default function Index() {
     }
   }, [activeProject, user?.uid]);
 
-  // Load tasks from localStorage
-  useEffect(() => {
-    const savedTasks = localStorage.getItem('viewableTasks');
-    if (savedTasks) {
-      const parsedTasks = JSON.parse(savedTasks).map((task: any) => ({
-        ...task,
-        createdAt: new Date(task.createdAt),
-        updatedAt: new Date(task.updatedAt),
-        dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
-        startDate: task.startDate ? new Date(task.startDate) : undefined
-      }));
-      setTasks(parsedTasks);
+  // Tasks are now loaded from Firebase in the useEffect above
+  // Removed localStorage loading as tasks are now managed by Firebase
+
+  // Nova AI Action Handler
+  const handleNovaAction = async (action: {
+    type: string;
+    data: any;
+  }) => {
+    if (!user?.uid) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to perform actions.",
+        variant: "destructive"
+      });
+      return;
     }
-  }, []);
+
+    const teamId = 'default-team';
+    const currentUser = getUserDisplayName(user);
+
+    try {
+      switch (action.type) {
+        case 'create_task':
+          await FirebaseWorkspaceTasksService.createTask(
+            {
+              title: action.data.title,
+              description: action.data.description || '',
+              status: action.data.status || 'todo',
+              priority: action.data.priority || 'medium',
+              assignee: action.data.assignee || currentUser,
+              assigneeAvatar: null,
+              tags: action.data.tags || [],
+              visibility: 'team',
+              subtasks: []
+            },
+            user.uid,
+            teamId
+          );
+          toast({
+            title: "Task Created",
+            description: `Task "${action.data.title}" has been created.`,
+          });
+          break;
+
+        case 'delete_task':
+          if (!action.data.id) {
+            throw new Error('Task ID is required');
+          }
+          await FirebaseWorkspaceTasksService.deleteTask(action.data.id, user.uid, teamId);
+          toast({
+            title: "Task Deleted",
+            description: "The task has been deleted.",
+          });
+          break;
+
+        case 'create_note':
+          await FirebaseNotesService.createNote(user.uid, teamId, {
+            title: action.data.title,
+            content: action.data.content || '',
+            tags: action.data.tags || [],
+            visibility: action.data.visibility || 'private'
+          });
+          toast({
+            title: "Note Created",
+            description: `Note "${action.data.title}" has been created.`,
+          });
+          break;
+
+        case 'delete_note':
+          if (!action.data.id) {
+            throw new Error('Note ID is required');
+          }
+          await FirebaseNotesService.deleteNote(user.uid, teamId, action.data.id);
+          toast({
+            title: "Note Deleted",
+            description: "The note has been deleted.",
+          });
+          break;
+
+        case 'create_contact':
+          await FirebaseContactsService.createContact(user.uid, teamId, {
+            name: action.data.name,
+            email: action.data.email || '',
+            phone: action.data.phone || '',
+            company: action.data.company || '',
+            status: (action.data.status || 'lead') as 'lead' | 'prospect' | 'customer' | 'inactive',
+            source: action.data.source || 'manual',
+            tags: action.data.tags || []
+          });
+          toast({
+            title: "Contact Created",
+            description: `Contact "${action.data.name}" has been added.`,
+          });
+          break;
+
+        case 'delete_contact':
+          if (!action.data.id) {
+            throw new Error('Contact ID is required');
+          }
+          await FirebaseContactsService.deleteContact(user.uid, teamId, action.data.id);
+          toast({
+            title: "Contact Deleted",
+            description: "The contact has been deleted.",
+          });
+          break;
+
+        case 'create_calendar_event':
+          await FirebaseCalendarEventsService.createEvent(user.uid, teamId, {
+            title: action.data.title,
+            description: action.data.description || '',
+            eventDate: action.data.eventDate ? new Date(action.data.eventDate) : new Date(),
+            startTime: action.data.startTime || '',
+            endTime: action.data.endTime || '',
+            location: action.data.location || ''
+          });
+          toast({
+            title: "Event Created",
+            description: `Event "${action.data.title}" has been added to your calendar.`,
+          });
+          break;
+
+        case 'delete_calendar_event':
+          if (!action.data.id) {
+            throw new Error('Event ID is required');
+          }
+          await FirebaseCalendarEventsService.deleteEvent(user.uid, teamId, action.data.id);
+          toast({
+            title: "Event Deleted",
+            description: "The event has been deleted.",
+          });
+          break;
+
+        case 'create_expense':
+          await FirebaseExpensesService.createExpense(user.uid, teamId, {
+            type: action.data.type || 'business',
+            category: action.data.category || 'other-business',
+            amount: parseFloat(action.data.amount),
+            currency: action.data.currency || 'USD',
+            description: action.data.description,
+            date: action.data.date ? new Date(action.data.date) : new Date(),
+            vendor: action.data.vendor || '',
+            tags: action.data.tags || [],
+            status: 'pending'
+          });
+          toast({
+            title: "Expense Created",
+            description: `Expense "${action.data.description}" has been added.`,
+          });
+          break;
+
+        case 'delete_expense':
+          if (!action.data.id) {
+            throw new Error('Expense ID is required');
+          }
+          await FirebaseExpensesService.deleteExpense(user.uid, teamId, action.data.id);
+          toast({
+            title: "Expense Deleted",
+            description: "The expense has been deleted.",
+          });
+          break;
+
+        default:
+          console.warn('Unknown action type:', action.type);
+          toast({
+            title: "Unknown Action",
+            description: `Action type "${action.type}" is not supported.`,
+            variant: "destructive"
+          });
+      }
+    } catch (error: any) {
+      console.error('Error performing action:', error);
+      toast({
+        title: "Error",
+        description: `Failed to ${action.type.replace(/_/g, ' ')}. ${error.message || 'Please try again.'}`,
+        variant: "destructive"
+      });
+      throw error; // Re-throw so Nova can handle it
+    }
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -944,12 +1300,15 @@ export default function Index() {
           onBookings={() => {
             setCurrentTab('bookings');
           }}
+          onExpenses={() => {
+            setCurrentTab('expenses');
+          }}
           onNavigateToTab={(tab) => setCurrentTab(tab as WorkspaceTab)}
         projects={projects}
         isLoading={isLoading}
           hasEverCreatedProject={hasEverCreatedProject}
       />
-        </div>
+          </div>
 
       {/* Main Content */}
         <div className="flex-1 overflow-auto bg-gradient-subtle scrollbar-none">
@@ -969,13 +1328,13 @@ export default function Index() {
                 height={32}
               />
               <span className="font-semibold text-foreground text-sm sm:text-base">Nexus</span>
-            </div>
+          </div>
                 <div className="flex items-center gap-2">
                   <ProfileDropdown />
                 </div>
-          </div>
+                </div>
 
-          </div>
+              </div>
 
         
         <div className="p-3 sm:p-4 md:p-6 lg:p-8">
@@ -987,8 +1346,8 @@ export default function Index() {
                   <div>
                     {/* Profile dropdown removed */}
           </div>
-                </div>
-          </div>
+        </div>
+      </div>
 
           {/* Nova AI Chat Interface */}
           <div className="mb-6 sm:mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
@@ -1016,17 +1375,66 @@ export default function Index() {
                   socialMedia: p.socialMedia,
                   additionalNotes: p.additionalNotes
                 })),
-                tasks: [], // TODO: Add tasks from ViewableTasks component
+                tasks: tasks.map(task => ({
+                  id: task.id,
+                  title: task.title,
+                  description: task.description || '',
+                  status: task.status,
+                  assignee: task.assignee,
+                  projectId: task.projectId || ''
+                })),
                 teamMembers: [],
-                notes: [], // TODO: Add notes from BuiltInNotes component
+                notes: notes.map(note => ({
+                  id: note.id,
+                  title: note.title,
+                  content: note.content || '',
+                  projectId: '' // Notes don't have projectId in the current schema
+                })),
                 currentUser: {
                   name: getUserDisplayName(user),
                   email: user?.email || ''
                 },
                 businessStage: 'startup', // TODO: Add business stage selection
-                industry: 'technology' // TODO: Add industry selection
+                industry: 'technology', // TODO: Add industry selection
+                // Additional context for Nova AI
+                contacts: contacts.map(contact => ({
+                  id: contact.id,
+                  name: contact.name,
+                  email: contact.email || '',
+                  phone: contact.phone || '',
+                  company: contact.company || '',
+                  status: contact.status || 'active'
+                })),
+                calendarEvents: calendarEvents.map(event => ({
+                  id: event.id,
+                  title: event.title,
+                  description: event.description || '',
+                  eventDate: event.eventDate instanceof Date ? event.eventDate : (event.eventDate ? new Date(event.eventDate) : new Date()),
+                  startTime: event.startTime || '',
+                  endTime: event.endTime || '',
+                  location: event.location || ''
+                })),
+                bookings: bookings.map(booking => ({
+                  id: booking.id,
+                  customerName: booking.customerName,
+                  customerEmail: booking.customerEmail,
+                  templateId: booking.templateId,
+                  scheduledDate: booking.startTime instanceof Date ? booking.startTime : (booking.startTime ? new Date(booking.startTime) : new Date()),
+                  status: booking.status
+                })),
+                expenses: expenses.map(expense => ({
+                  id: expense.id,
+                  type: expense.type,
+                  amount: expense.amount,
+                  currency: expense.currency,
+                  description: expense.description,
+                  date: expense.date instanceof Date ? expense.date : (expense.date ? new Date(expense.date) : new Date()),
+                  status: expense.status,
+                  category: expense.category
+                }))
               }}
               onSendMessage={(message) => console.log("Nova AI Message:", message)}
+              onAction={handleNovaAction}
               onAppLibrary={() => setCurrentTab('mindmap')}
               onNavigateToTab={(tab) => setCurrentTab(tab as any)}
             />
@@ -1081,6 +1489,7 @@ export default function Index() {
             }
             bookingsContent={<BookingManager />}
             projectsContent={<ProjectManagement />}
+            expensesContent={<ExpensesDashboard />}
             taskNotifications={0}
             teamNotifications={0}
             timerNotifications={0}

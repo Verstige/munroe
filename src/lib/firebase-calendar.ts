@@ -1,6 +1,7 @@
 // Firebase Calendar Events Service
 import { 
   collection, 
+  doc,
   addDoc, 
   updateDoc, 
   deleteDoc, 
@@ -174,8 +175,7 @@ export class FirebaseCalendarEventsService {
         updateData.eventDate = Timestamp.fromDate(updates.eventDate);
       }
 
-      const eventRef = collection(db, 'calendarEvents');
-      const eventDoc = eventRef.doc(eventId);
+      const eventDoc = doc(db, 'calendarEvents', eventId);
       
       await updateDoc(eventDoc, updateData);
       console.log('✅ Calendar event updated successfully');
@@ -193,8 +193,7 @@ export class FirebaseCalendarEventsService {
     try {
       console.log('🔄 FirebaseCalendarEventsService.deleteEvent called with:', { userId, teamId, eventId });
       
-      const eventRef = collection(db, 'calendarEvents');
-      const eventDoc = eventRef.doc(eventId);
+      const eventDoc = doc(db, 'calendarEvents', eventId);
       
       await deleteDoc(eventDoc);
       console.log('✅ Calendar event deleted successfully');
