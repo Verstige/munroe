@@ -13,7 +13,8 @@
     "netlify:build": "npm run build",
     "ios:build": "npm run build && npx cap sync ios",
     "ios:open": "npx cap open ios",
-    "ios:run": "npm run ios:build && npm run ios:open"
+    "ios:run": "npm run ios:build && npm run ios:open",
+    "start": "node server.js"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.0",
