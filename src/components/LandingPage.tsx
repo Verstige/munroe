@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import NovaShowcase from "./NovaShowcase";
+import NuminVsAI from "./NuminVsAI";
 import { 
   ArrowRight, 
   Sparkles, 
@@ -837,6 +838,9 @@ const LandingPage = () => {
           </Card>
         </div>
       </section>
+
+      {/* Numin vs AI — ChatGPT Comparison */}
+      <NuminVsAI />
 
       {/* Footer */}
       <footer className="relative z-10 px-4 sm:px-6 py-8 sm:py-12 border-t border-white/10">
