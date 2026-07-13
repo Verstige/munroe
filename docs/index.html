@@ -191,8 +191,8 @@ body[data-skin="cloud"] [data-skin-show="cloud"].cloud-stack { display: grid; }
   font-size: 0.6rem; font-weight: 900; color: var(--bg);
 }
 h1.hero-h {
-  font-size: clamp(2rem, 9vw, 5.4rem);
-  font-weight: 900; letter-spacing: -0.04em; line-height: 1.06;
+  font-size: clamp(2.4rem, 8vw, 5.4rem);
+  font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
   color: var(--text); max-width: 980px;
   width: 100%;
   margin: 0 auto 28px;
@@ -691,7 +691,7 @@ h1.hero-h {
   .nav { padding: 0 20px; height: 60px; }
   .nav-links { display: none; }
   .hero { padding: 120px 20px 60px; min-height: auto; }
-  h1.hero-h { font-size: clamp(2.2rem, 10vw, 3.5rem); }
+  h1.hero-h { font-size: clamp(2rem, 9vw, 3.5rem); letter-spacing: -0.03em; }
   .sub { font-size: 0.95rem; margin-bottom: 32px; }
   .btn-row { flex-direction: column; width: 100%; gap: 10px; margin-bottom: 32px; }
   .btn-primary, .btn-ghost { width: 100%; justify-content: center; padding: 14px 24px; }
@@ -1290,6 +1290,36 @@ try {
   const saved = localStorage.getItem('numin-skin');
   if (saved && SKIN_COPY[saved]) applySkin(saved);
 } catch (e) {}
+
+// Mobile-test mode: ?mobile=1 forces a 390px container so we can audit mobile layout
+// from a desktop browser. Renders inside a styled wrapper to simulate the viewport.
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mobile') !== '1') return;
+
+  const wrap = document.createElement('div');
+  wrap.id = 'mobile-sim';
+  wrap.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:99999;display:flex;flex-direction:column;align-items:center;overflow:hidden;';
+
+  const frame = document.createElement('div');
+  frame.style.cssText = 'width:390px;height:100vh;background:var(--bg);position:relative;overflow-y:auto;overflow-x:hidden;border:1px solid rgba(255,255,255,0.1);';
+
+  const body = document.body;
+  while (body.firstChild) frame.appendChild(body.firstChild);
+  body.innerHTML = '';
+  body.style.cssText = 'margin:0;padding:0;background:#222;overflow:hidden;';
+  wrap.appendChild(frame);
+  body.appendChild(wrap);
+
+  // MatchMedia override so all @media (max-width: 768px) rules apply inside the 390px frame
+  const origMatchMedia = window.matchMedia;
+  window.matchMedia = function(q) {
+    if (q.includes('max-width')) {
+      return { matches: true, media: q, addListener: () => {}, removeListener: () => {} };
+    }
+    return origMatchMedia.call(window, q);
+  };
+})();
 </script>
 
 </body>
