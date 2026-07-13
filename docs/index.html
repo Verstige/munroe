@@ -159,6 +159,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .tab-sub { font-size: 0.72rem; font-weight: 450; opacity: 0.7; }
 .tab[aria-selected="true"] .tab-sub { color: rgba(5, 7, 7, 0.65); opacity: 1; }
 
+/* Skin-conditional sections — hidden by default, JS reveals the matching one.
+   Fallback if JS is disabled: hide both (better than showing both stacked). */
+[data-skin-show] { display: none; }
+body[data-skin="local"] [data-skin-show="local"] { display: block; }
+body[data-skin="cloud"] [data-skin-show="cloud"] { display: block; }
+body[data-skin="local"] [data-skin-show="local"].cloud-stack,
+body[data-skin="cloud"] [data-skin-show="cloud"].cloud-stack { display: grid; }
+
 /* ── Hero ── */
 .hero {
   position: relative; min-height: 100vh; z-index: 1;
@@ -285,10 +293,14 @@ h1.hero-h {
     0 0 0 1px rgba(255, 255, 255, 0.04),
     0 -20px 80px rgba(var(--accent-rgb), 0.08),
     0 40px 120px rgba(0, 0, 0, 0.8);
-  transform: perspective(1200px) rotateX(4deg);
-  transition: transform 0.6s ease;
 }
-.dash-preview:hover { transform: perspective(1200px) rotateX(1deg); }
+@media (min-width: 769px) {
+  .dash-preview {
+    transform: perspective(1200px) rotateX(4deg);
+    transition: transform 0.6s ease;
+  }
+  .dash-preview:hover { transform: perspective(1200px) rotateX(1deg); }
+}
 .dash-preview::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.7), rgba(var(--accent-dim-rgb), 0.9), rgba(var(--accent-rgb), 0.7), transparent);
@@ -686,7 +698,7 @@ h1.hero-h {
   .dash-body { grid-template-columns: 1fr; padding: 12px; }
   .dash-side { flex-direction: row; flex-wrap: wrap; gap: 4px; }
   .dash-side-row { font-size: 0.72rem; padding: 6px 10px; }
-  .section, .channels, .cloud-what, .audience, .advantage, .experience, .workflow, .compare, .cta { padding: 80px 20px; }
+  .section, .channels, .cloud-what, .audience, .advantage, .experience, .workflow, .compare, .cta { padding: 100px 20px 80px; }
   .h2 { font-size: clamp(2rem, 8vw, 3rem); }
   .channels-grid { grid-template-columns: 1fr 1fr; }
   .cloud-stack, .wf-grid, .cards-row { grid-template-columns: 1fr; gap: 12px; }
