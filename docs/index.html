@@ -3,42 +3,40 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Numin — Your AI Employee, Running Locally</title>
-<meta name="description" content="Six specialized AI agents that run your entire business — operations, sales, support, and communications — 24/7, all on your own hardware." />
+<title>Numin — Your AI Employee, Running Locally or in the Cloud</title>
+<meta name="description" content="Six specialized AI agents that run your entire business — operations, sales, support, and communications — 24/7. Text them on iMessage, WhatsApp, Telegram, or web. Local on your Mac, or hosted on your private cloud computer." />
 <meta name="author" content="Numin" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23050707'/%3E%3Ctext x='50' y='62' font-family='Inter,sans-serif' font-size='48' font-weight='900' fill='%23C9A84C' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E" />
-<meta property="og:title" content="Numin — Your AI Employee, Running Locally" />
-<meta property="og:description" content="Six specialized AI agents that run your entire business — 24/7, all on your own hardware." />
+<meta property="og:title" content="Numin — Your AI Employee" />
+<meta property="og:description" content="Six specialized AI agents. Local or cloud. Talk to them on iMessage, WhatsApp, Telegram, or web." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content="@numin_ai" />
-<meta name="twitter:title" content="Numin — Your AI Employee, Running Locally" />
-<meta name="twitter:description" content="Six specialized AI agents that run your entire business — 24/7, all on your own hardware." />
+<meta name="twitter:title" content="Numin — Your AI Employee" />
+<meta name="twitter:description" content="Six specialized AI agents. Local or cloud. Talk to them on iMessage, WhatsApp, Telegram, or web." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    NUMIN LANDING — Self-contained, zero dependencies
-   Gold-on-black OrbitAI-derived design system.
    ============================================================ */
 :root {
   --bg: #050707;
   --bg-2: #0c0f14;
+  --bg-3: #0a0d11;
   --text: #f7f9fc;
   --text-dim: rgba(247, 249, 252, 0.35);
   --text-mid: #acb5c4;
   --text-mute: #5c6178;
   --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
   --accent: #C9A84C;
   --accent-light: #f0d078;
   --accent-dim: #E8D5A3;
   --accent-rgb: 201, 168, 76;
   --accent-dim-rgb: 232, 213, 163;
   --accent-deep: #9c7e2a;
-  --planet-2: #3e9cff;
-  --planet-2-light: #7ec3ff;
-  --planet-2-deep: #1a3a6e;
 }
 
 body[data-skin="cloud"] {
@@ -48,9 +46,6 @@ body[data-skin="cloud"] {
   --accent-rgb: 62, 156, 255;
   --accent-dim-rgb: 184, 219, 255;
   --accent-deep: #1e6fc4;
-  --planet-2: #3e9cff;
-  --planet-2-light: #7ec3ff;
-  --planet-2-deep: #1a3a6e;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,7 +63,7 @@ html, body {
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 
-/* ── Background layers ── */
+/* ── Background ── */
 .nebula {
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
@@ -79,7 +74,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     var(--bg);
   animation: nebula-drift 18s ease-in-out infinite alternate;
 }
-
 @keyframes nebula-drift {
   0% { transform: scale(1) translate(0, 0); }
   33% { transform: scale(1.05) translate(-1%, 1.5%); }
@@ -97,9 +91,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 30%, transparent 80%);
 }
 
-.stars {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-}
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
 
 /* ── Nav ── */
 .nav {
@@ -111,19 +103,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   -webkit-backdrop-filter: blur(20px) saturate(1.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-
-.nav-logo {
-  font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;
-}
+.nav-logo { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
 .nav-logo .dot { color: var(--accent); }
-
 .nav-links { display: flex; gap: 36px; list-style: none; }
 .nav-links a {
   font-size: 0.84rem; font-weight: 450; color: var(--text-mid);
   transition: color 0.2s;
 }
 .nav-links a:hover { color: var(--text); }
-
 .nav-cta {
   padding: 9px 22px; border-radius: 90px;
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
@@ -133,7 +120,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .nav-cta:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 32px rgba(var(--accent-rgb), 0.36); }
 
-/* ── Tab toggle ── */
+/* ── Tabs ── */
 .tabs {
   position: relative;
   display: inline-flex;
@@ -148,23 +135,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   z-index: 5;
   animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
 .tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 22px;
-  border-radius: 100px;
-  border: 1px solid transparent;
-  background: transparent;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 22px; border-radius: 100px;
+  border: 1px solid transparent; background: transparent;
   color: var(--text-mid);
-  font-family: inherit;
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-family: inherit; font-size: 0.88rem; font-weight: 600;
   cursor: pointer;
   transition: color 0.25s, background 0.25s, box-shadow 0.25s;
 }
-
 .tab:hover { color: var(--text); }
 .tab[aria-selected="true"] {
   color: var(--bg);
@@ -177,12 +156,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
 }
 .tab[aria-selected="true"] .tab-dot { background: var(--bg); box-shadow: none; }
-.tab-sub {
-  font-size: 0.72rem; font-weight: 450; opacity: 0.7;
-}
-.tab[aria-selected="true"] .tab-sub {
-  color: rgba(5, 7, 7, 0.65); opacity: 1;
-}
+.tab-sub { font-size: 0.72rem; font-weight: 450; opacity: 0.7; }
+.tab[aria-selected="true"] .tab-sub { color: rgba(5, 7, 7, 0.65); opacity: 1; }
 
 /* ── Hero ── */
 .hero {
@@ -190,7 +165,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; padding: 140px 40px 80px; overflow: hidden;
 }
-
 .badge {
   display: inline-flex; align-items: center; gap: 8px;
   background: rgba(var(--accent-rgb), 0.06);
@@ -209,11 +183,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: flex; align-items: center; justify-content: center;
   font-size: 0.6rem; font-weight: 900; color: var(--bg);
 }
-
 h1.hero-h {
   font-size: clamp(2.4rem, 7vw, 5.4rem);
   font-weight: 900; letter-spacing: -0.04em; line-height: 1.06;
-  color: var(--text); max-width: 900px;
+  color: var(--text); max-width: 980px;
   margin: 0 auto 28px;
   animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.1s;
 }
@@ -225,8 +198,8 @@ h1.hero-h {
     rgba(247, 249, 252, 0.35) 0%,
     rgba(247, 249, 252, 0.35) 30%,
     rgba(var(--accent-dim-rgb), 0.9) 45%,
-        rgba(var(--accent-rgb), 1) 50%,
-        rgba(var(--accent-dim-rgb), 0.9) 55%,
+    rgba(var(--accent-rgb), 1) 50%,
+    rgba(var(--accent-dim-rgb), 0.9) 55%,
     rgba(247, 249, 252, 0.35) 70%,
     rgba(247, 249, 252, 0.35) 100%
   );
@@ -240,13 +213,11 @@ h1.hero-h {
   0% { background-position: 200% center; }
   100% { background-position: -200% center; }
 }
-
 .sub {
-  font-size: 1.1rem; color: var(--text-mid); max-width: 540px;
-  margin: 0 auto 40px; line-height: 1.75; font-weight: 400;
+  font-size: 1.1rem; color: var(--text-mid); max-width: 580px;
+  margin: 0 auto 40px; line-height: 1.75;
   animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
 }
-
 .btn-row {
   display: flex; gap: 14px; justify-content: center; align-items: center;
   margin-bottom: 48px;
@@ -261,7 +232,6 @@ h1.hero-h {
   transition: all 0.3s;
 }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(var(--accent-rgb), 0.4); filter: brightness(1.08); }
-
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 16px 32px; border-radius: 90px;
@@ -330,41 +300,85 @@ h1.hero-h {
   100% { background-position: -200% center; }
 }
 .dash-preview-inner {
-  padding: 80px 40px; display: grid; grid-template-columns: 1fr 2fr; gap: 24px;
-  font-size: 0.78rem;
+  padding: 32px 32px 40px;
+}
+.dash-channels {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px 12px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: none;
+}
+.ch-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: #ff5f57;
+}
+.ch-dot.y { background: #ffbd2e; }
+.ch-dot.g { background: #28c940; }
+.ch-url {
+  margin-left: 14px; flex: 1;
+  font-size: 0.7rem; color: var(--text-mute);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.dash-body {
+  display: grid; grid-template-columns: 240px 1fr; gap: 16px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  min-height: 320px;
 }
 .dash-side {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px; padding: 16px;
+  display: flex; flex-direction: column; gap: 4px;
 }
 .dash-side-row {
-  padding: 8px 12px; border-radius: 8px; margin-bottom: 4px;
+  padding: 8px 12px; border-radius: 8px;
   color: var(--text-mid); display: flex; align-items: center; gap: 10px;
+  font-size: 0.78rem;
 }
 .dash-side-row.active { background: rgba(var(--accent-rgb), 0.08); color: var(--text); }
 .dash-main {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px; padding: 24px;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 12px;
 }
-.dash-card {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 8px; padding: 14px; margin-bottom: 12px;
+.msg {
+  display: flex; gap: 10px;
+  align-items: flex-start;
+  animation: msg-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.dash-card-title { font-weight: 600; margin-bottom: 4px; }
-.dash-card-meta { font-size: 0.72rem; color: var(--text-mute); }
-.dash-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;
+.msg.user { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 900; color: var(--bg); flex-shrink: 0;
 }
-.dash-stat { padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; }
-.dash-stat-val { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
-.dash-stat-lbl { font-size: 0.65rem; color: var(--text-mute); margin-top: 2px; }
+.msg-avatar.you {
+  background: linear-gradient(135deg, #6b7280, #9ca3af);
+}
+.msg-bubble {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--text);
+  max-width: 80%;
+  line-height: 1.5;
+}
+.msg.user .msg-bubble { background: rgba(var(--accent-rgb), 0.08); border-color: rgba(var(--accent-rgb), 0.2); }
+.msg-time { font-size: 0.62rem; color: var(--text-mute); margin-top: 4px; }
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* ── Sections ── */
 .section { position: relative; z-index: 1; padding: 120px 52px; }
-
 .eyebrow {
   font-size: 0.72rem; font-weight: 600; color: var(--accent);
   text-transform: uppercase; letter-spacing: 0.12em;
@@ -373,16 +387,84 @@ h1.hero-h {
 .eyebrow::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
 }
-
 .h2 {
   font-size: clamp(2.4rem, 5vw, 4rem); font-weight: 800;
   letter-spacing: -0.04em; line-height: 1.1; color: var(--text);
   margin-bottom: 16px;
 }
-
 .body-text {
   font-size: 1.1rem; color: var(--text-mid); max-width: 600px;
   line-height: 1.75; margin-bottom: 56px;
+}
+.center-h { text-align: center; }
+.center-h .body-text { margin-left: auto; margin-right: auto; }
+
+/* ── Channels ── */
+.channels { padding: 120px 52px; }
+.channels-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  max-width: 1100px; margin: 0 auto;
+}
+.ch-card {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  padding: 32px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.ch-card:hover { border-color: rgba(var(--accent-rgb), 0.25); transform: translateY(-4px); }
+.ch-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 18px;
+}
+.ch-card h3 {
+  font-size: 1.05rem; font-weight: 700; color: var(--text);
+  margin-bottom: 6px;
+}
+.ch-card p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; }
+.ch-example {
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  font-size: 0.78rem; color: var(--text-mid);
+  font-style: italic;
+}
+
+/* ── Cloud computer (what they get) ── */
+.cloud-what { background: linear-gradient(180deg, var(--bg) 0%, var(--bg-3) 100%); padding: 120px 52px; }
+.cloud-stack {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  max-width: 1100px; margin: 0 auto;
+}
+.cs-card {
+  border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg-2);
+  padding: 32px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.cs-card:hover { border-color: rgba(var(--accent-rgb), 0.25); transform: translateY(-3px); }
+.cs-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(var(--accent-rgb), 0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; margin-bottom: 16px;
+}
+.cs-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+.cs-card p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; }
+.cs-spec {
+  margin-top: 14px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.cs-spec-tag {
+  padding: 4px 10px; border-radius: 90px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  font-size: 0.7rem; color: var(--text-mid);
+  font-family: ui-monospace, monospace;
 }
 
 /* ── Audience ── */
@@ -406,11 +488,11 @@ h1.hero-h {
   color: var(--text);
 }
 .audience-footer {
-  font-size: 1.2rem; color: var(--text-mid); margin-top: 56px; font-weight: 400;
+  font-size: 1.2rem; color: var(--text-mid); margin-top: 56px;
 }
 .audience-footer .dim { color: rgba(172, 181, 196, 0.45); }
 
-/* ── Advantage ── */
+/* ── Advantage cards ── */
 .advantage { background: var(--bg); padding: 60px 52px 120px; }
 .cards-row {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
@@ -437,99 +519,93 @@ h1.hero-h {
 .card-title::before {
   content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
 }
-.card-body {
-  font-size: 0.82rem; color: var(--text-mute); line-height: 1.6;
-}
+.card-body { font-size: 0.82rem; color: var(--text-mute); line-height: 1.6; }
 .adv-tagline {
   text-align: center; font-size: clamp(1.1rem, 2.5vw, 1.6rem);
   color: var(--text-mid); margin-top: 80px;
 }
 .adv-tagline .bright { color: var(--text); }
 
-/* ── Bento ── */
-.bento { background: linear-gradient(180deg, var(--bg) 0%, #080b10 100%); padding: 120px 52px; }
-.bento-grid {
-  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto;
-  gap: 16px; max-width: 1100px; margin: 0 auto;
-}
-.bento-cell {
-  border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.06);
-  background: var(--bg-2); padding: 36px; position: relative; overflow: hidden;
-  transition: border-color 0.3s, transform 0.35s;
-}
-.bento-cell:hover { border-color: rgba(var(--accent-rgb), 0.18); transform: translateY(-3px); }
-.bento-icon {
-  width: 52px; height: 52px; border-radius: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.25rem; margin-bottom: 20px;
-}
-.bento-title {
-  font-size: 1.5rem; font-weight: 700; color: var(--text);
-  letter-spacing: -0.02em; margin-bottom: 8px;
-}
-.bento-title .dim { color: rgba(247, 249, 252, 0.45); font-weight: 300; }
-.bento-desc {
-  font-size: 0.88rem; color: var(--text-mute); line-height: 1.7; max-width: 420px;
-}
-.bento-mock {
-  margin-top: 24px; border-radius: 12px;
-  background: #080b10; border: 1px solid rgba(255, 255, 255, 0.05);
+/* ── Experience / Agent vs Chat ── */
+.experience { background: linear-gradient(180deg, var(--bg-3) 0%, var(--bg) 100%); padding: 120px 52px; }
+.xp-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  max-width: 1100px; margin: 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 24px;
   overflow: hidden;
 }
-.bento-mock-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  font-size: 0.78rem; color: var(--text-mid);
+.xp-col {
+  padding: 48px 40px;
 }
-.bento-mock-row:last-child { border-bottom: none; }
-.bento-mock-row .badge-opt {
-  margin-left: auto; font-size: 0.6rem; font-weight: 600;
-  color: #34f5c5; background: rgba(52, 245, 197, 0.1);
-  border: 1px solid rgba(52, 245, 197, 0.2);
-  padding: 2px 8px; border-radius: 90px; text-transform: uppercase; letter-spacing: 0.06em;
+.xp-col.chat { background: rgba(255, 255, 255, 0.015); border-right: 1px solid var(--border); }
+.xp-col.agent { background: rgba(var(--accent-rgb), 0.04); }
+.xp-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; margin-bottom: 8px;
 }
-.bento-mock-row .badge-idle {
-  margin-left: auto; font-size: 0.6rem; font-weight: 600;
-  color: var(--text-mid); background: rgba(172, 181, 196, 0.08);
-  border: 1px solid rgba(172, 181, 196, 0.12);
-  padding: 2px 8px; border-radius: 90px;
+.xp-col.chat .xp-label { color: var(--text-mute); }
+.xp-col.agent .xp-label { color: var(--accent); }
+.xp-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+.xp-tagline { font-size: 0.92rem; color: var(--text-mid); margin-bottom: 28px; line-height: 1.6; }
+.xp-rows { display: flex; flex-direction: column; gap: 16px; }
+.xp-row {
+  display: flex; gap: 14px; align-items: flex-start;
+  font-size: 0.88rem;
 }
-.mini-stats { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-.mini-stat {
-  padding: 10px 16px; background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px;
-}
-.mini-stat-val { font-size: 1.3rem; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
-.mini-stat-lbl { font-size: 0.62rem; color: var(--text-mute); font-weight: 500; }
-.check-list { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
-.check-item {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 0.85rem; color: var(--text-mid);
-}
-.check-item::before {
-  content: '✓'; width: 20px; height: 20px; border-radius: 50%;
-  background: rgba(var(--accent-rgb), 0.1);
-  border: 1px solid rgba(var(--accent-rgb), 0.2);
+.xp-row .ico {
+  width: 24px; height: 24px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 0.65rem; color: var(--accent); font-weight: 700;
+  flex-shrink: 0; font-size: 0.75rem; font-weight: 700; margin-top: 2px;
 }
-.bar-chart { display: flex; align-items: flex-end; gap: 6px; margin-top: 16px; height: 60px; }
-.bar {
-  flex: 1; border-radius: 4px 4px 0 0; background: rgba(var(--accent-rgb), 0.15);
+.xp-col.chat .ico {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  color: var(--text-mute);
 }
-.bar.active { background: linear-gradient(180deg, var(--accent), var(--accent-dim)); }
+.xp-col.agent .ico {
+  background: rgba(var(--accent-rgb), 0.15);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  color: var(--accent);
+}
+.xp-row-title { font-weight: 600; margin-bottom: 2px; }
+.xp-col.chat .xp-row-title { color: var(--text-mid); }
+.xp-col.agent .xp-row-title { color: var(--text); }
+.xp-row-body { font-size: 0.82rem; color: var(--text-mute); line-height: 1.55; }
 
-/* ── Compare ── */
-.compare {
-  background: var(--bg); padding: 120px 52px;
+/* ── Workflow / Use cases ── */
+.workflow { background: var(--bg); padding: 120px 52px; }
+.wf-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  max-width: 1100px; margin: 0 auto;
 }
+.wf-card {
+  border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg-2);
+  padding: 32px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.wf-card:hover { border-color: rgba(var(--accent-rgb), 0.25); transform: translateY(-4px); }
+.wf-emoji {
+  font-size: 1.8rem; margin-bottom: 14px;
+}
+.wf-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+.wf-card p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 14px; }
+.wf-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.wf-tag {
+  padding: 4px 10px; border-radius: 90px;
+  background: rgba(var(--accent-rgb), 0.06);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  font-size: 0.7rem; color: var(--accent-dim);
+}
+
+/* ── Compare (kept) ── */
+.compare { background: var(--bg); padding: 120px 52px; }
 .compare-h { text-align: center; margin-bottom: 64px; }
 .compare-h .accent-text { color: var(--accent); }
 .compare-table {
   max-width: 1000px; margin: 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;
+  border: 1px solid var(--border); border-radius: 20px;
   overflow: hidden;
 }
 .compare-row {
@@ -551,7 +627,6 @@ h1.hero-h {
   font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.1em; color: var(--text-mid);
 }
-.compare-head > div:nth-child(2) { color: var(--text-mute); }
 .compare-head > div:nth-child(3) { color: var(--accent); }
 
 /* ── CTA ── */
@@ -559,10 +634,15 @@ h1.hero-h {
 .cta-h .accent-text { color: var(--accent); }
 .cta-sub { font-size: 1rem; color: var(--text-mid); margin-bottom: 40px; }
 .cta-note { font-size: 0.8rem; color: #55657a; margin-top: 16px; }
+.cta-channels {
+  display: flex; gap: 24px; justify-content: center; margin-top: 32px;
+  font-size: 0.82rem; color: var(--text-mid);
+}
+.cta-channels span { display: flex; align-items: center; gap: 6px; }
 
 /* ── Footer ── */
 .footer {
-  background: var(--bg); border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg); border-top: 1px solid var(--border);
   padding: 44px 52px;
   display: flex; align-items: center; justify-content: space-between;
   flex-wrap: wrap; gap: 24px;
@@ -570,10 +650,7 @@ h1.hero-h {
 .footer-logo { font-size: 1.1rem; font-weight: 800; }
 .footer-logo .dot { color: var(--accent); }
 .footer-links { display: flex; gap: 32px; }
-.footer-links a {
-  font-size: 0.82rem; color: #55657a;
-  transition: color 0.2s;
-}
+.footer-links a { font-size: 0.82rem; color: #55657a; transition: color 0.2s; }
 .footer-links a:hover { color: var(--text-mid); }
 .footer-social { display: flex; gap: 12px; }
 .social-icon {
@@ -599,27 +676,31 @@ h1.hero-h {
 @media (max-width: 768px) {
   .nav { padding: 0 20px; height: 60px; }
   .nav-links { display: none; }
-  .hero { padding: 100px 20px 60px; min-height: auto; }
-  h1.hero-h { font-size: clamp(2.2rem, 10vw, 3.5rem); letter-spacing: -0.03em; }
+  .hero { padding: 120px 20px 60px; min-height: auto; }
+  h1.hero-h { font-size: clamp(2.2rem, 10vw, 3.5rem); }
   .sub { font-size: 0.95rem; margin-bottom: 32px; }
   .btn-row { flex-direction: column; width: 100%; gap: 10px; margin-bottom: 32px; }
   .btn-primary, .btn-ghost { width: 100%; justify-content: center; padding: 14px 24px; }
   .agent-strip { gap: 6px; padding: 0 4px; margin-bottom: 36px; }
   .pill { font-size: 0.62rem; padding: 5px 10px; }
-  .dash-preview-inner { grid-template-columns: 1fr; padding: 32px 16px; }
-  .dash-grid { grid-template-columns: repeat(2, 1fr); }
-  .section, .audience, .advantage, .bento, .compare, .cta { padding: 80px 20px; }
+  .dash-body { grid-template-columns: 1fr; padding: 12px; }
+  .dash-side { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+  .dash-side-row { font-size: 0.72rem; padding: 6px 10px; }
+  .section, .channels, .cloud-what, .audience, .advantage, .experience, .workflow, .compare, .cta { padding: 80px 20px; }
   .h2 { font-size: clamp(2rem, 8vw, 3rem); }
-  .cards-row { grid-template-columns: 1fr; gap: 12px; }
-  .bento-grid { grid-template-columns: 1fr; }
+  .channels-grid { grid-template-columns: 1fr 1fr; }
+  .cloud-stack, .wf-grid, .cards-row { grid-template-columns: 1fr; gap: 12px; }
+  .xp-grid { grid-template-columns: 1fr; }
+  .xp-col { padding: 32px 24px; }
+  .xp-col.chat { border-right: none; border-bottom: 1px solid var(--border); }
   .compare-table { font-size: 0.78rem; }
   .compare-row { grid-template-columns: 1fr 1.2fr 1.2fr; }
   .compare-row > div { padding: 12px 14px; font-size: 0.78rem; }
   .footer { flex-direction: column; text-align: center; padding: 32px 20px; gap: 20px; }
   .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
 }
-
 @media (max-width: 480px) {
+  .channels-grid { grid-template-columns: 1fr; }
   .compare-table { display: block; overflow-x: auto; }
   .compare-row { min-width: 540px; }
 }
@@ -634,9 +715,9 @@ h1.hero-h {
 <nav class="nav">
   <a href="/" class="nav-logo">numin<span class="dot">.</span></a>
   <ul class="nav-links">
-    <li><a href="#advantage">Advantage</a></li>
-    <li><a href="#agents">Agents</a></li>
-    <li><a href="#compare">Numin vs ChatGPT</a></li>
+    <li><a href="#channels">Talk to your agent</a></li>
+    <li><a href="#experience">Agent vs chat</a></li>
+    <li><a href="#compare">Vs ChatGPT</a></li>
   </ul>
   <a href="https://github.com/Verstige/numin" class="nav-cta">Get started</a>
 </nav>
@@ -651,7 +732,7 @@ h1.hero-h {
     <button class="tab" role="tab" aria-selected="false" data-skin-tab="cloud">
       <span class="tab-dot"></span>
       <span class="tab-label">Cloud</span>
-      <span class="tab-sub">White-labeled Orgo</span>
+      <span class="tab-sub">Your private cloud computer</span>
     </button>
   </div>
   <div class="badge">
@@ -665,14 +746,14 @@ h1.hero-h {
     <span class="accent-text" data-skin-text="line2-bright">on your Mac.</span>
   </h1>
   <p class="sub" data-skin-text="sub">
-    Numin deploys six specialized AI agents on-site at your company. They handle operations, sales, support, and communications — 24/7, all on your own hardware.
+    Numin deploys six specialized AI agents that run your entire business — operations, sales, support, and communications — 24/7. Text them on iMessage, WhatsApp, Telegram, or web. From anywhere.
   </p>
   <div class="btn-row">
-    <a href="https://github.com/Verstige/numin" class="btn-primary">Start free trial →</a>
-    <a href="https://github.com/Verstige/numin#what-you-get" class="btn-ghost">▶ See how it works</a>
+    <a href="https://github.com/Verstige/numin" class="btn-primary" data-skin-text="primary">Start free trial →</a>
+    <a href="#channels" class="btn-ghost" data-skin-text="secondary">▶ See how it works</a>
   </div>
   <div class="agent-strip">
-    <span class="strip-label">Live</span>
+    <span class="strip-label">Active</span>
     <span class="pill"><span class="pill-dot"></span>ARIA</span>
     <span class="pill"><span class="pill-dot"></span>VANCE</span>
     <span class="pill"><span class="pill-dot"></span>NEXUS</span>
@@ -682,29 +763,157 @@ h1.hero-h {
   </div>
 
   <div class="dash-preview">
+    <div class="dash-channels">
+      <span class="ch-dot"></span><span class="ch-dot y"></span><span class="ch-dot g"></span>
+      <span class="ch-url">numin://chat · synced from iMessage · WhatsApp · Telegram · Web</span>
+    </div>
     <div class="dash-preview-inner">
-      <div class="dash-side">
-        <div class="dash-side-row active"><span class="pill-dot"></span> Overview</div>
-        <div class="dash-side-row">Inbox</div>
-        <div class="dash-side-row">Calendar</div>
-        <div class="dash-side-row">CRM</div>
-        <div class="dash-side-row">Tasks</div>
-        <div class="dash-side-row">Reports</div>
-      </div>
-      <div class="dash-main">
-        <div class="dash-card">
-          <div class="dash-card-title">Good morning, Julylan</div>
-          <div class="dash-card-meta">6 agents active · 14 tasks triaged overnight</div>
+      <div class="dash-body">
+        <div class="dash-side">
+          <div class="dash-side-row active"><span class="pill-dot"></span> Chat</div>
+          <div class="dash-side-row">Inbox</div>
+          <div class="dash-side-row">Tasks</div>
+          <div class="dash-side-row">Calendar</div>
+          <div class="dash-side-row">CRM</div>
+          <div class="dash-side-row">Reports</div>
         </div>
-        <div class="dash-grid">
-          <div class="dash-stat"><div class="dash-stat-val">142</div><div class="dash-stat-lbl">emails triaged</div></div>
-          <div class="dash-stat"><div class="dash-stat-val">8</div><div class="dash-stat-lbl">meetings booked</div></div>
-          <div class="dash-stat"><div class="dash-stat-val">3</div><div class="dash-stat-lbl">deals updated</div></div>
+        <div class="dash-main">
+          <div class="msg">
+            <div class="msg-avatar">A</div>
+            <div>
+              <div class="msg-bubble">Good morning, Julylan. ARIA here. While you slept, I triaged 142 emails, drafted 11 replies, and flagged 3 that need your sign-off. PRISM finished the Q3 report draft — it's in your inbox.</div>
+              <div class="msg-time">7:02 AM · via iMessage</div>
+            </div>
+          </div>
+          <div class="msg user">
+            <div class="msg-avatar you">J</div>
+            <div>
+              <div class="msg-bubble">Send the report to the leadership team when I land. And book lunch with Sarah for Thursday.</div>
+              <div class="msg-time">7:04 AM · from your Mac</div>
+            </div>
+          </div>
+          <div class="msg">
+            <div class="msg-avatar">N</div>
+            <div>
+              <div class="msg-bubble">Done. Report will send at 9 AM your time. Lunch with Sarah booked for Thursday 12:30 — calendar invite sent, her assistant already accepted. Anything else?</div>
+              <div class="msg-time">7:04 AM · via iMessage</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </header>
+
+<section class="channels" id="channels">
+  <div class="eyebrow">Always-on access</div>
+  <h2 class="h2">Talk to your agent.<br><span class="dim">From anywhere.</span></h2>
+  <p class="body-text">
+    Your agents live in the conversation tools you already use. No new app to learn, no new login. Just text them like you'd text a teammate who's always on.
+  </p>
+  <div class="channels-grid">
+    <div class="ch-card">
+      <div class="ch-icon">💬</div>
+      <h3>iMessage</h3>
+      <p>Text from your iPhone, iPad, or Mac. Native iMessage, end-to-end encrypted, no friction.</p>
+      <div class="ch-example">"Hey ARIA, what's on my plate today?"</div>
+    </div>
+    <div class="ch-card">
+      <div class="ch-icon">🟢</div>
+      <h3>WhatsApp</h3>
+      <p>Message from anywhere in the world. Your agents reply instantly, no app switching.</p>
+      <div class="ch-example">"Book me a flight to Lisbon next Tuesday."</div>
+    </div>
+    <div class="ch-card">
+      <div class="ch-icon">✈️</div>
+      <h3>Telegram</h3>
+      <p>Full conversation history, file sharing, voice notes. Works on every device.</p>
+      <div class="ch-example">"Send me the client deck in PDF."</div>
+    </div>
+    <div class="ch-card">
+      <div class="ch-icon">🌐</div>
+      <h3>Web</h3>
+      <p>Full chat workspace in your browser. Drag-and-drop files, voice, screen share.</p>
+      <div class="ch-example">"Walk me through last week's metrics."</div>
+    </div>
+  </div>
+</section>
+
+<section class="cloud-what" id="cloud-what">
+  <div class="eyebrow" data-skin-show="cloud">What you get with Cloud</div>
+  <h2 class="h2" data-skin-show="cloud">Your private cloud computer.<br><span class="dim">Always on. Always yours.</span></h2>
+  <h2 class="h2" data-skin-show="local">What you get with Local.<br><span class="dim">Yours forever. Offline-capable.</span></h2>
+  <p class="body-text" data-skin-show="cloud">
+    Cloud gives you a dedicated Apple Silicon Mac in the cloud — provisioned in minutes, isolated to you, persistent across sessions. No hardware to buy, no setup, no maintenance.
+  </p>
+  <p class="body-text" data-skin-show="local">
+    Local installs directly on your own Mac. Your data never leaves your machine. Works offline. One-time setup, then it just runs.
+  </p>
+  <div class="cloud-stack" data-skin-show="cloud">
+    <div class="cs-card">
+      <div class="cs-icon">🖥️</div>
+      <h3>Dedicated Mac</h3>
+      <p>An Apple Silicon machine provisioned for you alone. Persistent state, your files, your environment.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">Apple Silicon</span><span class="cs-spec-tag">16GB+ RAM</span><span class="cs-spec-tag">macOS</span></div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-icon">🔒</div>
+      <h3>Isolated by default</h3>
+      <p>Your cloud Mac is yours alone. No shared resources, no noisy neighbors, no leakage between customers.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">Private</span><span class="cs-spec-tag">Encrypted disk</span></div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-icon">⚡</div>
+      <h3>Provisioned in minutes</h3>
+      <p>Skip the unboxing. Skip the install. Sign up and your agent is online before your coffee gets cold.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">&lt; 5 min setup</span></div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-icon">🌍</div>
+      <h3>Access from any device</h3>
+      <p>Browser on any laptop. iMessage on your phone. SSH if you want. Your cloud Mac is reachable everywhere.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">Web</span><span class="cs-spec-tag">iMessage</span><span class="cs-spec-tag">SSH</span></div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-icon">🔄</div>
+      <h3>Always on</h3>
+      <p>Runs 24/7. Monitors your business, processes tasks, briefs you in the morning. Never sleeps, never takes a day off.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">24/7 uptime</span></div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-icon">📦</div>
+      <h3>Snapshots &amp; rollback</h3>
+      <p>Every change is snapshotted. Roll back to any point in time. Experiment without fear.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">Versioned</span><span class="cs-spec-tag">Reversible</span></div>
+    </div>
+  </div>
+  <div class="cloud-stack" data-skin-show="local">
+    <div class="cs-card">
+      <div class="cs-icon">💻</div>
+      <h3>Your Mac, your data</h3>
+      <p>Runs on the Mac you already own. All processing, all storage, all memory stays on your machine. Period.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">Apple Silicon</span><span class="cs-spec-tag">M1+</span></div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-icon">🔌</div>
+      <h3>One-command install</h3>
+      <p>curl | bash. 30 seconds. Done. Numin starts automatically and runs in the background.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">~30s setup</span></div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-icon">📡</div>
+      <h3>Offline-capable</h3>
+      <p>Once your agent has the context it needs, it can keep working even if your internet drops. No cloud dependency.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">Offline-capable</span></div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-icon">🧠</div>
+      <h3>Memory that grows</h3>
+      <p>Your agent builds a permanent memory of your business — clients, decisions, patterns. It never forgets.</p>
+      <div class="cs-spec"><span class="cs-spec-tag">Persistent</span></div>
+    </div>
+  </div>
+</section>
 
 <section class="audience">
   <h2 class="h2 audience-h">
@@ -757,63 +966,128 @@ h1.hero-h {
   </p>
 </section>
 
-<section class="bento" id="agents">
-  <div class="eyebrow">Inside Numin</div>
-  <h2 class="h2">
-    Six specialized agents, <span class="dim" style="font-weight:300">one shared brain</span>
-  </h2>
-  <p class="body-text">Each agent owns a domain. Together they run the company.</p>
-  <div class="bento-grid">
-    <div class="bento-cell">
-      <div class="bento-icon">◈</div>
-      <h3 class="bento-title">Six specialized agents<span class="dim"> working as one team</span></h3>
-      <p class="bento-desc">ARIA researches. VANCE builds. NEXUS coordinates. PRISM writes. APEX sells. NUMIN orchestrates. Each owns a domain — together they run your business.</p>
-      <div class="bento-mock">
-        <div class="bento-mock-row"><span>ARIA · Research</span><span class="badge-idle">idle</span></div>
-        <div class="bento-mock-row"><span>VANCE · Build</span><span class="badge-opt">active</span></div>
-        <div class="bento-mock-row"><span>NEXUS · Plan</span><span class="badge-idle">idle</span></div>
-        <div class="bento-mock-row"><span>PRISM · Write</span><span class="badge-idle">idle</span></div>
-        <div class="bento-mock-row"><span>APEX · Sell</span><span class="badge-idle">idle</span></div>
-        <div class="bento-mock-row"><span>NUMIN · Orchestrate</span><span class="badge-idle">idle</span></div>
+<section class="experience" id="experience">
+  <div class="eyebrow">The experience difference</div>
+  <h2 class="h2">An agent isn't a chat LLM.<br><span class="dim">It's the next level.</span></h2>
+  <p class="body-text">
+    A chatbot answers. An agent <em>acts</em>. The shift from "talking to an AI" to "working with an agent" changes everything — what you delegate, how fast you move, what becomes possible.
+  </p>
+  <div class="xp-grid">
+    <div class="xp-col chat">
+      <div class="xp-label">Chat LLM</div>
+      <div class="xp-title">You ask. It answers.</div>
+      <div class="xp-tagline">A tool you open, type into, copy-paste from, and close.</div>
+      <div class="xp-rows">
+        <div class="xp-row">
+          <div class="ico">×</div>
+          <div>
+            <div class="xp-row-title">Forgets you</div>
+            <div class="xp-row-body">Every conversation starts from zero. No memory of your clients, your projects, your past decisions.</div>
+          </div>
+        </div>
+        <div class="xp-row">
+          <div class="ico">×</div>
+          <div>
+            <div class="xp-row-title">Suggests, doesn't act</div>
+            <div class="xp-row-body">It gives you text. You still have to copy, paste, send, update, schedule, follow up.</div>
+          </div>
+        </div>
+        <div class="xp-row">
+          <div class="ico">×</div>
+          <div>
+            <div class="xp-row-title">One-size-fits-all</div>
+            <div class="xp-row-body">Same model, same answers, same generic tone for everyone who uses it.</div>
+          </div>
+        </div>
+        <div class="xp-row">
+          <div class="ico">×</div>
+          <div>
+            <div class="xp-row-title">Waits for you</div>
+            <div class="xp-row-body">Completely passive. Nothing happens unless you open it and type. Nothing.</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="bento-cell">
-      <div class="bento-icon">⬡</div>
-      <h3 class="bento-title">Always on<span class="dim">, never waiting</span></h3>
-      <p class="bento-desc">Runs 24/7. Monitors inbox overnight, surfaces the urgent stuff, drafts the rest. You wake up to a triaged morning.</p>
-      <div class="mini-stats">
-        <div class="mini-stat"><div class="mini-stat-val">142</div><div class="mini-stat-lbl">emails triaged</div></div>
-        <div class="mini-stat"><div class="mini-stat-val">8</div><div class="mini-stat-lbl">meetings booked</div></div>
-        <div class="mini-stat"><div class="mini-stat-val">3</div><div class="mini-stat-lbl">deals updated</div></div>
+    <div class="xp-col agent">
+      <div class="xp-label">Your Numin agent</div>
+      <div class="xp-title">You text. It works.</div>
+      <div class="xp-tagline">A teammate that lives in your tools, knows your business, and gets things done.</div>
+      <div class="xp-rows">
+        <div class="xp-row">
+          <div class="ico">✓</div>
+          <div>
+            <div class="xp-row-title">Knows you forever</div>
+            <div class="xp-row-body">Permanent memory of your business. Every client, every decision, every preference — remembered, retrieved, applied.</div>
+          </div>
+        </div>
+        <div class="xp-row">
+          <div class="ico">✓</div>
+          <div>
+            <div class="xp-row-title">Closes the loop</div>
+            <div class="xp-row-body">Sends the email. Updates the CRM. Books the meeting. Posts the ticket. You just told it what you wanted done.</div>
+          </div>
+        </div>
+        <div class="xp-row">
+          <div class="ico">✓</div>
+          <div>
+            <div class="xp-row-title">Six specialists</div>
+            <div class="xp-row-body">One for research. One for sales. One for ops. One for content. One for support. One orchestrator. Each owns a domain.</div>
+          </div>
+        </div>
+        <div class="xp-row">
+          <div class="ico">✓</div>
+          <div>
+            <div class="xp-row-title">Always on</div>
+            <div class="xp-row-body">24/7. Monitors overnight. Triages your inbox. Briefs you in the morning. Flags what's urgent. Drafts the rest.</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="bento-cell">
-      <div class="bento-icon">▲</div>
-      <h3 class="bento-title">Real integrations<span class="dim">, real actions</span></h3>
-      <p class="bento-desc">Gmail, Calendar, Slack, Notion, HubSpot, Salesforce, Pipedrive, Stripe, and 1,000+ more. Numin lives inside your stack.</p>
-      <div class="check-list">
-        <div class="check-item">Email · Gmail + Outlook</div>
-        <div class="check-item">Calendar · Google + Apple</div>
-        <div class="check-item">CRM · HubSpot + Salesforce</div>
-        <div class="check-item">Comms · Slack + Teams</div>
-      </div>
+  </div>
+</section>
+
+<section class="workflow" id="workflow">
+  <div class="eyebrow">Built for the way you actually work</div>
+  <h2 class="h2 center-h">An operating system for<br><span class="dim">your entire operation.</span></h2>
+  <p class="body-text center-h">
+    Whether you run a solo consultancy, a 50-person agency, or a global enterprise — Numin adapts to the work, not the other way around.
+  </p>
+  <div class="wf-grid">
+    <div class="wf-card">
+      <div class="wf-emoji">🚀</div>
+      <h3>For founders &amp; solo operators</h3>
+      <p>You're the bottleneck. Numin takes the recurring operations off your plate — email, scheduling, follow-ups, invoicing, research — so you can focus on the work only you can do.</p>
+      <div class="wf-tags"><span class="wf-tag">Inbox triage</span><span class="wf-tag">Calendar</span><span class="wf-tag">CRM updates</span><span class="wf-tag">Research</span></div>
     </div>
-    <div class="bento-cell">
-      <div class="bento-icon">◆</div>
-      <h3 class="bento-title">Built for output<span class="dim">, not conversation</span></h3>
-      <p class="bento-desc">Most AI tools answer questions. Numin closes loops. Less typing, more shipping.</p>
-      <div class="bar-chart">
-        <div class="bar" style="height:40%"></div>
-        <div class="bar" style="height:55%"></div>
-        <div class="bar" style="height:35%"></div>
-        <div class="bar" style="height:70%"></div>
-        <div class="bar" style="height:50%"></div>
-        <div class="bar" style="height:85%"></div>
-        <div class="bar" style="height:60%"></div>
-        <div class="bar" style="height:90%"></div>
-        <div class="bar" style="height:75%"></div>
-        <div class="bar active" style="height:100%"></div>
-      </div>
+    <div class="wf-card">
+      <div class="wf-emoji">🏢</div>
+      <h3>For agencies &amp; service teams</h3>
+      <p>Six specialized agents as your team. Client comms, content production, project ops, lead gen — running parallel workstreams without hiring another body.</p>
+      <div class="wf-tags"><span class="wf-tag">Client comms</span><span class="wf-tag">Content</span><span class="wf-tag">Project ops</span><span class="wf-tag">Reporting</span></div>
+    </div>
+    <div class="wf-card">
+      <div class="wf-emoji">🎨</div>
+      <h3>For creative systems &amp; studios</h3>
+      <p>Brief intake, asset versioning, copy iteration, scheduling across channels. Agents that understand your creative pipeline and run the production layer.</p>
+      <div class="wf-tags"><span class="wf-tag">Briefs</span><span class="wf-tag">Iteration</span><span class="wf-tag">Publishing</span><span class="wf-tag">Asset ops</span></div>
+    </div>
+    <div class="wf-card">
+      <div class="wf-emoji">📊</div>
+      <h3>For sales &amp; revenue teams</h3>
+      <p>Lead enrichment, outreach sequences, pipeline updates, meeting prep, follow-ups. Sales agents that work the top of the funnel while your reps close.</p>
+      <div class="wf-tags"><span class="wf-tag">Leads</span><span class="wf-tag">Outreach</span><span class="wf-tag">Pipeline</span><span class="wf-tag">Forecasting</span></div>
+    </div>
+    <div class="wf-card">
+      <div class="wf-emoji">🧠</div>
+      <h3>For enterprise &amp; operations</h3>
+      <p>Internal knowledge retrieval, ticket routing, vendor coordination, compliance checks. Enterprise workflows that finally have an automation layer that understands context.</p>
+      <div class="wf-tags"><span class="wf-tag">Knowledge</span><span class="wf-tag">Tickets</span><span class="wf-tag">Vendors</span><span class="wf-tag">Compliance</span></div>
+    </div>
+    <div class="wf-card">
+      <div class="wf-emoji">🌐</div>
+      <h3>For projects &amp; communities</h3>
+      <p>Community moderation, member onboarding, content calendars, event coordination. A persistent operator for any project that needs to keep moving between human check-ins.</p>
+      <div class="wf-tags"><span class="wf-tag">Community</span><span class="wf-tag">Onboarding</span><span class="wf-tag">Events</span><span class="wf-tag">Content</span></div>
     </div>
   </div>
 </section>
@@ -852,7 +1126,7 @@ h1.hero-h {
     <div class="compare-row">
       <div>Privacy</div>
       <div>Your conversations train their models.</div>
-      <div>100% local. Your data never leaves your building.</div>
+      <div>100% local or your private cloud computer. Your data never leaves.</div>
     </div>
     <div class="compare-row">
       <div>Always On</div>
@@ -861,8 +1135,8 @@ h1.hero-h {
     </div>
     <div class="compare-row">
       <div>Hardware</div>
-      <div>Lives in the cloud. Dependent on their servers.</div>
-      <div>Runs on your Mac. You own the hardware. No outages.</div>
+      <div>Lives in someone else's cloud. Dependent on their servers.</div>
+      <div>Your Mac, or your dedicated cloud Mac. You own the runtime.</div>
     </div>
   </div>
 </section>
@@ -875,9 +1149,15 @@ h1.hero-h {
   <p class="cta-sub" data-skin-text="ctaSub">14-day free trial. Runs on your Mac. No cloud required.</p>
   <div class="btn-row" style="margin-bottom:0">
     <a href="https://github.com/Verstige/numin" class="btn-primary" data-skin-text="primary">Start free trial →</a>
-    <a href="https://github.com/Verstige/numin" class="btn-ghost" data-skin-text="secondary">▶ Read the README</a>
+    <a href="#channels" class="btn-ghost" data-skin-text="secondary">▶ See how it works</a>
   </div>
-  <p class="cta-note" data-skin-text="ctaNote">No credit card · Apple Silicon Mac · Hermes-powered</p>
+  <div class="cta-channels">
+    <span>💬 iMessage</span>
+    <span>🟢 WhatsApp</span>
+    <span>✈️ Telegram</span>
+    <span>🌐 Web</span>
+  </div>
+  <p class="cta-note" data-skin-text="ctaNote">No credit card · Apple Silicon Mac or your private cloud computer · Hermes-powered</p>
 </section>
 
 <footer class="footer">
@@ -894,14 +1174,13 @@ h1.hero-h {
     <a href="https://github.com/Verstige/numin" class="social-icon">GH</a>
   </div>
 </footer>
-<div class="footer-bottom">© 2026 Numin · Your AI Employee, Running Locally</div>
+<div class="footer-bottom">© 2026 Numin · Your AI Employee, Running Locally or in the Cloud</div>
 
 <script>
-// Generate some stars in the background
+// Stars
 (function() {
   const stars = document.getElementById('stars');
-  const count = 60;
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < 60; i++) {
     const s = document.createElement('div');
     s.className = 'star';
     s.style.position = 'absolute';
@@ -917,8 +1196,6 @@ h1.hero-h {
     stars.appendChild(s);
   }
 })();
-
-// Inject twinkle keyframes once
 const style = document.createElement('style');
 style.textContent = '@keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }';
 document.head.appendChild(style);
@@ -931,11 +1208,11 @@ const SKIN_COPY = {
     'line1-bright': 'One business.',
     'line2-dim': 'Running',
     'line2-bright': 'on your Mac.',
-    sub: 'Numin deploys six specialized AI agents on-site at your company. They handle operations, sales, support, and communications — 24/7, all on your own hardware.',
+    sub: 'Numin deploys six specialized AI agents that run your entire business — operations, sales, support, and communications — 24/7. Text them on iMessage, WhatsApp, Telegram, or web. From anywhere.',
     primary: 'Start free trial →',
     secondary: '▶ See how it works',
     ctaSub: '14-day free trial. Runs on your Mac. No cloud required.',
-    ctaNote: 'No credit card · Apple Silicon Mac · Hermes-powered',
+    ctaNote: 'No credit card · Apple Silicon Mac or your private cloud computer · Hermes-powered',
     eyebrow: 'The Numin advantage',
     h2a: 'Most AI tools',
     h2aDim: 'answer questions.',
@@ -945,23 +1222,23 @@ const SKIN_COPY = {
     body: 'ChatGPT is a conversation. Numin is an operating system. The difference is memory, action, and ownership.',
   },
   cloud: {
-    badge: 'YOUR AI EMPLOYEE · WHITE-LABELED CLOUD',
+    badge: 'YOUR AI EMPLOYEE · IN YOUR PRIVATE CLOUD',
     'line1-dim': 'Six agents.',
     'line1-bright': 'Zero hardware.',
     'line2-dim': 'Hosted',
-    'line2-bright': 'on Orgo Cloud.',
-    sub: 'Get the full Numin experience without buying a Mac. We provision a dedicated cloud Mac, brand it as your own, and you log in from any browser.',
+    'line2-bright': 'on your cloud Mac.',
+    sub: 'Skip the Mac mini. We provision a dedicated Apple Silicon machine in the cloud, your agent is online in minutes. Reach it from iMessage, WhatsApp, Telegram, or any browser.',
     primary: 'Provision your agent →',
-    secondary: '▶ Watch cloud demo',
-    ctaSub: '14-day free trial. Browser access. White-labeled as Numin Cloud.',
-    ctaNote: 'No credit card · Any device · Orgo-powered',
+    secondary: '▶ See how it works',
+    ctaSub: '14-day free trial. Browser access. Your dedicated cloud computer.',
+    ctaNote: 'No credit card · Any device · Apple Silicon in the cloud · Hermes-powered',
     eyebrow: 'The cloud advantage',
     h2a: 'Most AI tools',
     h2aDim: 'need your hardware.',
     h2b: 'Numin Cloud',
     h2bDim: 'runs',
-    h2bSuffix: ' on ours.',
-    body: 'Skip the Mac mini. Skip the install. We spin up a dedicated cloud Mac pre-configured with your agents, white-labeled as Numin Cloud, ready in minutes.',
+    h2bSuffix: ' on yours.',
+    body: 'Skip the install. We spin up a dedicated cloud Mac pre-configured with your agents. Isolated, persistent, and reachable from anywhere.',
   },
 };
 
@@ -969,13 +1246,18 @@ function applySkin(skin) {
   document.body.setAttribute('data-skin', skin);
   const copy = SKIN_COPY[skin];
 
-  // Update all [data-skin-text] elements
+  // Text swaps
   document.querySelectorAll('[data-skin-text]').forEach(el => {
     const key = el.getAttribute('data-skin-text');
     if (copy[key] !== undefined) el.textContent = copy[key];
   });
 
-  // Update tab ariaselected
+  // Conditional section visibility — show only the [data-skin-show] elements matching the skin
+  document.querySelectorAll('[data-skin-show]').forEach(el => {
+    el.style.display = (el.getAttribute('data-skin-show') === skin) ? '' : 'none';
+  });
+
+  // Tab ariaselected
   document.querySelectorAll('[data-skin-tab]').forEach(tab => {
     const selected = tab.getAttribute('data-skin-tab') === skin;
     tab.setAttribute('aria-selected', selected ? 'true' : 'false');
@@ -984,14 +1266,12 @@ function applySkin(skin) {
   try { localStorage.setItem('numin-skin', skin); } catch (e) {}
 }
 
-// Wire tab clicks
 document.querySelectorAll('[data-skin-tab]').forEach(tab => {
   tab.addEventListener('click', () => {
     applySkin(tab.getAttribute('data-skin-tab'));
   });
 });
 
-// Restore from storage on load
 try {
   const saved = localStorage.getItem('numin-skin');
   if (saved && SKIN_COPY[saved]) applySkin(saved);
