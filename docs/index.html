@@ -444,13 +444,6 @@ h1.hero-h {
   transition: border-color 0.3s, transform 0.3s;
 }
 .ch-card:hover { border-color: rgba(var(--accent-rgb), 0.25); transform: translateY(-4px); }
-.ch-icon {
-  width: 48px; height: 48px; border-radius: 14px;
-  background: rgba(var(--accent-rgb), 0.08);
-  border: 1px solid rgba(var(--accent-rgb), 0.15);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem; margin-bottom: 18px;
-}
 .ch-card h3 {
   font-size: 1.05rem; font-weight: 700; color: var(--text);
   margin-bottom: 6px;
@@ -466,36 +459,117 @@ h1.hero-h {
 }
 
 /* ── Cloud computer (what they get) ── */
-.cloud-what { background: linear-gradient(180deg, var(--bg) 0%, var(--bg-3) 100%); padding: 120px 52px; }
-.cloud-stack {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
-  max-width: 1100px; margin: 0 auto;
+/* ── Cloud / Local (redesigned) ── */
+.cloud-what { background: var(--bg); padding: 140px 52px; }
+.cloud-head { text-align: center; max-width: 800px; margin: 0 auto 64px; }
+.cloud-head .body-text { margin-left: auto; margin-right: auto; }
+.cloud-stage {
+  max-width: 1200px; margin: 0 auto;
+  border: 1px solid var(--border); border-radius: 32px;
+  background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+  padding: 48px 40px;
+  position: relative; overflow: hidden;
 }
-.cs-card {
-  border-radius: 20px; border: 1px solid var(--border);
-  background: var(--bg-2);
-  padding: 32px;
-  transition: border-color 0.3s, transform 0.3s;
+.cloud-stage::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 60%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.5), transparent);
 }
-.cs-card:hover { border-color: rgba(var(--accent-rgb), 0.25); transform: translateY(-3px); }
-.cs-icon {
-  width: 44px; height: 44px; border-radius: 12px;
-  background: rgba(var(--accent-rgb), 0.08);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.2rem; margin-bottom: 16px;
+.cloud-mockup {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px;
+  align-items: center;
 }
-.cs-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
-.cs-card p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; }
-.cs-spec {
-  margin-top: 14px;
-  display: flex; gap: 8px; flex-wrap: wrap;
-}
-.cs-spec-tag {
-  padding: 4px 10px; border-radius: 90px;
-  background: rgba(255, 255, 255, 0.04);
+.cloud-visual {
+  position: relative;
+  aspect-ratio: 1 / 0.85;
+  border-radius: 24px;
+  background: radial-gradient(circle at 30% 20%, rgba(var(--accent-rgb), 0.15), transparent 60%),
+              radial-gradient(circle at 70% 80%, rgba(var(--accent-rgb), 0.08), transparent 60%),
+              var(--bg);
   border: 1px solid var(--border);
-  font-size: 0.7rem; color: var(--text-mid);
-  font-family: ui-monospace, monospace;
+  padding: 24px;
+  overflow: hidden;
+}
+.cloud-visual::after {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+.cloud-mac {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 78%; aspect-ratio: 1.4 / 1;
+  background: linear-gradient(135deg, #2a2a30 0%, #1a1a1f 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 12px;
+}
+.cloud-mac::after {
+  content: ''; position: absolute; bottom: -10px; left: -8%; right: -8%;
+  height: 8px; background: linear-gradient(180deg, #3a3a42 0%, #2a2a30 100%);
+  border-radius: 0 0 8px 8px;
+}
+.cloud-mac-screen {
+  width: 100%; height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #0c0c10 0%, #050507 100%);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  overflow: hidden;
+}
+.cloud-mac-bar {
+  display: flex; gap: 6px; align-items: center;
+  padding-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.cloud-mac-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff5f57; }
+.cloud-mac-dot:nth-child(2) { background: #ffbd2e; }
+.cloud-mac-dot:nth-child(3) { background: #28c940; }
+.cloud-mac-title { margin-left: 12px; font-size: 0.65rem; color: var(--text-mute); font-family: 'SF Mono', monospace; }
+.cloud-mac-line {
+  font-size: 0.65rem; color: var(--text-mid); font-family: 'SF Mono', monospace;
+  padding: 3px 0;
+}
+.cloud-mac-line .prompt { color: var(--accent); margin-right: 6px; }
+.cloud-mac-line.active { color: var(--text); }
+.cloud-features { display: flex; flex-direction: column; gap: 18px; }
+.cloud-feat {
+  display: flex; gap: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.3s, background 0.3s, transform 0.3s;
+}
+.cloud-feat:hover {
+  border-color: rgba(var(--accent-rgb), 0.3);
+  background: rgba(var(--accent-rgb), 0.04);
+  transform: translateX(4px);
+}
+.cloud-feat-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); flex-shrink: 0;
+}
+.cloud-feat-icon .icon { width: 20px; height: 20px; }
+.cloud-feat-body { flex: 1; }
+.cloud-feat h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+.cloud-feat p { font-size: 0.82rem; color: var(--text-mid); line-height: 1.5; margin: 0; }
+.cloud-feat-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.cloud-feat-tag {
+  font-size: 0.65rem; font-weight: 600; color: var(--text-mute);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 8px; border-radius: 90px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+@media (max-width: 768px) {
+  .cloud-mockup { grid-template-columns: 1fr; gap: 32px; }
+  .cloud-stage { padding: 32px 24px; border-radius: 24px; }
+  .cloud-visual { aspect-ratio: 1 / 0.9; }
 }
 
 /* ── Audience ── */
@@ -605,29 +679,64 @@ h1.hero-h {
 .xp-row-body { font-size: 0.82rem; color: var(--text-mute); line-height: 1.55; }
 
 /* ── Workflow / Use cases ── */
-.workflow { background: var(--bg); padding: 120px 52px; }
+.workflow { background: linear-gradient(180deg, var(--bg) 0%, var(--bg-3) 100%); padding: 140px 52px; position: relative; z-index: 1; }
+.workflow-head { text-align: center; max-width: 800px; margin: 0 auto 64px; }
+.workflow-head .body-text { margin-left: auto; margin-right: auto; }
 .wf-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-  max-width: 1100px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(180px, auto);
+  gap: 16px;
+  max-width: 1200px; margin: 0 auto;
 }
 .wf-card {
   border-radius: 20px; border: 1px solid var(--border);
   background: var(--bg-2);
-  padding: 32px;
-  transition: border-color 0.3s, transform 0.3s;
+  padding: 28px 28px 24px;
+  transition: border-color 0.3s, transform 0.3s, background 0.3s;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
 }
-.wf-card:hover { border-color: rgba(var(--accent-rgb), 0.25); transform: translateY(-4px); }
-.wf-emoji {
-  font-size: 1.8rem; margin-bottom: 14px;
+.wf-card::before {
+  content: ''; position: absolute;
+  top: -1px; left: -1px; right: -1px; bottom: -1px;
+  background: radial-gradient(circle at 0% 0%, rgba(var(--accent-rgb), 0.1), transparent 50%);
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
 }
-.wf-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
-.wf-card p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 14px; }
-.wf-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.wf-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-4px); }
+.wf-card:hover::before { opacity: 1; }
+.wf-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent);
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.wf-icon .icon { width: 22px; height: 22px; }
+.wf-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+.wf-card p { font-size: 0.88rem; color: var(--text-mid); line-height: 1.55; flex: 1; }
+.wf-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
 .wf-tag {
   padding: 4px 10px; border-radius: 90px;
   background: rgba(var(--accent-rgb), 0.06);
   border: 1px solid rgba(var(--accent-rgb), 0.15);
   font-size: 0.7rem; color: var(--accent-dim);
+  font-weight: 600;
+}
+/* Bento layout — some cards are wider */
+.wf-card.wide { grid-column: span 8; }
+.wf-card.tall { grid-column: span 4; grid-row: span 2; }
+.wf-card.regular { grid-column: span 4; }
+.wf-card.full { grid-column: span 12; }
+@media (max-width: 1024px) {
+  .wf-card.wide { grid-column: span 12; }
+  .wf-card.tall { grid-column: span 6; grid-row: auto; }
+  .wf-card.regular { grid-column: span 6; }
+}
+@media (max-width: 640px) {
+  .wf-card.wide, .wf-card.tall, .wf-card.regular, .wf-card.full { grid-column: span 12; grid-row: auto; }
 }
 
 /* ── Compare (kept) ── */
@@ -660,41 +769,90 @@ h1.hero-h {
 }
 .compare-head > div:nth-child(3) { color: var(--accent); }
 
-/* ── Built on Numin (architecture story) ── */
-.built { background: var(--bg); padding: 140px 52px 120px; position: relative; z-index: 1; }
-.built-head { text-align: center; max-width: 800px; margin: 0 auto 32px; }
+/* ── Built on Numin (architecture story, upgraded) ── */
+.built { background: var(--bg); padding: 140px 52px 120px; position: relative; z-index: 1; overflow: hidden; }
+.built::before {
+  content: ''; position: absolute; top: 10%; left: -10%;
+  width: 40%; height: 50%;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.08), transparent 60%);
+  pointer-events: none; animation: nebula-drift 30s ease-in-out infinite;
+}
+.built::after {
+  content: ''; position: absolute; bottom: 5%; right: -10%;
+  width: 40%; height: 50%;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.05), transparent 60%);
+  pointer-events: none; animation: nebula-drift 35s ease-in-out infinite reverse;
+}
+.built-head { text-align: center; max-width: 800px; margin: 0 auto 32px; position: relative; z-index: 1; }
 .built-head .body-text { margin-left: auto; margin-right: auto; }
+.built-stats {
+  display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
+  margin: 32px auto 64px; max-width: 800px;
+  padding: 24px; border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+}
+.built-stat { text-align: center; }
+.built-stat-num {
+  font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.built-stat-label { font-size: 0.75rem; color: var(--text-mute); letter-spacing: 0.08em; text-transform: uppercase; }
 .built-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
   max-width: 1200px; margin: 48px auto 0;
+  position: relative; z-index: 1;
 }
 .bcard {
   border-radius: 20px; border: 1px solid var(--border);
   background: var(--bg-2); padding: 32px 28px;
   transition: border-color 0.3s, transform 0.3s, background 0.3s;
   position: relative; overflow: hidden;
+  opacity: 0; transform: translateY(20px);
 }
+.bcard.in-view { opacity: 1; transform: translateY(0); transition: opacity 0.6s, transform 0.6s, border-color 0.3s, background 0.3s; }
 .bcard::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.4), transparent);
   opacity: 0; transition: opacity 0.3s;
 }
+.bcard::after {
+  content: ''; position: absolute;
+  top: -50%; left: -50%; right: -50%; bottom: -50%;
+  background: radial-gradient(circle at center, rgba(var(--accent-rgb), 0.08), transparent 60%);
+  opacity: 0; transition: opacity 0.4s; pointer-events: none;
+}
 .bcard:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-4px); }
 .bcard:hover::before { opacity: 1; }
+.bcard:hover::after { opacity: 1; }
 .bcard-num {
   font-size: 0.7rem; font-weight: 800; color: var(--accent);
   letter-spacing: 0.12em; margin-bottom: 16px;
+  font-family: ui-monospace, monospace;
 }
 .bcard-icon {
-  width: 44px; height: 44px; border-radius: 12px;
+  width: 48px; height: 48px; border-radius: 14px;
   background: rgba(var(--accent-rgb), 0.1);
   border: 1px solid rgba(var(--accent-rgb), 0.18);
   display: flex; align-items: center; justify-content: center;
   color: var(--accent); margin-bottom: 18px;
+  transition: transform 0.4s;
 }
-.bcard-icon .icon { width: 22px; height: 22px; }
-.bcard h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
-.bcard p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; }
+.bcard:hover .bcard-icon { transform: scale(1.1) rotate(-5deg); }
+.bcard-icon .icon { width: 24px; height: 24px; }
+.bcard h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+.bcard p { font-size: 0.88rem; color: var(--text-mid); line-height: 1.55; }
+.bcard-stat {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 16px; padding: 4px 10px;
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  border-radius: 90px;
+  font-size: 0.72rem; font-weight: 700; color: var(--accent);
+  font-family: ui-monospace, monospace;
+}
 
 /* ── Efficiency / cost story ── */
 .efficient { background: linear-gradient(180deg, var(--bg-3) 0%, var(--bg) 100%); padding: 120px 52px; position: relative; z-index: 1; }
@@ -760,6 +918,14 @@ h1.hero-h {
   box-shadow: 0 8px 40px rgba(var(--accent-rgb), 0.25);
 }
 .vscc-logo-img.numin svg { color: var(--accent); width: 72px; height: 72px; }
+.ch-icon {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+  transition: transform 0.3s;
+}
+.ch-icon img { width: 100%; height: 100%; object-fit: contain; }
+.ch-card:hover .ch-icon { transform: scale(1.1) rotate(-3deg); }
 .vscc-logo-label {
   font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--text-mid);
@@ -1037,7 +1203,8 @@ h1.hero-h {
   .section, .channels, .cloud-what, .audience, .advantage, .experience, .workflow, .compare, .cta { padding: 100px 20px 80px; }
   .h2 { font-size: clamp(2rem, 8vw, 3rem); }
   .channels-grid { grid-template-columns: 1fr 1fr; }
-  .cloud-stack, .wf-grid, .cards-row { grid-template-columns: 1fr; gap: 12px; }
+  .built-grid { grid-template-columns: repeat(2, 1fr); }
+  .wf-grid, .cards-row { grid-template-columns: 1fr; gap: 12px; }
   .xp-grid { grid-template-columns: 1fr; }
   .xp-col { padding: 32px 24px; }
   .xp-col.chat { border-right: none; border-bottom: 1px solid var(--border); }
@@ -1073,6 +1240,8 @@ h1.hero-h {
 @media (max-width: 480px) {
   .channels-grid { grid-template-columns: 1fr; }
 }
+
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 
 /* ============================================================
    ICON SPRITE — Lucide-style, all 24x24 viewBox
@@ -1269,25 +1438,25 @@ h1.hero-h {
   </p>
   <div class="channels-grid">
     <div class="ch-card">
-      <div class="ch-icon"><svg class="icon icon-lg"><use href="#i-message-circle"/></svg></div>
+      <div class="ch-icon"><img src="logo-imessage.svg" alt="iMessage" /></div>
       <h3>iMessage</h3>
       <p>Text from your iPhone, iPad, or Mac. Native iMessage, end-to-end encrypted, no friction.</p>
       <div class="ch-example">"Hey ARIA, what's on my plate today?"</div>
     </div>
     <div class="ch-card">
-      <div class="ch-icon"><svg class="icon icon-lg"><use href="#i-message-circle"/></svg></div>
+      <div class="ch-icon"><img src="logo-whatsapp.svg" alt="WhatsApp" /></div>
       <h3>WhatsApp</h3>
       <p>Message from anywhere in the world. Your agents reply instantly, no app switching.</p>
       <div class="ch-example">"Book me a flight to Lisbon next Tuesday."</div>
     </div>
     <div class="ch-card">
-      <div class="ch-icon"><svg class="icon icon-lg"><use href="#i-send"/></svg></div>
+      <div class="ch-icon"><img src="logo-telegram.svg" alt="Telegram" /></div>
       <h3>Telegram</h3>
       <p>Full conversation history, file sharing, voice notes. Works on every device.</p>
       <div class="ch-example">"Send me the client deck in PDF."</div>
     </div>
     <div class="ch-card">
-      <div class="ch-icon"><svg class="icon icon-lg"><use href="#i-globe"/></svg></div>
+      <div class="ch-icon"><img src="logo-safari.svg" alt="Web" /></div>
       <h3>Web</h3>
       <p>Full chat workspace in your browser. Drag-and-drop files, voice, screen share.</p>
       <div class="ch-example">"Walk me through last week's metrics."</div>
@@ -1295,78 +1464,172 @@ h1.hero-h {
   </div>
 </section>
 
-<section class="cloud-what" id="cloud-what">
-  <div class="eyebrow" data-skin-show="cloud">What you get with Cloud</div>
-  <h2 class="h2" data-skin-show="cloud">Your private cloud computer.<br><span class="dim">Always on. Always yours.</span></h2>
-  <h2 class="h2" data-skin-show="local">What you get with Local.<br><span class="dim">Yours forever. Offline-capable.</span></h2>
-  <p class="body-text" data-skin-show="cloud">
-    Cloud gives you a dedicated Apple Silicon Mac in the cloud — provisioned in minutes, isolated to you, persistent across sessions. No hardware to buy, no setup, no maintenance.
-  </p>
-  <p class="body-text" data-skin-show="local">
-    Local installs directly on your own Mac. Your data never leaves your machine. Works offline. One-time setup, then it just runs.
-  </p>
-  <div class="cloud-stack" data-skin-show="cloud">
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-monitor"/></svg></div>
-      <h3>Dedicated Mac</h3>
-      <p>An Apple Silicon machine provisioned for you alone. Persistent state, your files, your environment.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">Apple Silicon</span><span class="cs-spec-tag">16GB+ RAM</span><span class="cs-spec-tag">macOS</span></div>
+<section class="vscc" id="vs-claude">
+  <div class="vscc-head">
+    <div class="eyebrow" style="justify-content:center">The honest comparison</div>
+    <h2 class="h2">Numin vs <span class="accent-text">Claude Code</span></h2>
+    <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Both are great. They're built for different jobs. Claude Code writes code in a one-shot session. Numin runs your business 24/7.</p>
+  </div>
+  <div class="vscc-logos">
+    <div class="vscc-logo-block">
+      <div class="vscc-logo-img">
+        <img src="claude-favicon.ico" alt="Claude Code" />
+      </div>
+      <div class="vscc-logo-label">Claude Code</div>
     </div>
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-shield"/></svg></div>
-      <h3>Isolated by default</h3>
-      <p>Your cloud Mac is yours alone. No shared resources, no noisy neighbors, no leakage between customers.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">Private</span><span class="cs-spec-tag">Encrypted disk</span></div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-zap"/></svg></div>
-      <h3>Provisioned in minutes</h3>
-      <p>Skip the unboxing. Skip the install. Sign up and your agent is online before your coffee gets cold.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">&lt; 5 min setup</span></div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-globe"/></svg></div>
-      <h3>Access from any device</h3>
-      <p>Browser on any laptop. iMessage on your phone. SSH if you want. Your cloud Mac is reachable everywhere.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">Web</span><span class="cs-spec-tag">iMessage</span><span class="cs-spec-tag">SSH</span></div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-clock"/></svg></div>
-      <h3>Always on</h3>
-      <p>Runs 24/7. Monitors your business, processes tasks, briefs you in the morning. Never sleeps, never takes a day off.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">24/7 uptime</span></div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-rotate-ccw"/></svg></div>
-      <h3>Snapshots &amp; rollback</h3>
-      <p>Every change is snapshotted. Roll back to any point in time. Experiment without fear.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">Versioned</span><span class="cs-spec-tag">Reversible</span></div>
+    <div class="vscc-vs">VS</div>
+    <div class="vscc-logo-block">
+      <div class="vscc-logo-img numin">
+        <svg class="icon" style="width:72px;height:72px"><use href="#i-sparkles"/></svg>
+      </div>
+      <div class="vscc-logo-label" style="color:var(--accent)">Numin</div>
     </div>
   </div>
-  <div class="cloud-stack" data-skin-show="local">
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-laptop"/></svg></div>
-      <h3>Your Mac, your data</h3>
-      <p>Runs on the Mac you already own. All processing, all storage, all memory stays on your machine. Period.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">Apple Silicon</span><span class="cs-spec-tag">M1+</span></div>
+  <div class="vscc-table">
+    <div class="vscc-row vscc-head">
+      <div></div>
+      <div>Claude Code ($200/mo)</div>
+      <div>Numin (from $50/mo)</div>
     </div>
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-plug"/></svg></div>
-      <h3>One-command install</h3>
-      <p>curl | bash. 30 seconds. Done. Numin starts automatically and runs in the background.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">~30s setup</span></div>
+    <div class="vscc-row"><div>Price</div><div>$200/mo flat, no setup fee</div><div>From $50/mo + optional $299 setup</div></div>
+    <div class="vscc-row"><div>Usage caps</div><div>Daily message limits, throttled at peak</div><div>Credit-based, never throttled, no daily caps</div></div>
+    <div class="vscc-row"><div>Where it lives</div><div>Your terminal, one window</div><div>iMessage, WhatsApp, Telegram, web — every channel you already use</div></div>
+    <div class="vscc-row"><div>Memory</div><div>Per-session, dies when you close the window</div><div>Permanent, learns your business over time, never forgets</div></div>
+    <div class="vscc-row"><div>Always on</div><div>No — waits for you to open it</div><div>Yes — runs 24/7, monitors, briefs you in the morning</div></div>
+    <div class="vscc-row"><div>Specialists</div><div>One generalist agent</div><div>6 specialists — research, build, plan, write, sell, orchestrate</div></div>
+    <div class="vscc-row"><div>Custom training</div><div>Generic prompts you write yourself</div><div>Pre-trained on your business during onboarding</div></div>
+    <div class="vscc-row"><div>Tasks it does</div><div>Suggests code, waits for review</div><div>Sends emails, updates CRM, books meetings, closes tickets — without asking</div></div>
+    <div class="vscc-row"><div>Ownership</div><div>Renting a tool — they can change pricing or shut it down</div><div>Your agent, your data, your Mac — you own the runtime</div></div>
+    <div class="vscc-row"><div>Best for</div><div>Developers writing code</div><div>Entrepreneurs, CEOs, and operators running a business</div></div>
+  </div>
+  <p class="vscc-cta">Both have their place. If you're shipping code, use Claude Code. If you're running a business, use Numin.</p>
+</section>
+
+
+<section class="cloud-what" id="cloud-what">
+  <div class="cloud-head">
+    <div class="eyebrow" data-skin-show="cloud" style="justify-content:center">Your private cloud computer</div>
+    <div class="eyebrow" data-skin-show="local" style="justify-content:center">Your Mac, supercharged</div>
+    <h2 class="h2" data-skin-show="cloud">Dedicated Apple Silicon.<br><span class="dim">Always on. Always yours.</span></h2>
+    <h2 class="h2" data-skin-show="local">Runs on your Mac.<br><span class="dim">Stays on your Mac.</span></h2>
+    <p class="body-text center-h" data-skin-show="cloud" style="margin-left:auto;margin-right:auto">A dedicated Mac mini provisioned for you in the cloud. Pre-configured with your agents, persistent across sessions, reachable from every device you own.</p>
+    <p class="body-text center-h" data-skin-show="local" style="margin-left:auto;margin-right:auto">Numin installs directly on the Mac you already own. Everything stays on your machine — processing, storage, memory. Works online and offline.</p>
+  </div>
+
+  <div class="cloud-stage" data-skin-show="cloud">
+    <div class="cloud-mockup">
+      <div class="cloud-visual">
+        <div class="cloud-mac">
+          <div class="cloud-mac-screen">
+            <div class="cloud-mac-bar">
+              <span class="cloud-mac-dot"></span>
+              <span class="cloud-mac-dot"></span>
+              <span class="cloud-mac-dot"></span>
+              <span class="cloud-mac-title">numin — 100.64.0.12</span>
+            </div>
+            <div class="cloud-mac-line"><span class="prompt">$</span>numin status</div>
+            <div class="cloud-mac-line active">ARIA online · monitoring inbox</div>
+            <div class="cloud-mac-line active">PRISM online · drafting Q3</div>
+            <div class="cloud-mac-line active">APEX online · 12 leads ready</div>
+            <div class="cloud-mac-line"><span class="prompt">$</span>running 142d · 24/7</div>
+            <div class="cloud-mac-line"><span class="prompt">$</span>memory: 847 episodes</div>
+            <div class="cloud-mac-line"><span class="prompt">$</span>_<span style="background:var(--accent);color:var(--bg);padding:0 4px;animation:blink 1s infinite">▍</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="cloud-features">
+        <div class="cloud-feat">
+          <div class="cloud-feat-icon"><svg class="icon"><use href="#i-monitor"/></svg></div>
+          <div class="cloud-feat-body">
+            <h4>Dedicated Apple Silicon</h4>
+            <p>An entire M-series Mac provisioned for you alone. Your files, your state, your environment — isolated, encrypted, persistent.</p>
+            <div class="cloud-feat-tags"><span class="cloud-feat-tag">M2 / M3 / M4</span><span class="cloud-feat-tag">16GB+ RAM</span><span class="cloud-feat-tag">macOS</span></div>
+          </div>
+        </div>
+        <div class="cloud-feat">
+          <div class="cloud-feat-icon"><svg class="icon"><use href="#i-zap"/></svg></div>
+          <div class="cloud-feat-body">
+            <h4>Online in 5 minutes</h4>
+            <p>Sign up, get credentials, your cloud Mac is ready. Agents pre-installed. Channels pre-wired. You're texting your agent before lunch.</p>
+            <div class="cloud-feat-tags"><span class="cloud-feat-tag">&lt; 5 min</span><span class="cloud-feat-tag">Zero setup</span></div>
+          </div>
+        </div>
+        <div class="cloud-feat">
+          <div class="cloud-feat-icon"><svg class="icon"><use href="#i-clock"/></svg></div>
+          <div class="cloud-feat-body">
+            <h4>Always on, never sleeps</h4>
+            <p>Runs 24/7/365. Monitors your business overnight. Briefs you in the morning. Processes tasks while you're at the gym.</p>
+            <div class="cloud-feat-tags"><span class="cloud-feat-tag">99.9% uptime</span><span class="cloud-feat-tag">24/7</span></div>
+          </div>
+        </div>
+        <div class="cloud-feat">
+          <div class="cloud-feat-icon"><svg class="icon"><use href="#i-rotate-ccw"/></svg></div>
+          <div class="cloud-feat-body">
+            <h4>Snapshots &amp; rollback</h4>
+            <p>Every change is snapshotted. Roll back to any moment. Experiment without fear — your state is always recoverable.</p>
+            <div class="cloud-feat-tags"><span class="cloud-feat-tag">Versioned</span><span class="cloud-feat-tag">Reversible</span></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-wifi-off"/></svg></div>
-      <h3>Offline-capable</h3>
-      <p>Once your agent has the context it needs, it can keep working even if your internet drops. No cloud dependency.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">Offline-capable</span></div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-icon"><svg class="icon icon-lg"><use href="#i-brain"/></svg></div>
-      <h3>Memory that grows</h3>
-      <p>Your agent builds a permanent memory of your business — clients, decisions, patterns. It never forgets.</p>
-      <div class="cs-spec"><span class="cs-spec-tag">Persistent</span></div>
+  </div>
+
+  <div class="cloud-stage" data-skin-show="local">
+    <div class="cloud-mockup">
+      <div class="cloud-visual">
+        <div class="cloud-mac">
+          <div class="cloud-mac-screen">
+            <div class="cloud-mac-bar">
+              <span class="cloud-mac-dot"></span>
+              <span class="cloud-mac-dot"></span>
+              <span class="cloud-mac-dot"></span>
+              <span class="cloud-mac-title">~ — julylans-macbook</span>
+            </div>
+            <div class="cloud-mac-line"><span class="prompt">$</span>curl install.numin.io | bash</div>
+            <div class="cloud-mac-line active">✓ installing agent core</div>
+            <div class="cloud-mac-line active">✓ mounting ~/.numin</div>
+            <div class="cloud-mac-line active">✓ linking iMessage bridge</div>
+            <div class="cloud-mac-line"><span class="prompt">$</span>numin start --detach</div>
+            <div class="cloud-mac-line active">ARIA on iMessage · ready</div>
+            <div class="cloud-mac-line active">PRISM on WhatsApp · ready</div>
+            <div class="cloud-mac-line"><span class="prompt">$</span>_<span style="background:var(--accent);color:var(--bg);padding:0 4px;animation:blink 1s infinite">▍</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="cloud-features">
+        <div class="cloud-feat">
+          <div class="cloud-feat-icon"><svg class="icon"><use href="#i-laptop"/></svg></div>
+          <div class="cloud-feat-body">
+            <h4>Your Mac, your data</h4>
+            <p>Runs on the Mac you already own. All processing, all storage, all memory stays on your machine. Period.</p>
+            <div class="cloud-feat-tags"><span class="cloud-feat-tag">Apple Silicon</span><span class="cloud-feat-tag">M1+</span></div>
+          </div>
+        </div>
+        <div class="cloud-feat">
+          <div class="cloud-feat-icon"><svg class="icon"><use href="#i-plug"/></svg></div>
+          <div class="cloud-feat-body">
+            <h4>30-second install</h4>
+            <p>One command. Numin starts automatically. Runs in the background, never in your way. Updating itself while you sleep.</p>
+            <div class="cloud-feat-tags"><span class="cloud-feat-tag">curl | bash</span><span class="cloud-feat-tag">~30s</span></div>
+          </div>
+        </div>
+        <div class="cloud-feat">
+          <div class="cloud-feat-icon"><svg class="icon"><use href="#i-wifi-off"/></svg></div>
+          <div class="cloud-feat-body">
+            <h4>Works offline</h4>
+            <p>Internet drops? Numin keeps running on local models and your cached context. The show goes on.</p>
+            <div class="cloud-feat-tags"><span class="cloud-feat-tag">Resilient</span><span class="cloud-feat-tag">Local</span></div>
+          </div>
+        </div>
+        <div class="cloud-feat">
+          <div class="cloud-feat-icon"><svg class="icon"><use href="#i-brain"/></svg></div>
+          <div class="cloud-feat-body">
+            <h4>Memory that compounds</h4>
+            <p>Your agent builds permanent memory of your business. Clients, decisions, patterns — never forgets, always available.</p>
+            <div class="cloud-feat-tags"><span class="cloud-feat-tag">Persistent</span><span class="cloud-feat-tag">Compounding</span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -1498,110 +1761,171 @@ h1.hero-h {
           </div>
         </div>
       </div>
-    </div>
-  </div>
 </section>
 
 <section class="workflow" id="workflow">
-  <div class="eyebrow">Built for the way you actually work</div>
-  <h2 class="h2 center-h">An operating system for<br><span class="dim">your entire operation.</span></h2>
-  <p class="body-text center-h">
-    Whether you run a solo consultancy, a 50-person agency, or a global enterprise — Numin adapts to the work, not the other way around.
-  </p>
+  <div class="workflow-head">
+    <div class="eyebrow" style="justify-content:center">The way you actually work</div>
+    <h2 class="h2">Built for the operators<br><span class="dim">running real businesses.</span></h2>
+    <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Different industries, different workflows, same outcome. Numin adapts to how you actually run your business — not the other way around.</p>
+  </div>
   <div class="wf-grid">
-    <div class="wf-card">
-      <div class="wf-emoji"><svg class="icon icon-2xl"><use href="#i-rocket"/></svg></div>
-      <h3>For founders &amp; solo operators</h3>
-      <p>You're the bottleneck. Numin takes the recurring operations off your plate — email, scheduling, follow-ups, invoicing, research — so you can focus on the work only you can do.</p>
-      <div class="wf-tags"><span class="wf-tag">Inbox triage</span><span class="wf-tag">Calendar</span><span class="wf-tag">CRM updates</span><span class="wf-tag">Research</span></div>
-    </div>
-    <div class="wf-card">
-      <div class="wf-emoji"><svg class="icon icon-2xl"><use href="#i-building"/></svg></div>
-      <h3>For agencies &amp; service teams</h3>
-      <p>Six specialized agents as your team. Client comms, content production, project ops, lead gen — running parallel workstreams without hiring another body.</p>
-      <div class="wf-tags"><span class="wf-tag">Client comms</span><span class="wf-tag">Content</span><span class="wf-tag">Project ops</span><span class="wf-tag">Reporting</span></div>
-    </div>
-    <div class="wf-card">
-      <div class="wf-emoji"><svg class="icon icon-2xl"><use href="#i-palette"/></svg></div>
-      <h3>For creative systems &amp; studios</h3>
-      <p>Brief intake, asset versioning, copy iteration, scheduling across channels. Agents that understand your creative pipeline and run the production layer.</p>
-      <div class="wf-tags"><span class="wf-tag">Briefs</span><span class="wf-tag">Iteration</span><span class="wf-tag">Publishing</span><span class="wf-tag">Asset ops</span></div>
-    </div>
-    <div class="wf-card">
-      <div class="wf-emoji"><svg class="icon icon-2xl"><use href="#i-bar-chart"/></svg></div>
-      <h3>For sales &amp; revenue teams</h3>
-      <p>Lead enrichment, outreach sequences, pipeline updates, meeting prep, follow-ups. Sales agents that work the top of the funnel while your reps close.</p>
-      <div class="wf-tags"><span class="wf-tag">Leads</span><span class="wf-tag">Outreach</span><span class="wf-tag">Pipeline</span><span class="wf-tag">Forecasting</span></div>
-    </div>
-    <div class="wf-card">
-      <div class="wf-emoji"><svg class="icon icon-2xl"><use href="#i-brain"/></svg></div>
-      <h3>For enterprise &amp; operations</h3>
-      <p>Internal knowledge retrieval, ticket routing, vendor coordination, compliance checks. Enterprise workflows that finally have an automation layer that understands context.</p>
-      <div class="wf-tags"><span class="wf-tag">Knowledge</span><span class="wf-tag">Tickets</span><span class="wf-tag">Vendors</span><span class="wf-tag">Compliance</span></div>
-    </div>
-    <div class="wf-card">
-      <div class="wf-emoji"><svg class="icon icon-2xl"><use href="#i-globe"/></svg></div>
-      <h3>For projects &amp; communities</h3>
-      <p>Community moderation, member onboarding, content calendars, event coordination. A persistent operator for any project that needs to keep moving between human check-ins.</p>
-      <div class="wf-tags"><span class="wf-tag">Community</span><span class="wf-tag">Onboarding</span><span class="wf-tag">Events</span><span class="wf-tag">Content</span></div>
+  <div class="wf-card wide">
+    <div class="wf-icon"><svg class="icon"><use href="#i-rocket"/></svg></div>
+    <h3>For founders &amp; solo operators</h3>
+    <p>You're the bottleneck. Numin takes the recurring operations off your plate — email triage, calendar, follow-ups, invoicing, research — so you can focus on the work only you can do.</p>
+    <div class="wf-tags">
+      <span class="wf-tag">Inbox triage</span>
+      <span class="wf-tag">Calendar</span>
+      <span class="wf-tag">CRM updates</span>
+      <span class="wf-tag">Research</span>
+      <span class="wf-tag">Invoicing</span>
+      <span class="wf-tag">Follow-ups</span>
     </div>
   </div>
+  <div class="wf-card tall">
+    <div class="wf-icon"><svg class="icon"><use href="#i-building"/></svg></div>
+    <h3>For agencies &amp; service teams</h3>
+    <p>Six specialized agents as your team. Client comms, content production, project ops, lead gen — running parallel workstreams without hiring another body.</p>
+    <div class="wf-tags">
+      <span class="wf-tag">Client comms</span>
+      <span class="wf-tag">Content</span>
+      <span class="wf-tag">Project ops</span>
+      <span class="wf-tag">Reporting</span>
+      <span class="wf-tag">Lead gen</span>
+    </div>
+  </div>
+  <div class="wf-card regular">
+    <div class="wf-icon"><svg class="icon"><use href="#i-palette"/></svg></div>
+    <h3>For creative studios</h3>
+    <p>Brief intake, asset versioning, copy iteration, scheduling across channels.</p>
+    <div class="wf-tags">
+      <span class="wf-tag">Briefs</span>
+      <span class="wf-tag">Iteration</span>
+      <span class="wf-tag">Publishing</span>
+    </div>
+  </div>
+  <div class="wf-card regular">
+    <div class="wf-icon"><svg class="icon"><use href="#i-bar-chart"/></svg></div>
+    <h3>For sales teams</h3>
+    <p>Lead enrichment, outreach, pipeline updates, meeting prep, follow-ups.</p>
+    <div class="wf-tags">
+      <span class="wf-tag">Leads</span>
+      <span class="wf-tag">Outreach</span>
+      <span class="wf-tag">Pipeline</span>
+    </div>
+  </div>
+  <div class="wf-card regular">
+    <div class="wf-icon"><svg class="icon"><use href="#i-brain"/></svg></div>
+    <h3>For enterprise ops</h3>
+    <p>Internal knowledge, ticket routing, vendor coordination, compliance checks.</p>
+    <div class="wf-tags">
+      <span class="wf-tag">Knowledge</span>
+      <span class="wf-tag">Tickets</span>
+      <span class="wf-tag">Vendors</span>
+      <span class="wf-tag">Compliance</span>
+    </div>
+  </div>
+  <div class="wf-card wide">
+    <div class="wf-icon"><svg class="icon"><use href="#i-globe"/></svg></div>
+    <h3>For projects &amp; communities</h3>
+    <p>Community moderation, member onboarding, content calendars, event coordination. A persistent operator for any project that needs to keep moving between human check-ins.</p>
+    <div class="wf-tags">
+      <span class="wf-tag">Community</span>
+      <span class="wf-tag">Onboarding</span>
+      <span class="wf-tag">Events</span>
+      <span class="wf-tag">Content</span>
+      <span class="wf-tag">Moderation</span>
+    </div>
+  </div>
+</div>
+  
 </section>
 
 <section class="built" id="built">
   <div class="built-head">
     <div class="eyebrow" style="justify-content:center">What's under the hood</div>
     <h2 class="h2">Built on a complete<br><span class="dim">intelligence system.</span></h2>
-    <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Numin isn't a wrapper around a chatbot. It's a full-stack agentic platform — built from the ground up to run your business without you babysitting it. Here's what's under the hood.</p>
+    <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Numin isn't a wrapper around a chatbot. It's a full-stack agentic platform — built from the ground up to run your business without you babysitting it.</p>
+  </div>
+  <div class="built-stats">
+    <div class="built-stat">
+      <div class="built-stat-num">6</div>
+      <div class="built-stat-label">Specialized agents</div>
+    </div>
+    <div class="built-stat">
+      <div class="built-stat-num">7</div>
+      <div class="built-stat-label">Channels</div>
+    </div>
+    <div class="built-stat">
+      <div class="built-stat-num">1000+</div>
+      <div class="built-stat-label">Integrations</div>
+    </div>
+    <div class="built-stat">
+      <div class="built-stat-num">24/7</div>
+      <div class="built-stat-label">Always on</div>
+    </div>
+    <div class="built-stat">
+      <div class="built-stat-num">∞</div>
+      <div class="built-stat-label">Memory</div>
+    </div>
   </div>
   <div class="built-grid">
     <div class="bcard">
       <div class="bcard-num">01 / INTELLIGENCE</div>
       <div class="bcard-icon"><svg class="icon"><use href="#i-brain"/></svg></div>
       <h3>Persistent memory</h3>
-      <p>Your agent remembers every client, every preference, every decision — across sessions, across months, across years. It builds a model of your business that compounds over time. New team members onboarded by reading the agent's memory.</p>
+      <p>Your agent remembers every client, every preference, every decision — across sessions, across months, across years. It builds a model of your business that compounds over time.</p>
+      <div class="bcard-stat">NEVER FORGETS</div>
     </div>
     <div class="bcard">
       <div class="bcard-num">02 / CHANNELS</div>
       <div class="bcard-icon"><svg class="icon"><use href="#i-message-circle"/></svg></div>
       <h3>Every messaging surface</h3>
-      <p>iMessage, WhatsApp, Telegram, Discord, Slack, SMS, web chat, voice. Your agent reaches you wherever you already are. One conversation context across all of them — pick up on iPhone where you left off on Mac.</p>
+      <p>iMessage, WhatsApp, Telegram, Discord, Slack, SMS, web chat, voice. Your agent reaches you wherever you already are. One conversation context across all of them.</p>
+      <div class="bcard-stat">7 SURFACES</div>
     </div>
     <div class="bcard">
       <div class="bcard-num">03 / SKILLS LIBRARY</div>
       <div class="bcard-icon"><svg class="icon"><use href="#i-wand"/></svg></div>
       <h3>Skills that compose</h3>
-      <p>A growing library of pre-built capabilities — email triage, calendar scheduling, CRM updates, invoicing, research, content drafting, code review, data analysis. Compose them like building blocks. Your agent picks the right skill for each task.</p>
+      <p>A growing library of pre-built capabilities — email triage, calendar scheduling, CRM updates, invoicing, research, content drafting, code review, data analysis.</p>
+      <div class="bcard-stat">COMPOSABLE</div>
     </div>
     <div class="bcard">
       <div class="bcard-num">04 / INTEGRATIONS</div>
       <div class="bcard-icon"><svg class="icon"><use href="#i-plug"/></svg></div>
       <h3>1,000+ tools, native</h3>
-      <p>Native integrations with Gmail, Outlook, Google Calendar, Apple Calendar, Slack, Notion, HubSpot, Salesforce, Stripe, Linear, GitHub, and hundreds more. Your agent doesn't just talk to these tools — it actually executes inside them.</p>
+      <p>Native integrations with Gmail, Outlook, Calendar, Slack, Notion, HubSpot, Salesforce, Stripe, Linear, GitHub, and hundreds more. Your agent executes inside them.</p>
+      <div class="bcard-stat">1000+</div>
     </div>
     <div class="bcard">
       <div class="bcard-num">05 / ORCHESTRATION</div>
       <div class="bcard-icon"><svg class="icon"><use href="#i-network"/></svg></div>
       <h3>Six specialists, one brain</h3>
-      <p>ARIA for research. VANCE for build. NEXUS for planning. PRISM for content. APEX for sales. NUMIN for orchestration. Each owns a domain. They share context, hand off tasks, and coordinate without you.</p>
+      <p>ARIA for research. VANCE for build. NEXUS for planning. PRISM for content. APEX for sales. NUMIN for orchestration. Each owns a domain.</p>
+      <div class="bcard-stat">6 AGENTS</div>
     </div>
     <div class="bcard">
       <div class="bcard-num">06 / SCHEDULING</div>
       <div class="bcard-icon"><svg class="icon"><use href="#i-clock"/></svg></div>
       <h3>Cron that actually works</h3>
-      <p>Schedule anything — daily briefings, weekly reports, monthly invoicing, quarterly reviews. Your agent runs them in the background and surfaces results. No missed tasks, no forgotten deadlines.</p>
+      <p>Schedule anything — daily briefings, weekly reports, monthly invoicing, quarterly reviews. Your agent runs them in the background and surfaces results.</p>
+      <div class="bcard-stat">AUTOMATED</div>
     </div>
     <div class="bcard">
       <div class="bcard-num">07 / SUB-AGENTS</div>
       <div class="bcard-icon"><svg class="icon"><use href="#i-users"/></svg></div>
       <h3>Specialists on demand</h3>
-      <p>Spin up a dedicated sub-agent for a project — a marketing agent for the launch, a research agent for due diligence, a coding agent for the MVP. They run, deliver, and report back. You stay focused on the main work.</p>
+      <p>Spin up a dedicated sub-agent for a project — a marketing agent for the launch, a research agent for due diligence. They run, deliver, and report back.</p>
+      <div class="bcard-stat">ON DEMAND</div>
     </div>
     <div class="bcard">
       <div class="bcard-num">08 / CUSTOM TRAINING</div>
       <div class="bcard-icon"><svg class="icon"><use href="#i-target"/></svg></div>
       <h3>Trained on your business</h3>
-      <p>During onboarding, your agent ingests your docs, your past decisions, your customer profiles, your voice. It answers like someone who's been at your company for years — because it has read everything.</p>
+      <p>During onboarding, your agent ingests your docs, your past decisions, your customer profiles, your voice. It answers like someone who's been at your company for years.</p>
+      <div class="bcard-stat">YOU-TRAINED</div>
     </div>
   </div>
 </section>
@@ -1680,46 +2004,6 @@ h1.hero-h {
   </div>
 </section>
 
-<section class="vscc" id="vs-claude">
-  <div class="vscc-head">
-    <div class="eyebrow" style="justify-content:center">The honest comparison</div>
-    <h2 class="h2">Numin vs <span class="accent-text">Claude Code</span></h2>
-    <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Both are great. They're built for different jobs. Claude Code writes code in a one-shot session. Numin runs your business 24/7.</p>
-  </div>
-  <div class="vscc-logos">
-    <div class="vscc-logo-block">
-      <div class="vscc-logo-img">
-        <img src="claude-favicon.ico" alt="Claude Code" />
-      </div>
-      <div class="vscc-logo-label">Claude Code</div>
-    </div>
-    <div class="vscc-vs">VS</div>
-    <div class="vscc-logo-block">
-      <div class="vscc-logo-img numin">
-        <svg class="icon" style="width:72px;height:72px"><use href="#i-sparkles"/></svg>
-      </div>
-      <div class="vscc-logo-label" style="color:var(--accent)">Numin</div>
-    </div>
-  </div>
-  <div class="vscc-table">
-    <div class="vscc-row vscc-head">
-      <div></div>
-      <div>Claude Code ($200/mo)</div>
-      <div>Numin (from $50/mo)</div>
-    </div>
-    <div class="vscc-row"><div>Price</div><div>$200/mo flat, no setup fee</div><div>From $50/mo + optional $299 setup</div></div>
-    <div class="vscc-row"><div>Usage caps</div><div>Daily message limits, throttled at peak</div><div>Credit-based, never throttled, no daily caps</div></div>
-    <div class="vscc-row"><div>Where it lives</div><div>Your terminal, one window</div><div>iMessage, WhatsApp, Telegram, web — every channel you already use</div></div>
-    <div class="vscc-row"><div>Memory</div><div>Per-session, dies when you close the window</div><div>Permanent, learns your business over time, never forgets</div></div>
-    <div class="vscc-row"><div>Always on</div><div>No — waits for you to open it</div><div>Yes — runs 24/7, monitors, briefs you in the morning</div></div>
-    <div class="vscc-row"><div>Specialists</div><div>One generalist agent</div><div>6 specialists — research, build, plan, write, sell, orchestrate</div></div>
-    <div class="vscc-row"><div>Custom training</div><div>Generic prompts you write yourself</div><div>Pre-trained on your business during onboarding</div></div>
-    <div class="vscc-row"><div>Tasks it does</div><div>Suggests code, waits for review</div><div>Sends emails, updates CRM, books meetings, closes tickets — without asking</div></div>
-    <div class="vscc-row"><div>Ownership</div><div>Renting a tool — they can change pricing or shut it down</div><div>Your agent, your data, your Mac — you own the runtime</div></div>
-    <div class="vscc-row"><div>Best for</div><div>Developers writing code</div><div>Entrepreneurs, CEOs, and operators running a business</div></div>
-  </div>
-  <p class="vscc-cta">Both have their place. If you're shipping code, use Claude Code. If you're running a business, use Numin.</p>
-</section>
 
 <section class="own" id="own">
   <div class="eyebrow">What you own</div>
@@ -2133,6 +2417,19 @@ document.querySelectorAll('.faq-q').forEach(btn => {
     if (!wasOpen) item.classList.add('open');
   });
 });
+
+// Reveal-on-scroll for built cards
+if ('IntersectionObserver' in window) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('in-view'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.bcard').forEach(el => observer.observe(el));
+}
 
 // Mobile-test mode: ?mobile=1 forces a 390px container so we can audit mobile layout
 // from a desktop browser. Renders inside a styled wrapper to simulate the viewport.
