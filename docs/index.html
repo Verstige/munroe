@@ -1,35 +1,845 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Numin — AI Business Operating System</title>
-    <meta name="description" content="6 AI agents that run your entire business — CRM, email, content, calendar, and more. Automate operations, scale without hiring." />
-    <meta name="author" content="Numin" />
-    <link rel="icon" type="image/png" sizes="96x96" href="/numin-io/nexus-favicon.png">
-    <link rel="icon" type="image/png" sizes="576x576" href="/numin-io/nexus-favicon.png">
-    <link rel="icon" type="image/png" sizes="1536x1536" href="/numin-io/nexus-favicon.png">
-    <link rel="apple-touch-icon" sizes="540x540" href="/numin-io/nexus-favicon.png">
-    <link rel="manifest" href="/numin-io/manifest.json">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Numin — Your AI Employee, Running Locally</title>
+<meta name="description" content="Six specialized AI agents that run your entire business — operations, sales, support, and communications — 24/7, all on your own hardware." />
+<meta name="author" content="Numin" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23050707'/%3E%3Ctext x='50' y='62' font-family='Inter,sans-serif' font-size='48' font-weight='900' fill='%23C9A84C' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E" />
+<meta property="og:title" content="Numin — Your AI Employee, Running Locally" />
+<meta property="og:description" content="Six specialized AI agents that run your entire business — 24/7, all on your own hardware." />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@numin_ai" />
+<meta name="twitter:title" content="Numin — Your AI Employee, Running Locally" />
+<meta name="twitter:description" content="Six specialized AI agents that run your entire business — 24/7, all on your own hardware." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   NUMIN LANDING — Self-contained, zero dependencies
+   Gold-on-black OrbitAI-derived design system.
+   ============================================================ */
+:root {
+  --bg: #050707;
+  --bg-2: #0c0f14;
+  --text: #f7f9fc;
+  --text-dim: rgba(247, 249, 252, 0.35);
+  --text-mid: #acb5c4;
+  --text-mute: #5c6178;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #C9A84C;
+  --accent-light: #f0d078;
+  --accent-dim: #E8D5A3;
+}
 
-    <meta property="og:title" content="Numin — Your AI Employee, Running Locally" />
-    <meta property="og:description" content="Six specialized AI agents that run your entire business — operations, sales, support, and communications — 24/7." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://verstige.github.io/numin-io/numin-logo.png" />
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@numin_ai" />
-    <meta name="twitter:title" content="Numin — Your AI Employee, Running Locally" />
-    <meta name="twitter:description" content="Six specialized AI agents that run your entire business — 24/7, all on your own hardware." />
-    <meta name="twitter:image" content="https://verstige.github.io/numin-io/numin-logo.png" />
-    <script type="module" crossorigin src="/numin-io/assets/index-BCVtYd8-.js"></script>
-    <link rel="stylesheet" crossorigin href="/numin-io/assets/index-BHu5_014.css">
-  </head>
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  <body>
-    <div id="root"></div>
-  </body>
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+/* ── Background layers ── */
+.nebula {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% -5%, rgba(201, 168, 76, 0.13) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 15% 35%, rgba(201, 168, 76, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 60% at 85% 25%, rgba(62, 100, 200, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50% 80%, rgba(201, 168, 76, 0.05) 0%, transparent 60%),
+    var(--bg);
+  animation: nebula-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift {
+  0% { transform: scale(1) translate(0, 0); }
+  33% { transform: scale(1.05) translate(-1%, 1.5%); }
+  66% { transform: scale(0.97) translate(1.5%, -1%); }
+  100% { transform: scale(1.03) translate(-0.5%, 0.5%); }
+}
+
+.grid-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(201, 168, 76, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201, 168, 76, 0.025) 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 30%, transparent 80%);
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 30%, transparent 80%);
+}
+
+.stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+}
+
+/* ── Nav ── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 68px; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 52px;
+  background: rgba(5, 7, 7, 0.72);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-logo {
+  font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;
+}
+.nav-logo .dot { color: var(--accent); }
+
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+  font-size: 0.84rem; font-weight: 450; color: var(--text-mid);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-cta {
+  padding: 9px 22px; border-radius: 90px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--bg); font-size: 0.84rem; font-weight: 700;
+  box-shadow: 0 4px 20px rgba(201, 168, 76, 0.28);
+  transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.nav-cta:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 8px 32px rgba(201, 168, 76, 0.36); }
+
+/* ── Hero ── */
+.hero {
+  position: relative; min-height: 100vh; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 140px 40px 80px; overflow: hidden;
+}
+
+.badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(201, 168, 76, 0.06);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 100px;
+  padding: 6px 16px 6px 8px;
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent-dim);
+  margin-bottom: 28px;
+  animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.badge-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 900; color: var(--bg);
+}
+
+h1.hero-h {
+  font-size: clamp(2.4rem, 7vw, 5.4rem);
+  font-weight: 900; letter-spacing: -0.04em; line-height: 1.06;
+  color: var(--text); max-width: 900px;
+  margin: 0 auto 28px;
+  animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.1s;
+}
+.dim { color: var(--text-dim); font-weight: 300; }
+.accent-text { color: var(--accent); }
+.shimmer {
+  background: linear-gradient(
+    120deg,
+    rgba(247, 249, 252, 0.35) 0%,
+    rgba(247, 249, 252, 0.35) 30%,
+    rgba(232, 213, 163, 0.9) 45%,
+    rgba(201, 168, 76, 1) 50%,
+    rgba(232, 213, 163, 0.9) 55%,
+    rgba(247, 249, 252, 0.35) 70%,
+    rgba(247, 249, 252, 0.35) 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-sweep 4s ease-in-out infinite 1.5s;
+  font-weight: 300;
+}
+@keyframes shimmer-sweep {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.sub {
+  font-size: 1.1rem; color: var(--text-mid); max-width: 540px;
+  margin: 0 auto 40px; line-height: 1.75; font-weight: 400;
+  animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
+}
+
+.btn-row {
+  display: flex; gap: 14px; justify-content: center; align-items: center;
+  margin-bottom: 48px;
+  animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.4s;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 36px; border-radius: 90px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--bg); font-size: 0.95rem; font-weight: 700;
+  box-shadow: 0 6px 32px rgba(201, 168, 76, 0.3);
+  transition: all 0.3s;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(201, 168, 76, 0.4); filter: brightness(1.08); }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 32px; border-radius: 90px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text); font-size: 0.95rem; font-weight: 500;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s;
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
+
+.agent-strip {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 auto 60px; justify-content: center; flex-wrap: wrap;
+  animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.55s;
+  max-width: 700px;
+}
+.strip-label {
+  font-size: 0.62rem; color: #3a3f52; text-transform: uppercase;
+  letter-spacing: 0.12em; font-weight: 600; margin-right: 4px;
+}
+.pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 0.68rem; font-weight: 500; color: #55657a;
+  letter-spacing: 0.04em;
+}
+.pill-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 6px rgba(201, 168, 76, 0.6);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.5); }
+  50% { transform: scale(1.3); opacity: 0.6; box-shadow: 0 0 0 6px rgba(201, 168, 76, 0); }
+}
+
+.dash-preview {
+  position: relative; z-index: 2;
+  width: 100%; max-width: 1160px;
+  margin: 0 auto;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
+  background: var(--bg-2);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 -20px 80px rgba(201, 168, 76, 0.08),
+    0 40px 120px rgba(0, 0, 0, 0.8);
+  transform: perspective(1200px) rotateX(4deg);
+  transition: transform 0.6s ease;
+}
+.dash-preview:hover { transform: perspective(1200px) rotateX(1deg); }
+.dash-preview::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.7), rgba(232, 213, 163, 0.9), rgba(201, 168, 76, 0.7), transparent);
+  background-size: 200% 100%;
+  animation: gradient-line-sweep 3s linear infinite;
+}
+@keyframes gradient-line-sweep {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.dash-preview-inner {
+  padding: 80px 40px; display: grid; grid-template-columns: 1fr 2fr; gap: 24px;
+  font-size: 0.78rem;
+}
+.dash-side {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px; padding: 16px;
+}
+.dash-side-row {
+  padding: 8px 12px; border-radius: 8px; margin-bottom: 4px;
+  color: var(--text-mid); display: flex; align-items: center; gap: 10px;
+}
+.dash-side-row.active { background: rgba(201, 168, 76, 0.08); color: var(--text); }
+.dash-main {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px; padding: 24px;
+}
+.dash-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px; padding: 14px; margin-bottom: 12px;
+}
+.dash-card-title { font-weight: 600; margin-bottom: 4px; }
+.dash-card-meta { font-size: 0.72rem; color: var(--text-mute); }
+.dash-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;
+}
+.dash-stat { padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; }
+.dash-stat-val { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+.dash-stat-lbl { font-size: 0.65rem; color: var(--text-mute); margin-top: 2px; }
+
+/* ── Sections ── */
+.section { position: relative; z-index: 1; padding: 120px 52px; }
+
+.eyebrow {
+  font-size: 0.72rem; font-weight: 600; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.eyebrow::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+}
+
+.h2 {
+  font-size: clamp(2.4rem, 5vw, 4rem); font-weight: 800;
+  letter-spacing: -0.04em; line-height: 1.1; color: var(--text);
+  margin-bottom: 16px;
+}
+
+.body-text {
+  font-size: 1.1rem; color: var(--text-mid); max-width: 600px;
+  line-height: 1.75; margin-bottom: 56px;
+}
+
+/* ── Audience ── */
+.audience { background: var(--bg); text-align: center; padding: 120px 52px 100px; }
+.audience-h .accent-text { color: var(--accent); }
+.tag-row {
+  display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+  max-width: 900px; margin: 0 auto;
+}
+.tag {
+  padding: 12px 28px; border-radius: 90px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 1.05rem; font-weight: 500; color: var(--text-mid);
+  display: flex; align-items: center; gap: 10px;
+}
+.tag .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.tag.active {
+  background: rgba(201, 168, 76, 0.08);
+  border-color: rgba(201, 168, 76, 0.2);
+  color: var(--text);
+}
+.audience-footer {
+  font-size: 1.2rem; color: var(--text-mid); margin-top: 56px; font-weight: 400;
+}
+.audience-footer .dim { color: rgba(172, 181, 196, 0.45); }
+
+/* ── Advantage ── */
+.advantage { background: var(--bg); padding: 60px 52px 120px; }
+.cards-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  max-width: 1100px;
+}
+.card {
+  border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-2);
+  padding: 36px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.card:hover { border-color: rgba(201, 168, 76, 0.2); transform: translateY(-4px); }
+.card-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; margin-bottom: 14px;
+}
+.card-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.92rem; font-weight: 500; color: var(--text);
+  margin-bottom: 8px;
+}
+.card-title::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+}
+.card-body {
+  font-size: 0.82rem; color: var(--text-mute); line-height: 1.6;
+}
+.adv-tagline {
+  text-align: center; font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  color: var(--text-mid); margin-top: 80px;
+}
+.adv-tagline .bright { color: var(--text); }
+
+/* ── Bento ── */
+.bento { background: linear-gradient(180deg, var(--bg) 0%, #080b10 100%); padding: 120px 52px; }
+.bento-grid {
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto;
+  gap: 16px; max-width: 1100px; margin: 0 auto;
+}
+.bento-cell {
+  border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-2); padding: 36px; position: relative; overflow: hidden;
+  transition: border-color 0.3s, transform 0.35s;
+}
+.bento-cell:hover { border-color: rgba(201, 168, 76, 0.18); transform: translateY(-3px); }
+.bento-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem; margin-bottom: 20px;
+}
+.bento-title {
+  font-size: 1.5rem; font-weight: 700; color: var(--text);
+  letter-spacing: -0.02em; margin-bottom: 8px;
+}
+.bento-title .dim { color: rgba(247, 249, 252, 0.45); font-weight: 300; }
+.bento-desc {
+  font-size: 0.88rem; color: var(--text-mute); line-height: 1.7; max-width: 420px;
+}
+.bento-mock {
+  margin-top: 24px; border-radius: 12px;
+  background: #080b10; border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+.bento-mock-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.78rem; color: var(--text-mid);
+}
+.bento-mock-row:last-child { border-bottom: none; }
+.bento-mock-row .badge-opt {
+  margin-left: auto; font-size: 0.6rem; font-weight: 600;
+  color: #34f5c5; background: rgba(52, 245, 197, 0.1);
+  border: 1px solid rgba(52, 245, 197, 0.2);
+  padding: 2px 8px; border-radius: 90px; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.bento-mock-row .badge-idle {
+  margin-left: auto; font-size: 0.6rem; font-weight: 600;
+  color: var(--text-mid); background: rgba(172, 181, 196, 0.08);
+  border: 1px solid rgba(172, 181, 196, 0.12);
+  padding: 2px 8px; border-radius: 90px;
+}
+.mini-stats { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.mini-stat {
+  padding: 10px 16px; background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px;
+}
+.mini-stat-val { font-size: 1.3rem; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+.mini-stat-lbl { font-size: 0.62rem; color: var(--text-mute); font-weight: 500; }
+.check-list { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+.check-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.85rem; color: var(--text-mid);
+}
+.check-item::before {
+  content: '✓'; width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; color: var(--accent); font-weight: 700;
+}
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; margin-top: 16px; height: 60px; }
+.bar {
+  flex: 1; border-radius: 4px 4px 0 0; background: rgba(201, 168, 76, 0.15);
+}
+.bar.active { background: linear-gradient(180deg, var(--accent), var(--accent-dim)); }
+
+/* ── Compare ── */
+.compare {
+  background: var(--bg); padding: 120px 52px;
+}
+.compare-h { text-align: center; margin-bottom: 64px; }
+.compare-h .accent-text { color: var(--accent); }
+.compare-table {
+  max-width: 1000px; margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;
+  overflow: hidden;
+}
+.compare-row {
+  display: grid; grid-template-columns: 1fr 1.4fr 1.4fr;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.compare-row:last-child { border-bottom: none; }
+.compare-row > div { padding: 20px 24px; font-size: 0.88rem; }
+.compare-row > div:first-child {
+  background: rgba(255, 255, 255, 0.02);
+  font-weight: 700; color: var(--text);
+}
+.compare-row > div:nth-child(2) { color: var(--text-mute); }
+.compare-row > div:nth-child(3) {
+  color: var(--text); background: rgba(201, 168, 76, 0.04);
+  border-left: 1px solid rgba(201, 168, 76, 0.15);
+}
+.compare-head > div {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-mid);
+}
+.compare-head > div:nth-child(2) { color: var(--text-mute); }
+.compare-head > div:nth-child(3) { color: var(--accent); }
+
+/* ── CTA ── */
+.cta { padding: 120px 52px 100px; text-align: center; background: var(--bg); position: relative; overflow: hidden; }
+.cta-h .accent-text { color: var(--accent); }
+.cta-sub { font-size: 1rem; color: var(--text-mid); margin-bottom: 40px; }
+.cta-note { font-size: 0.8rem; color: #55657a; margin-top: 16px; }
+
+/* ── Footer ── */
+.footer {
+  background: var(--bg); border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 44px 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 24px;
+}
+.footer-logo { font-size: 1.1rem; font-weight: 800; }
+.footer-logo .dot { color: var(--accent); }
+.footer-links { display: flex; gap: 32px; }
+.footer-links a {
+  font-size: 0.82rem; color: #55657a;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--text-mid); }
+.footer-social { display: flex; gap: 12px; }
+.social-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-mid); font-size: 0.78rem; font-weight: 600;
+  transition: border-color 0.2s, color 0.2s;
+}
+.social-icon:hover { border-color: rgba(201, 168, 76, 0.3); color: var(--accent); }
+.footer-bottom {
+  text-align: center; padding: 20px 52px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.75rem; color: #3a3f52; background: var(--bg);
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(36px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .nav { padding: 0 20px; height: 60px; }
+  .nav-links { display: none; }
+  .hero { padding: 100px 20px 60px; min-height: auto; }
+  h1.hero-h { font-size: clamp(2.2rem, 10vw, 3.5rem); letter-spacing: -0.03em; }
+  .sub { font-size: 0.95rem; margin-bottom: 32px; }
+  .btn-row { flex-direction: column; width: 100%; gap: 10px; margin-bottom: 32px; }
+  .btn-primary, .btn-ghost { width: 100%; justify-content: center; padding: 14px 24px; }
+  .agent-strip { gap: 6px; padding: 0 4px; margin-bottom: 36px; }
+  .pill { font-size: 0.62rem; padding: 5px 10px; }
+  .dash-preview-inner { grid-template-columns: 1fr; padding: 32px 16px; }
+  .dash-grid { grid-template-columns: repeat(2, 1fr); }
+  .section, .audience, .advantage, .bento, .compare, .cta { padding: 80px 20px; }
+  .h2 { font-size: clamp(2rem, 8vw, 3rem); }
+  .cards-row { grid-template-columns: 1fr; gap: 12px; }
+  .bento-grid { grid-template-columns: 1fr; }
+  .compare-table { font-size: 0.78rem; }
+  .compare-row { grid-template-columns: 1fr 1.2fr 1.2fr; }
+  .compare-row > div { padding: 12px 14px; font-size: 0.78rem; }
+  .footer { flex-direction: column; text-align: center; padding: 32px 20px; gap: 20px; }
+  .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+}
+
+@media (max-width: 480px) {
+  .compare-table { display: block; overflow-x: auto; }
+  .compare-row { min-width: 540px; }
+}
+</style>
+</head>
+<body>
+
+<div class="nebula"></div>
+<div class="grid-overlay"></div>
+<div class="stars" id="stars"></div>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">numin<span class="dot">.</span></a>
+  <ul class="nav-links">
+    <li><a href="#advantage">Advantage</a></li>
+    <li><a href="#agents">Agents</a></li>
+    <li><a href="#compare">Numin vs ChatGPT</a></li>
+  </ul>
+  <a href="https://github.com/Verstige/numin" class="nav-cta">Get started</a>
+</nav>
+
+<header class="hero">
+  <div class="badge">
+    <span class="badge-dot">N</span>
+    YOUR AI EMPLOYEE · RUNNING LOCALLY
+  </div>
+  <h1 class="hero-h">
+    <span class="dim">Six agents.</span> <span class="shimmer">One business.</span><br>
+    <span class="dim">Running</span> <span class="accent-text">on your Mac.</span>
+  </h1>
+  <p class="sub">
+    Numin deploys six specialized AI agents on-site at your company. They handle operations, sales, support, and communications — 24/7, all on your own hardware.
+  </p>
+  <div class="btn-row">
+    <a href="https://github.com/Verstige/numin" class="btn-primary">Start free trial →</a>
+    <a href="https://github.com/Verstige/numin#what-you-get" class="btn-ghost">▶ See how it works</a>
+  </div>
+  <div class="agent-strip">
+    <span class="strip-label">Live</span>
+    <span class="pill"><span class="pill-dot"></span>ARIA</span>
+    <span class="pill"><span class="pill-dot"></span>VANCE</span>
+    <span class="pill"><span class="pill-dot"></span>NEXUS</span>
+    <span class="pill"><span class="pill-dot"></span>PRISM</span>
+    <span class="pill"><span class="pill-dot"></span>APEX</span>
+    <span class="pill"><span class="pill-dot"></span>NUMIN</span>
+  </div>
+
+  <div class="dash-preview">
+    <div class="dash-preview-inner">
+      <div class="dash-side">
+        <div class="dash-side-row active"><span class="pill-dot"></span> Overview</div>
+        <div class="dash-side-row">Inbox</div>
+        <div class="dash-side-row">Calendar</div>
+        <div class="dash-side-row">CRM</div>
+        <div class="dash-side-row">Tasks</div>
+        <div class="dash-side-row">Reports</div>
+      </div>
+      <div class="dash-main">
+        <div class="dash-card">
+          <div class="dash-card-title">Good morning, Julylan</div>
+          <div class="dash-card-meta">6 agents active · 14 tasks triaged overnight</div>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-stat"><div class="dash-stat-val">142</div><div class="dash-stat-lbl">emails triaged</div></div>
+          <div class="dash-stat"><div class="dash-stat-val">8</div><div class="dash-stat-lbl">meetings booked</div></div>
+          <div class="dash-stat"><div class="dash-stat-val">3</div><div class="dash-stat-lbl">deals updated</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="audience">
+  <h2 class="h2 audience-h">
+    Built for <span class="accent-text">operators</span> who don't want to hire
+  </h2>
+  <div class="tag-row">
+    <span class="tag active"><span class="dot"></span>Founders</span>
+    <span class="tag"><span class="dot"></span>Agencies</span>
+    <span class="tag"><span class="dot"></span>Consultants</span>
+    <span class="tag"><span class="dot"></span>E-commerce</span>
+    <span class="tag"><span class="dot"></span>Real Estate</span>
+    <span class="tag"><span class="dot"></span>Coaches</span>
+    <span class="tag"><span class="dot"></span>Sales Teams</span>
+    <span class="tag"><span class="dot"></span>Ops Teams</span>
+    <span class="tag"><span class="dot"></span>Marketing Teams</span>
+  </div>
+  <p class="audience-footer">
+    If you run a business and your time is the bottleneck — <span class="dim">Numin is the lever.</span>
+  </p>
+</section>
+
+<section class="advantage" id="advantage">
+  <div class="eyebrow">The Numin advantage</div>
+  <h2 class="h2">
+    Most AI tools <span class="dim">answer questions.</span><br>
+    Numin <span class="dim">runs</span> your business.
+  </h2>
+  <p class="body-text">
+    ChatGPT is a conversation. Numin is an operating system. The difference is memory, action, and ownership.
+  </p>
+  <div class="cards-row">
+    <div class="card">
+      <div class="card-icon">◈</div>
+      <div class="card-title">Memory that grows</div>
+      <div class="card-body">Numin learns your business from every conversation, every task, every decision. The longer it runs, the sharper it gets.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">▲</div>
+      <div class="card-title">Agents that act</div>
+      <div class="card-body">Not chatbots that suggest — agents that execute. Send email, update CRM, book meeting, close ticket. While you sleep.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⬡</div>
+      <div class="card-title">Trained on you</div>
+      <div class="card-body">Your products, your clients, your voice. Numin doesn't answer like a generic AI. It answers like your team.</div>
+    </div>
+  </div>
+  <p class="adv-tagline">
+    One subscription. <span class="bright">Six agents.</span> Your entire back office.
+  </p>
+</section>
+
+<section class="bento" id="agents">
+  <div class="eyebrow">Inside Numin</div>
+  <h2 class="h2">
+    Six specialized agents, <span class="dim" style="font-weight:300">one shared brain</span>
+  </h2>
+  <p class="body-text">Each agent owns a domain. Together they run the company.</p>
+  <div class="bento-grid">
+    <div class="bento-cell">
+      <div class="bento-icon">◈</div>
+      <h3 class="bento-title">Six specialized agents<span class="dim"> working as one team</span></h3>
+      <p class="bento-desc">ARIA researches. VANCE builds. NEXUS coordinates. PRISM writes. APEX sells. NUMIN orchestrates. Each owns a domain — together they run your business.</p>
+      <div class="bento-mock">
+        <div class="bento-mock-row"><span>ARIA · Research</span><span class="badge-idle">idle</span></div>
+        <div class="bento-mock-row"><span>VANCE · Build</span><span class="badge-opt">active</span></div>
+        <div class="bento-mock-row"><span>NEXUS · Plan</span><span class="badge-idle">idle</span></div>
+        <div class="bento-mock-row"><span>PRISM · Write</span><span class="badge-idle">idle</span></div>
+        <div class="bento-mock-row"><span>APEX · Sell</span><span class="badge-idle">idle</span></div>
+        <div class="bento-mock-row"><span>NUMIN · Orchestrate</span><span class="badge-idle">idle</span></div>
+      </div>
+    </div>
+    <div class="bento-cell">
+      <div class="bento-icon">⬡</div>
+      <h3 class="bento-title">Always on<span class="dim">, never waiting</span></h3>
+      <p class="bento-desc">Runs 24/7. Monitors inbox overnight, surfaces the urgent stuff, drafts the rest. You wake up to a triaged morning.</p>
+      <div class="mini-stats">
+        <div class="mini-stat"><div class="mini-stat-val">142</div><div class="mini-stat-lbl">emails triaged</div></div>
+        <div class="mini-stat"><div class="mini-stat-val">8</div><div class="mini-stat-lbl">meetings booked</div></div>
+        <div class="mini-stat"><div class="mini-stat-val">3</div><div class="mini-stat-lbl">deals updated</div></div>
+      </div>
+    </div>
+    <div class="bento-cell">
+      <div class="bento-icon">▲</div>
+      <h3 class="bento-title">Real integrations<span class="dim">, real actions</span></h3>
+      <p class="bento-desc">Gmail, Calendar, Slack, Notion, HubSpot, Salesforce, Pipedrive, Stripe, and 1,000+ more. Numin lives inside your stack.</p>
+      <div class="check-list">
+        <div class="check-item">Email · Gmail + Outlook</div>
+        <div class="check-item">Calendar · Google + Apple</div>
+        <div class="check-item">CRM · HubSpot + Salesforce</div>
+        <div class="check-item">Comms · Slack + Teams</div>
+      </div>
+    </div>
+    <div class="bento-cell">
+      <div class="bento-icon">◆</div>
+      <h3 class="bento-title">Built for output<span class="dim">, not conversation</span></h3>
+      <p class="bento-desc">Most AI tools answer questions. Numin closes loops. Less typing, more shipping.</p>
+      <div class="bar-chart">
+        <div class="bar" style="height:40%"></div>
+        <div class="bar" style="height:55%"></div>
+        <div class="bar" style="height:35%"></div>
+        <div class="bar" style="height:70%"></div>
+        <div class="bar" style="height:50%"></div>
+        <div class="bar" style="height:85%"></div>
+        <div class="bar" style="height:60%"></div>
+        <div class="bar" style="height:90%"></div>
+        <div class="bar" style="height:75%"></div>
+        <div class="bar active" style="height:100%"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="compare" id="compare">
+  <div class="compare-h">
+    <div class="eyebrow" style="justify-content:center">The comparison</div>
+    <h2 class="h2">This isn't <span class="dim">ChatGPT.</span><br>It's an <span class="accent-text">operating system.</span></h2>
+  </div>
+  <div class="compare-table">
+    <div class="compare-row compare-head">
+      <div></div>
+      <div>ChatGPT</div>
+      <div>Numin</div>
+    </div>
+    <div class="compare-row">
+      <div>Memory</div>
+      <div>Forgets everything when you close the tab.</div>
+      <div>Permanent, growing memory of your entire business.</div>
+    </div>
+    <div class="compare-row">
+      <div>Action</div>
+      <div>Gives you text. You still have to do everything.</div>
+      <div>Takes real action. Sends emails, updates CRM, books meetings.</div>
+    </div>
+    <div class="compare-row">
+      <div>Context</div>
+      <div>Knows nothing about your business.</div>
+      <div>Trained specifically on YOUR business.</div>
+    </div>
+    <div class="compare-row">
+      <div>Agents</div>
+      <div>One generalist. Good at many things, expert at nothing.</div>
+      <div>6 specialized AI executives — each one owns a domain.</div>
+    </div>
+    <div class="compare-row">
+      <div>Privacy</div>
+      <div>Your conversations train their models.</div>
+      <div>100% local. Your data never leaves your building.</div>
+    </div>
+    <div class="compare-row">
+      <div>Always On</div>
+      <div>Waits to be asked. Completely passive.</div>
+      <div>Runs 24/7 autonomously. Monitors, briefs, flags issues.</div>
+    </div>
+    <div class="compare-row">
+      <div>Hardware</div>
+      <div>Lives in the cloud. Dependent on their servers.</div>
+      <div>Runs on your Mac. You own the hardware. No outages.</div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2 class="h2 cta-h">
+    Stop managing.<br>
+    <span class="accent-text">Start operating.</span>
+  </h2>
+  <p class="cta-sub">14-day free trial. Runs on your Mac. No cloud required.</p>
+  <div class="btn-row" style="margin-bottom:0">
+    <a href="https://github.com/Verstige/numin" class="btn-primary">Start free trial →</a>
+    <a href="https://github.com/Verstige/numin" class="btn-ghost">▶ Read the README</a>
+  </div>
+  <p class="cta-note">No credit card · Apple Silicon Mac · Hermes-powered</p>
+</section>
+
+<footer class="footer">
+  <div class="footer-logo">numin<span class="dot">.</span></div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Support</a>
+    <a href="https://github.com/Verstige/numin">GitHub</a>
+  </div>
+  <div class="footer-social">
+    <a href="#" class="social-icon">X</a>
+    <a href="#" class="social-icon">in</a>
+    <a href="https://github.com/Verstige/numin" class="social-icon">GH</a>
+  </div>
+</footer>
+<div class="footer-bottom">© 2026 Numin · Your AI Employee, Running Locally</div>
+
+<script>
+// Generate some stars in the background
+(function() {
+  const stars = document.getElementById('stars');
+  const count = 60;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.position = 'absolute';
+    s.style.borderRadius = '50%';
+    s.style.background = '#fff';
+    const size = Math.random() * 2 + 0.5;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = (Math.random() * 100) + '%';
+    s.style.opacity = (Math.random() * 0.5 + 0.2).toString();
+    s.style.animation = 'twinkle ' + (Math.random() * 3 + 2) + 's ease-in-out infinite ' + (Math.random() * 3) + 's';
+    stars.appendChild(s);
+  }
+})();
+
+// Inject twinkle keyframes once
+const style = document.createElement('style');
+style.textContent = '@keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }';
+document.head.appendChild(style);
+</script>
+
+</body>
 </html>
