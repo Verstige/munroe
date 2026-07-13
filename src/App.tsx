@@ -39,12 +39,17 @@ const queryClient = new QueryClient();
 const App = () => {
   // Initialize reminder system and mobile app when app starts
   useEffect(() => {
+    // Skip on the public landing page — it's a marketing surface, not the app shell.
+    // Landing users don't need ReminderSystem, Firebase, Capacitor, or mobile-config.
+    if (window.location.pathname === '/' || window.location.pathname === '/home') {
+      return;
+    }
     const reminderSystem = ReminderSystem.getInstance();
     reminderSystem.start();
-    
+
     // Initialize mobile-specific configurations
     initializeMobileApp();
-    
+
     // Cleanup on unmount
     return () => {
       reminderSystem.stop();
