@@ -191,7 +191,7 @@ body[data-skin="cloud"] [data-skin-show="cloud"].cloud-stack { display: grid; }
   font-size: 0.6rem; font-weight: 900; color: var(--bg);
 }
 h1.hero-h {
-  font-size: clamp(2.4rem, 8vw, 5.4rem);
+  font-size: clamp(1.75rem, 8vw, 5.4rem);
   font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
   color: var(--text); max-width: 980px;
   width: 100%;
@@ -691,12 +691,15 @@ h1.hero-h {
   .nav { padding: 0 20px; height: 60px; }
   .nav-links { display: none; }
   .hero { padding: 120px 20px 60px; min-height: auto; }
-  h1.hero-h { font-size: clamp(2rem, 9vw, 3.5rem); letter-spacing: -0.03em; }
+  h1.hero-h { font-size: clamp(1.6rem, 8vw, 3.5rem); letter-spacing: -0.03em; line-height: 1.1; }
   .sub { font-size: 0.95rem; margin-bottom: 32px; }
   .btn-row { flex-direction: column; width: 100%; gap: 10px; margin-bottom: 32px; }
   .btn-primary, .btn-ghost { width: 100%; justify-content: center; padding: 14px 24px; }
   .agent-strip { gap: 6px; padding: 0 4px; margin-bottom: 36px; }
   .pill { font-size: 0.62rem; padding: 5px 10px; }
+  .tabs { flex-direction: column; border-radius: 24px; padding: 8px; gap: 4px; width: 100%; max-width: 320px; }
+  .tab { width: 100%; justify-content: center; padding: 12px 18px; font-size: 0.82rem; }
+  .tab-sub { display: none; }
   .dash-body { grid-template-columns: 1fr; padding: 12px; }
   .dash-side { flex-direction: row; flex-wrap: wrap; gap: 4px; }
   .dash-side-row { font-size: 0.72rem; padding: 6px 10px; }
