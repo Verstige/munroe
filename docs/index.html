@@ -688,21 +688,28 @@ h1.hero-h {
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  .nav { padding: 0 20px; height: 60px; }
+  .nav { padding: 0 16px; height: 60px; }
   .nav-links { display: none; }
-  .hero { padding: 120px 20px 60px; min-height: auto; }
+  .hero { padding: 100px 16px 40px; min-height: auto; width: 100%; }
   h1.hero-h { font-size: clamp(1.6rem, 8vw, 3.5rem); letter-spacing: -0.03em; line-height: 1.1; }
-  .sub { font-size: 0.95rem; margin-bottom: 32px; }
-  .btn-row { flex-direction: column; width: 100%; gap: 10px; margin-bottom: 32px; }
+  .sub { font-size: 0.95rem; margin-bottom: 32px; padding: 0 8px; }
+  .btn-row { flex-direction: column; width: 100%; gap: 10px; margin-bottom: 32px; padding: 0 8px; }
   .btn-primary, .btn-ghost { width: 100%; justify-content: center; padding: 14px 24px; }
   .agent-strip { gap: 6px; padding: 0 4px; margin-bottom: 36px; }
   .pill { font-size: 0.62rem; padding: 5px 10px; }
-  .tabs { flex-direction: column; border-radius: 24px; padding: 8px; gap: 4px; width: 100%; max-width: 320px; }
+  .tabs { flex-direction: column; border-radius: 24px; padding: 8px; gap: 4px; width: calc(100% - 16px); max-width: 360px; }
   .tab { width: 100%; justify-content: center; padding: 12px 18px; font-size: 0.82rem; }
   .tab-sub { display: none; }
-  .dash-body { grid-template-columns: 1fr; padding: 12px; }
+  .dash-preview { margin: 0; border-radius: 14px 14px 0 0; }
+  .dash-preview-inner { padding: 12px; }
+  .dash-channels { padding: 8px 10px; font-size: 0.65rem; }
+  .ch-url { font-size: 0.62rem; margin-left: 8px; }
+  .dash-body { grid-template-columns: 1fr; padding: 8px; gap: 10px; min-height: auto; }
   .dash-side { flex-direction: row; flex-wrap: wrap; gap: 4px; }
-  .dash-side-row { font-size: 0.72rem; padding: 6px 10px; }
+  .dash-side-row { font-size: 0.7rem; padding: 5px 10px; }
+  .dash-main { padding: 12px; gap: 10px; }
+  .msg-bubble { max-width: 92%; padding: 8px 12px; font-size: 0.78rem; line-height: 1.4; }
+  .msg-avatar { width: 24px; height: 24px; font-size: 0.6rem; }
   .section, .channels, .cloud-what, .audience, .advantage, .experience, .workflow, .compare, .cta { padding: 100px 20px 80px; }
   .h2 { font-size: clamp(2rem, 8vw, 3rem); }
   .channels-grid { grid-template-columns: 1fr 1fr; }
