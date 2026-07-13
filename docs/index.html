@@ -162,13 +162,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .tab-sub { font-size: 0.72rem; font-weight: 450; opacity: 0.7; }
 .tab[aria-selected="true"] .tab-sub { color: rgba(5, 7, 7, 0.65); opacity: 1; }
 
-/* Skin-conditional sections — hidden by default, JS reveals the matching one.
-   Fallback if JS is disabled: hide both (better than showing both stacked). */
-[data-skin-show] { display: none; }
-body[data-skin="local"] [data-skin-show="local"] { display: block; }
-body[data-skin="cloud"] [data-skin-show="cloud"] { display: block; }
+/* Skin-conditional sections — hidden by default, body data-skin reveals the matching one */
+[data-skin-show] { display: none !important; }
+body[data-skin="local"] [data-skin-show="local"] { display: block !important; }
+body[data-skin="cloud"] [data-skin-show="cloud"] { display: block !important; }
 body[data-skin="local"] [data-skin-show="local"].cloud-stack,
-body[data-skin="cloud"] [data-skin-show="cloud"].cloud-stack { display: grid; }
+body[data-skin="cloud"] [data-skin-show="cloud"].cloud-stack { display: grid !important; }
 
 /* ── Hero ── */
 .hero { position: relative; min-height: 100vh; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 140px 40px 80px; overflow: hidden; width: 100%; max-width: 100vw; box-sizing: border-box; }
