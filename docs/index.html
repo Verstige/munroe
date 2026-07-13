@@ -660,9 +660,114 @@ h1.hero-h {
 }
 .compare-head > div:nth-child(3) { color: var(--accent); }
 
+/* ── Built on Numin (architecture story) ── */
+.built { background: var(--bg); padding: 140px 52px 120px; position: relative; z-index: 1; }
+.built-head { text-align: center; max-width: 800px; margin: 0 auto 32px; }
+.built-head .body-text { margin-left: auto; margin-right: auto; }
+.built-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  max-width: 1200px; margin: 48px auto 0;
+}
+.bcard {
+  border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg-2); padding: 32px 28px;
+  transition: border-color 0.3s, transform 0.3s, background 0.3s;
+  position: relative; overflow: hidden;
+}
+.bcard::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.4), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.bcard:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-4px); }
+.bcard:hover::before { opacity: 1; }
+.bcard-num {
+  font-size: 0.7rem; font-weight: 800; color: var(--accent);
+  letter-spacing: 0.12em; margin-bottom: 16px;
+}
+.bcard-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); margin-bottom: 18px;
+}
+.bcard-icon .icon { width: 22px; height: 22px; }
+.bcard h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.bcard p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.55; }
+
+/* ── Efficiency / cost story ── */
+.efficient { background: linear-gradient(180deg, var(--bg-3) 0%, var(--bg) 100%); padding: 120px 52px; position: relative; z-index: 1; }
+.efficient-head { text-align: center; max-width: 800px; margin: 0 auto 64px; }
+.efficient-head .body-text { margin-left: auto; margin-right: auto; }
+.efficient-table {
+  max-width: 1000px; margin: 0 auto;
+  border: 1px solid var(--border); border-radius: 20px; overflow: hidden;
+}
+.efficient-row {
+  display: grid; grid-template-columns: 1.2fr 1fr 1fr;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.efficient-row:last-child { border-bottom: none; }
+.efficient-row > div { padding: 22px 24px; font-size: 0.92rem; }
+.efficient-row > div:first-child {
+  background: rgba(255, 255, 255, 0.02);
+  font-weight: 700; color: var(--text);
+}
+.efficient-row > div:nth-child(2) { color: var(--text-mute); }
+.efficient-row > div:nth-child(3) {
+  color: var(--text); background: rgba(var(--accent-rgb), 0.04);
+  border-left: 1px solid rgba(var(--accent-rgb), 0.15);
+  font-weight: 600;
+}
+.efficient-head > div {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-mid);
+}
+.efficient-head > div:nth-child(3) { color: var(--accent); }
+.efficient-callout {
+  margin: 48px auto 0; max-width: 700px; padding: 24px 32px;
+  border-radius: 16px;
+  background: rgba(var(--accent-rgb), 0.06);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  text-align: center;
+}
+.efficient-callout p { font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0; }
+.efficient-callout strong { color: var(--accent); font-weight: 700; }
+
 /* ── Numin vs Claude Code ── */
-.vscc { background: var(--bg); padding: 120px 52px; position: relative; overflow: hidden; }
+.pricing, .vscc, .faq { background: var(--bg); padding: 120px 52px; position: relative; z-index: 1; }
 .vscc-head { text-align: center; max-width: 800px; margin: 0 auto 64px; }
+.vscc-logos {
+  display: flex; align-items: center; justify-content: center; gap: 48px;
+  margin: 0 auto 56px; flex-wrap: wrap;
+}
+.vscc-logo-block {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.vscc-logo-img {
+  width: 128px; height: 128px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+.vscc-logo-img img { width: 80px; height: 80px; object-fit: contain; }
+.vscc-logo-img.numin {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.04));
+  border-color: rgba(var(--accent-rgb), 0.4);
+  box-shadow: 0 8px 40px rgba(var(--accent-rgb), 0.25);
+}
+.vscc-logo-img.numin svg { color: var(--accent); width: 72px; height: 72px; }
+.vscc-logo-label {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-mid);
+}
+.vscc-vs {
+  font-size: 1.2rem; font-weight: 800; color: var(--text-mute);
+  letter-spacing: 0.1em; padding: 0 8px;
+}
 .vscc-table {
   max-width: 1100px; margin: 0 auto;
   border: 1px solid var(--border); border-radius: 20px; overflow: hidden;
@@ -951,7 +1056,17 @@ h1.hero-h {
   .vscc-row > div:nth-child(3) { background: none; border-left: none; overflow-wrap: break-word; word-break: break-word; }
   .vscc-table { border: none; border-radius: 16px; overflow: visible; }
   .vscc-head { display: none; }
-  .own-grid, .pricing-grid, .credits-grid { grid-template-columns: 1fr; gap: 12px; }
+  .own-grid, .pricing-grid, .credits-grid, .built-grid { grid-template-columns: 1fr; gap: 12px; }
+  .efficient-row { grid-template-columns: 1fr; gap: 4px; padding: 8px 0; }
+  .efficient-row > div { padding: 8px 14px; font-size: 0.82rem; }
+  .efficient-row > div:first-child { background: none; font-weight: 700; padding-bottom: 4px; }
+  .efficient-row > div:nth-child(2) { color: var(--text-mute); padding-top: 0; padding-bottom: 8px; border-left: none; border-bottom: 1px dashed rgba(255, 255, 255, 0.08); }
+  .efficient-row > div:nth-child(3) { background: none; border-left: none; }
+  .efficient-head { display: none; }
+  .vscc-logos { gap: 24px; }
+  .vscc-logo-img { width: 96px; height: 96px; }
+  .vscc-logo-img img { width: 64px; height: 64px; }
+  .vscc-logo-img.numin svg { width: 56px; height: 56px; }
   .footer { flex-direction: column; text-align: center; padding: 32px 20px; gap: 20px; }
   .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
 }
@@ -1433,6 +1548,89 @@ h1.hero-h {
   </div>
 </section>
 
+<section class="built" id="built">
+  <div class="built-head">
+    <div class="eyebrow" style="justify-content:center">What's under the hood</div>
+    <h2 class="h2">Built on a complete<br><span class="dim">intelligence system.</span></h2>
+    <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Numin isn't a wrapper around a chatbot. It's a full-stack agentic platform — built from the ground up to run your business without you babysitting it. Here's what's under the hood.</p>
+  </div>
+  <div class="built-grid">
+    <div class="bcard">
+      <div class="bcard-num">01 / INTELLIGENCE</div>
+      <div class="bcard-icon"><svg class="icon"><use href="#i-brain"/></svg></div>
+      <h3>Persistent memory</h3>
+      <p>Your agent remembers every client, every preference, every decision — across sessions, across months, across years. It builds a model of your business that compounds over time. New team members onboarded by reading the agent's memory.</p>
+    </div>
+    <div class="bcard">
+      <div class="bcard-num">02 / CHANNELS</div>
+      <div class="bcard-icon"><svg class="icon"><use href="#i-message-circle"/></svg></div>
+      <h3>Every messaging surface</h3>
+      <p>iMessage, WhatsApp, Telegram, Discord, Slack, SMS, web chat, voice. Your agent reaches you wherever you already are. One conversation context across all of them — pick up on iPhone where you left off on Mac.</p>
+    </div>
+    <div class="bcard">
+      <div class="bcard-num">03 / SKILLS LIBRARY</div>
+      <div class="bcard-icon"><svg class="icon"><use href="#i-wand"/></svg></div>
+      <h3>Skills that compose</h3>
+      <p>A growing library of pre-built capabilities — email triage, calendar scheduling, CRM updates, invoicing, research, content drafting, code review, data analysis. Compose them like building blocks. Your agent picks the right skill for each task.</p>
+    </div>
+    <div class="bcard">
+      <div class="bcard-num">04 / INTEGRATIONS</div>
+      <div class="bcard-icon"><svg class="icon"><use href="#i-plug"/></svg></div>
+      <h3>1,000+ tools, native</h3>
+      <p>Native integrations with Gmail, Outlook, Google Calendar, Apple Calendar, Slack, Notion, HubSpot, Salesforce, Stripe, Linear, GitHub, and hundreds more. Your agent doesn't just talk to these tools — it actually executes inside them.</p>
+    </div>
+    <div class="bcard">
+      <div class="bcard-num">05 / ORCHESTRATION</div>
+      <div class="bcard-icon"><svg class="icon"><use href="#i-network"/></svg></div>
+      <h3>Six specialists, one brain</h3>
+      <p>ARIA for research. VANCE for build. NEXUS for planning. PRISM for content. APEX for sales. NUMIN for orchestration. Each owns a domain. They share context, hand off tasks, and coordinate without you.</p>
+    </div>
+    <div class="bcard">
+      <div class="bcard-num">06 / SCHEDULING</div>
+      <div class="bcard-icon"><svg class="icon"><use href="#i-clock"/></svg></div>
+      <h3>Cron that actually works</h3>
+      <p>Schedule anything — daily briefings, weekly reports, monthly invoicing, quarterly reviews. Your agent runs them in the background and surfaces results. No missed tasks, no forgotten deadlines.</p>
+    </div>
+    <div class="bcard">
+      <div class="bcard-num">07 / SUB-AGENTS</div>
+      <div class="bcard-icon"><svg class="icon"><use href="#i-users"/></svg></div>
+      <h3>Specialists on demand</h3>
+      <p>Spin up a dedicated sub-agent for a project — a marketing agent for the launch, a research agent for due diligence, a coding agent for the MVP. They run, deliver, and report back. You stay focused on the main work.</p>
+    </div>
+    <div class="bcard">
+      <div class="bcard-num">08 / CUSTOM TRAINING</div>
+      <div class="bcard-icon"><svg class="icon"><use href="#i-target"/></svg></div>
+      <h3>Trained on your business</h3>
+      <p>During onboarding, your agent ingests your docs, your past decisions, your customer profiles, your voice. It answers like someone who's been at your company for years — because it has read everything.</p>
+    </div>
+  </div>
+</section>
+
+<section class="efficient" id="efficient">
+  <div class="efficient-head">
+    <div class="eyebrow" style="justify-content:center">The credit anxiety problem</div>
+    <h2 class="h2">Efficiency by design.<br><span class="dim">More done with less.</span></h2>
+    <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Most AI users hit a wall every afternoon — daily caps, rate limits, "you've reached your limit." You wanted the smartest model, but the smartest model is also the most expensive. Numin is engineered around this problem.</p>
+  </div>
+  <div class="efficient-table">
+    <div class="efficient-row efficient-head">
+      <div></div>
+      <div>Typical AI tool</div>
+      <div>Numin</div>
+    </div>
+    <div class="efficient-row"><div>Daily usage limits</div><div>Hit a wall mid-afternoon on heavy days</div><div>No daily caps — your agent keeps working</div></div>
+    <div class="efficient-row"><div>Throttling at peak</div><div>Slow responses when servers are busy</div><div>Always fast — we provision capacity for you</div></div>
+    <div class="efficient-row"><div>Model cost vs quality</div><div>Pay premium for top models, get capped fast</div><div>Smart routing picks the right model per task</div></div>
+    <div class="efficient-row"><div>Token efficiency</div><div>Pay per token, no optimization for your use case</div><div>Built-in caching, summarization, and reuse</div></div>
+    <div class="efficient-row"><div>Context management</div><div>Pay to re-process the same context every query</div><div>Persistent memory means no re-processing</div></div>
+    <div class="efficient-row"><div>Specialization cost</div><div>One generalist model for everything</div><div>Small focused models for routine tasks, large models only when needed</div></div>
+    <div class="efficient-row"><div>Running cost per task</div><div>Same cost whether it's a 1-line answer or 50-page report</div><div>Routed to the right model — most tasks are 5-10x cheaper</div></div>
+  </div>
+  <div class="efficient-callout">
+    <p><strong>The result:</strong> most Numin users do 5-10x more work per dollar than they'd get on Claude Code, ChatGPT, or any flat-rate tool. Because the platform is engineered to use the right model at the right time — not the biggest model for every task.</p>
+  </div>
+</section>
+
 <section class="compare" id="compare">
   <div class="compare-h">
     <div class="eyebrow" style="justify-content:center">The comparison</div>
@@ -1487,6 +1685,21 @@ h1.hero-h {
     <div class="eyebrow" style="justify-content:center">The honest comparison</div>
     <h2 class="h2">Numin vs <span class="accent-text">Claude Code</span></h2>
     <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Both are great. They're built for different jobs. Claude Code writes code in a one-shot session. Numin runs your business 24/7.</p>
+  </div>
+  <div class="vscc-logos">
+    <div class="vscc-logo-block">
+      <div class="vscc-logo-img">
+        <img src="claude-favicon.ico" alt="Claude Code" />
+      </div>
+      <div class="vscc-logo-label">Claude Code</div>
+    </div>
+    <div class="vscc-vs">VS</div>
+    <div class="vscc-logo-block">
+      <div class="vscc-logo-img numin">
+        <svg class="icon" style="width:72px;height:72px"><use href="#i-sparkles"/></svg>
+      </div>
+      <div class="vscc-logo-label" style="color:var(--accent)">Numin</div>
+    </div>
   </div>
   <div class="vscc-table">
     <div class="vscc-row vscc-head">
