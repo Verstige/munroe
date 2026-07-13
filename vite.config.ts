@@ -5,6 +5,9 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // GitHub Pages serves this site at /numin-io/, not at root.
+  // Without this, asset URLs in built HTML resolve to /assets/... (404 on Pages).
+  base: "/numin-io/",
   server: {
     host: "::",
     port: 8080,
