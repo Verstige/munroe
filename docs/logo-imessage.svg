@@ -1,10 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="im-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34DA50"/>
-      <stop offset="100%" stop-color="#22BD38"/>
+    <linearGradient id="im-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5AC8FA"/>
+      <stop offset="100%" stop-color="#007AFF"/>
     </linearGradient>
   </defs>
-  <path d="M52 8H12C7.6 8 4 11.6 4 16v26c0 4.4 3.6 8 8 8h6v6c0 1.3 1.5 2 2.5 1.2L31 50h21c4.4 0 8-3.6 8-8V16c0-4.4-3.6-8-8-8z" fill="url(#im-grad)"/>
-  <path d="M20 22h24M20 30h24M20 38h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M10 8C7.79 8 6 9.79 6 12v26c0 2.21 1.79 4 4 4h6v8l8-8h30c2.21 0 4-1.79 4-4V12c0-2.21-1.79-4-4-4H10z" fill="url(#im-grad)"/>
+  <rect x="14" y="16" width="32" height="3" rx="1.5" fill="#fff" opacity="0.95"/>
+  <rect x="14" y="22" width="36" height="3" rx="1.5" fill="#fff" opacity="0.95"/>
+  <rect x="14" y="28" width="24" height="3" rx="1.5" fill="#fff" opacity="0.95"/>
 </svg>

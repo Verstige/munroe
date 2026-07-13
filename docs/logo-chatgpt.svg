@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <g fill="#10A37F">
+    <!-- Six interlocking petals around a center -->
+    <path d="M32 4 C 38 4 42 8 42 14 C 42 18 40 20 38 22 C 40 22 44 22 46 26 C 48 30 46 36 42 38 C 38 40 36 38 34 36 C 36 40 36 44 32 48 C 28 52 22 50 20 46 C 18 42 20 38 22 36 C 18 38 14 38 12 34 C 10 30 12 24 16 22 C 18 22 22 22 24 22 C 22 20 22 16 24 12 C 26 6 30 4 32 4 Z" opacity="0.95"/>
+    <circle cx="32" cy="32" r="6"/>
+  </g>
+  <circle cx="32" cy="32" r="6" fill="#0E8C6B"/>
+</svg>
