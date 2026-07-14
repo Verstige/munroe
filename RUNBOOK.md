@@ -1,47 +1,85 @@
 # Munro — Runbook
 
-This is the single source of truth for what's shipped, what's not, and what decisions are pending.
+_Final state, July 14, 2026._
+
+This is the source of truth for what's shipped, what's pending, and what decisions are still owed.
 
 ---
 
-## Live NOW (pushed to GH Pages)
+## What is Munro
 
-- **Landing page**: `https://verstige.github.io/numin-io/` — fully rebranded to Munro. 16 sections, gold accent, working comparison cards, FAQ, pricing tiers, credit packs.
-- **Source**: `docs/index.html` (single self-contained file, 220KB, 4,200+ lines)
-- **Brand**: All references read "Munro" (105 occurrences). Zero "numin" / "Numin" / "NUMIN" anywhere.
-- **Title**: "Munro — The AI agent that knows your business"
-- **GitHub**: `Verstige/numin-io` (slug kept for SEO; rename is a separate decision in §Open decisions)
+Munro is an AI agent platform. Customers buy a subscription, get a private virtual computer running their agent, wire it to one of four messaging channels, and the agent runs 24/7 doing work for them. The agent is white-labeled — the customer never sees the LLM behind it. Customers name their own agent.
 
-## Built but not deployed (in repo)
+The brand promise: Munro **finds the signal in the noise.** The platform markets six inherited disciplines (scored decisions, liveness, separate reviewer, real "done" definition, reusable code, layered memory) that ship as defaults — no opt-in required.
 
-| Asset | Path | What it is | How to deploy |
-|---|---|---|---|
-| Customer dashboard | `dashboard/index.html` | Customer-facing UI: billing portal link, Orgo remote, skill marketplace UI | Host on a real domain (Vercel, Railway, Netlify). Auth-gate before showing real customer data. |
-| Admin dashboard | `admin/index.html` | Operations UI: customer list, skill publishing, library | Same. `noindex,nofollow` is set. Add a password-gate / IP allowlist in front. |
-| Onboarding form | `onboarding/index.html` | 6-step customer intake (business, goals, current stack, pain points, AI spend, channel) | Points at `formspree.io/f/your-form-id`. Replace with your Formspree ID, OR plug into Supabase. |
-| Provisioning script | `scripts/provision.sh` | Bash: per-customer Orgo box + Hermes install + channel wire + Supabase record + operator Telegram DM | Set env vars (see script comments). Run per new customer. |
-| ToS / Privacy / Refund | `legal/` | Plain-language templates for the 3 legal docs | Replace placeholders ([YOUR STATE], Stripe portal URLs). Have a lawyer review. |
+The brand mark is a **constellation** — peak + cardinal ticks + focal dot, gold `#C9A84C` on near-black `#0D0D0F`.
 
-## Not built yet (waiting on decisions, accounts, or both)
+---
 
-These are the items I cannot finish without you. They are listed in priority order.
+## Live NOW
 
-### 1. Stripe products + checkout (BLOCKER for revenue)
+- **Landing page**: `https://verstige.github.io/numin-io/` — fully rebranded to Munro, 17 sections, GSAP-driven card animations, Constellation mark in nav, mobile-responsive.
+
+  Sections in order:
+  ```
+  1. channels · 2. composio · 3. skills · 4. marketplace · 5. inherited
+  6. vs-claude · 7. cloud-what · 8. advantage · 9. personality · 10. workflow
+  11. efficient · 12. compare · 13. built · 14. benchmarks · 15. own
+  16. pricing · 17. faq
+  ```
+
+  **Editing decisions applied during the cuts pass:**
+  - `#experience` deleted (redundant with `#advantage`)
+  - `#credits` deleted (vestigial artifact of pre-pivot product)
+  - `#workflow` 6 industries → 3 (Founders · Agencies · Sales)
+  - `#vs-claude` 10 cards → 5 (Price · Usage caps · Where it lives · Memory · Always on)
+  - `#built`, `#benchmarks`, `#own` moved immediately before `#pricing` (credibility cluster → price)
+
+- **Brand kit**: at `docs/brand/` — `munro-lockup`, `munro-icon`, `munro-wordmark`, `munro-appicon`, `munro-favicon`, `munro-hero`, `manifest.json`. All assets returning 200 from GH Pages.
+
+- **GitHub**: `Verstige/numin-io` (slug kept for SEO continuity; rename is a separate decision).
+
+---
+
+## Built but not deployed
+
+| Asset | Path | What's missing to ship |
+|---|---|---|
+| Customer dashboard | `dashboard/index.html` | Auth (Supabase), hosting (Vercel/Railway), backend wiring |
+| Admin dashboard | `admin/index.html` | Same as above. Buttons are visual-only mocks. |
+| Onboarding form | `onboarding/index.html` | Action target — currently points at `formspree.io/f/your-form-id` placeholder |
+| Provisioning script | `scripts/provision.sh` | Operator-side bash: Orgo API + Supabase + Telegram bot token |
+| ToS / Privacy / Refund | `legal/` | Drafts in plain language. Lawyer review needed before any public-facing link. |
+
+---
+
+## Open work — what unblocks what
+
+These are ordered by revenue impact. **Start at the top.**
+
+### 1. Stripe products + Checkout
+
+**Why first:** Without this, no money can move.
 
 You need:
+- A Stripe account in your name (specify business entity — sole prop / LLC)
+- Products created: $499 one-time Setup + $99/mo Solo Subscription (your locked price)
+- Two URLs I need back:
+  - Stripe Payment Link (one-time Setup)
+  - Stripe Customer Portal URL
 
-- A Stripe account in your name (your business entity: sole prop / LLC)
-- Products created: $499 one-time Setup + $99/mo Solo Subscription
-- Stripe Customer Portal enabled (free, in Stripe dashboard)
-- Two URLs I need: a Stripe "Payment Link" for the Setup, and the Customer Portal URL
+**What I do once you hand me the URLs:** wire `scripts/provision.sh` to accept a Stripe customer ID at provisioning, update landing CTAs (`Start free trial`, `Provision your agent`) to point at the Payment Link.
 
-**What I'll do once you have those**: wire `scripts/provision.sh` to take the Stripe customer ID as the second arg, and update the landing CTAs to point at the Payment Link.
+### 2. Supabase project
 
-### 2. Supabase project (BLOCKER for records)
+**Why second:** the records and the auth both need it.
 
-You need a Supabase project. Costs $0 on free tier for <500MB / <50K rows.
+You create it (free tier covers v1). I need three things:
+- Project URL
+- Anon key (public, used in dashboard/admin HTML)
+- Service role key (private, used in `provision.sh`)
 
-Two tables needed:
+Three tables, schema in `RUNBOOK.md` historical:
 
 ```sql
 create table customers (
@@ -75,76 +113,97 @@ create table customer_skills (
 );
 ```
 
-### 3. Domain registration (BLOCKER for shareability)
+### 3. Domain registration
 
-`verstige.github.io/numin-io/` is a placeholder URL. You need a real domain.
+**Why third:** links shared today carry `verstige.github.io/numin-io/`. That's a fossil URL.
 
-Pick one (most user-friendly to least):
+Recommended: `munro.ai` (~$80/yr, premier feel — verify availability on Namecheap or Cloudflare).
 
-- `munro.ai` (~$80/yr, hard to get, premier feel)
-- `getmunro.ai` (~$30/yr fall-back)
-- `usemunro.com` (~$12/yr, cheap, fine for v1)
-- `munro.run` (cloud-coded feel)
+Alternative: `usemunro.com` (~$12/yr fallback).
 
-I'd go with `munro.ai` if available. Verify on Namecheap/Cloudflare.
+Once registered: CNAME to GH Pages via repo Settings → Pages → Custom Domain.
 
-If you buy `munro.ai`, set it as a CNAME to `verstige.github.io`. GH Pages supports custom domains under Settings → Pages.
+### 4. GH Pages repo rename
 
-### 4. Renaming the GH Pages repo / slug
+`Verstige/numin-io` (slug). Two paths:
 
-The repo is currently `Verstige/numin-io`. That URL has accumulated (some) inbound links.
+- **Keep slug**: preserves any inbound links. URL stays ugly.
+- **Rename to `Verstige/munro`**: clean URL. Old `/numin-io/` 404s.
 
-Two options:
+Recommend: rename + add a server-side redirect from old URL to new. ~10 min.
 
-- **Keep slug `numin-io`**: preserves inbound. Visitors see `verstige.github.io/numin-io/` forever. Awkward brand match.
-- **Rename to `Verstige/munro`**: clean brand match. URL changes to `verstige.github.io/munro/`. Old inbound links 404.
+### 5. Hosting for dashboard + admin
 
-I'd recommend: rename the repo, keep an HTTP redirect from the old slug. Will take ~10 min once you decide.
+GH Pages can't run the backend these dashboards need (auth, persistence).
 
-### 5. Hosting the dashboard + admin
+Recommended: **Vercel** (free tier covers v1, generous Next.js support if we wrap the dashboards later).
 
-The dashboards are static HTML right now. They need a backend to:
+Alternatively: **Railway** if you want everything self-hosted on one provider with VitaTech/Verstige already there.
 
-- Authenticate customers (Stripe email + magic link)
-- Persist customer records (Supabase above)
-- Hide admin behind a gate
+### 6. Orgo base-image bake
 
-Recommended: Vercel (free tier) with Next.js wrappers. Or Railway/VPS if you want self-hosted. I'll prep a Next.js scaffold when you pick.
+`scripts/provision.sh` references `${MUNRO_BASE_IMAGE:-munro-base-v1}` — a pre-baked OS image with the Hermes agent already installed.
 
-### 6. Orgo image bake
-
-`scripts/provision.sh` references `${MUNRO_BASE_IMAGE:-munro-base-v1}` — a pre-baked OS image with Hermes installed. **You need to bake this once** on Orgo, then every new customer box is spun up from it in seconds instead of installing from scratch.
-
-Bake procedure:
+**One-time setup procedure:**
 
 1. Provision a fresh Orgo box
 2. SSH in
-3. Install Hermes / your agent code
-4. Configure the default Telegram bot skeleton
+3. Install Hermes / Munro agent code
+4. Configure default Telegram bot skeleton
 5. Snapshot via Orgo API → save as `munro-base-v1`
 6. Document the procedure so you can rebuild when the agent code updates
 
-### 7. Decisions still pending
+Without this, every new customer's box installs from scratch (~5 minutes per customer). With the baked image, ~30 seconds.
 
-These I genuinely cannot guess. Each one is one sentence. Please answer them when you can:
+### 7. Tier structure decision
 
-- **Tier structure on landing**: keep all 5 tiers, gut to 1 ($499/$99), or somewhere in between? (Solo is now $99/mo; rest of ladder needs your call.)
-- **Customer identity model**: Magic-link email, Google OAuth, or both?
-- **Channel default for new customers**: Telegram (fastest), iMessage (requires BlueBubbles gateway on each Mac box, slower), or letting customer pick at onboarding?
-- **Refund-window length**: 30 days (industry standard) or something else?
-- **LLC vs sole prop**: doesn't change the code but affects Stripe Account setup timing
-- **Admin auth**: simple password, Vercel password protection, IP allowlist, or something stronger?
+Locked value-prop is `$499 setup + $99/mo`. The pricing section on the live site currently shows **5 tiers** ranging $0–$2,499. Recommendation:
 
-I do not need answers all at once. Each unblocks a separate piece.
+- **Keep 2 tiers**: DIY (free, your API key) + Managed ($99/mo + $499 setup)
+- Drop Solo/Pro/Business/Enterprise until real demand forces them back
+
+Decision deferred to a future session.
+
+### 8. Closed-loop gate on admin publish form
+
+Per the marketing promise ("scored decisions, not vibes"), the admin publish-skills form could require a non-empty `stop condition` field before publish. Adds consistency between marketing and runtime. **Optional** — not blocking anything.
+
+### 9. Firecrawl API key on this Mac
+
+Web tools (search, extract, X search) are currently offline. Adding the key unlocks article reads, market checks, and domain verification work. **Set when convenient.**
+
+---
+
+## Policy decisions still pending
+
+Each is one sentence. None blocks launch; all gate polished state.
+
+- **Customer identity model**: magic-link email, Google OAuth, or both
+- **Default channel for new customers**: Telegram (fastest), iMessage (requires BlueBubbles gateway), WhatsApp, Discord, or "customer picks at onboarding"
+- **Refund window**: 30 days (industry standard) or different
+- **Business entity**: sole prop or LLC — affects Stripe account setup
+- **Admin auth**: simple password gate, IP allowlist, or stronger
+
+---
+
+## What I would do tomorrow if continuing
+
+If resuming:
+1. Stand up Supabase, run the schema, hook it into the dashboards
+2. Add the closed-loop `stop condition` field to the admin publish form
+3. Cut the 17 stale `*.md` setup docs at repo root (legacy from prior project — confusing the at-a-glance state of the repo)
+4. Cut the `_redirects` file in `docs/` (Netlify leftover, unused)
 
 ---
 
 ## TL;DR
 
-- **Landing rebrand to Munro is live** ✓
-- **Pricing headline updated, Solo $99/mo** ✓ (rest of tiers need your call)
-- **Customer dashboard, admin dashboard, onboarding form, provisioning script, legal templates all built in repo** ✓
-- **Stripe / Supabase / domain / Orgo image bake all blocked on your accounts** ⏸
-- **Tier structure decision still pending** ⏸
+**Live now:** landing page with full brand identity and content; brand kit.
 
-When you're ready to go live, start here: create Stripe products + buy domain. Everything else chains off those two.
+**Built but inert:** customer/admin dashboards, onboarding form, provisioning script, legal templates — they render, they look right, but they don't persist or authenticate.
+
+**Blocking first revenue:** Stripe (you create the products), Supabase (you create the project), then I can wire provisioning and dashboards together.
+
+**Fast-follow:** domain (so the URL says Munro), GH Pages slug rename, hosting for the dashboards.
+
+Policy and product decisions above are not blocking ship — they're flagged for after first customer.
