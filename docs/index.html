@@ -1030,65 +1030,6 @@ h1.hero-h {
   padding: 0;
   isolation: isolate;
 }
-.stack::before {
-  content: ''; position: absolute; inset: 0; z-index: -1;
-  background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(var(--accent-rgb), 0.08), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 50% 80%, rgba(62, 100, 200, 0.05), transparent 70%);
-  transition: background 0.8s ease;
-  pointer-events: none;
-}
-.stack[data-bg-tone="1"]::before {
-  background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(var(--accent-rgb), 0.1), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 70% 70%, rgba(100, 60, 200, 0.05), transparent 70%);
-}
-.stack[data-bg-tone="2"]::before {
-  background: radial-gradient(ellipse 80% 60% at 70% 30%, rgba(80, 200, 220, 0.08), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 30% 70%, rgba(var(--accent-rgb), 0.07), transparent 70%);
-}
-.stack[data-bg-tone="3"]::before {
-  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(220, 80, 160, 0.06), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 30% 30%, rgba(60, 180, 220, 0.06), transparent 70%);
-}
-.stack[data-bg-tone="4"]::before {
-  background: radial-gradient(ellipse 80% 60% at 20% 60%, rgba(180, 220, 80, 0.06), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 80% 30%, rgba(var(--accent-rgb), 0.06), transparent 70%);
-}
-.stack[data-bg-tone="5"]::before {
-  background: radial-gradient(ellipse 80% 60% at 60% 30%, rgba(var(--accent-rgb), 0.09), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 40% 80%, rgba(80, 60, 200, 0.05), transparent 70%);
-}
-.stack[data-bg-tone="6"]::before {
-  background: radial-gradient(ellipse 80% 60% at 80% 50%, rgba(60, 200, 180, 0.07), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 20% 30%, rgba(220, 80, 80, 0.05), transparent 70%);
-}
-.stack[data-bg-tone="7"]::before {
-  background: radial-gradient(ellipse 80% 60% at 40% 70%, rgba(var(--accent-rgb), 0.1), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 60% 30%, rgba(200, 100, 60, 0.06), transparent 70%);
-}
-.stack[data-bg-tone="8"]::before {
-  background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(var(--accent-rgb), 0.08), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 30% 60%, rgba(60, 100, 200, 0.06), transparent 70%);
-}
-.stack[data-bg-tone="9"]::before {
-  background: radial-gradient(ellipse 80% 60% at 60% 60%, rgba(var(--accent-rgb), 0.09), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 40% 30%, rgba(180, 60, 200, 0.05), transparent 70%);
-}
-.stack[data-bg-tone="10"]::before {
-  background: radial-gradient(ellipse 80% 60% at 30% 50%, rgba(220, 180, 60, 0.06), transparent 70%),
-              radial-gradient(ellipse 60% 50% at 70% 40%, rgba(var(--accent-rgb), 0.08), transparent 70%);
-}
-.stack-sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 80px 52px 60px; /* top: leave room for nav */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-}
 /* Stacked-deck: cards are positioned absolutely in a vertical stack.
    The top card is at the center; subsequent cards are offset slightly
    down + to the side so you can see the "deck" visual. */
@@ -1290,6 +1231,149 @@ h1.hero-h {
 @media (max-width: 768px) {
   .stack-row { grid-template-columns: 1fr; }
   .stack-card h3 { font-size: 1.25rem; }
+}
+
+/* ── Benchmarks ── */
+.benchmarks { background: var(--bg); padding: 140px 52px; position: relative; z-index: 1; }
+.bench-head { text-align: center; max-width: 800px; margin: 0 auto 64px; }
+.bench-head .body-text { margin-left: auto; margin-right: auto; }
+.bench-stage { max-width: 1200px; margin: 0 auto; }
+
+/* SVG line graph */
+.bench-graph-wrap {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+  padding: 40px 32px 32px;
+  margin-bottom: 48px;
+  overflow: hidden;
+}
+.bench-graph-wrap::before {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(var(--accent-rgb), 0.05), transparent 70%);
+  pointer-events: none;
+}
+.bench-graph {
+  position: relative; z-index: 1;
+  width: 100%; height: 380px;
+}
+.bench-graph-grid line { stroke: rgba(255, 255, 255, 0.04); stroke-width: 1; }
+.bench-axis-label {
+  font-family: ui-monospace, monospace;
+  font-size: 10px; font-weight: 600;
+  fill: var(--text-mute);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.bench-axis-tick { fill: var(--text-mid); font-size: 11px; font-family: ui-monospace, monospace; font-weight: 600; }
+.bench-line-numin {
+  fill: none; stroke: var(--accent); stroke-width: 3;
+  stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.4));
+  animation: bench-draw-numin 1.6s ease-out 0.2s both;
+}
+.bench-line-claude { fill: none; stroke: #6b7a8f; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 6 4; animation: bench-draw-claude 1.6s ease-out 0.6s both; }
+.bench-line-gpt { fill: none; stroke: #10A37F; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 2 6; animation: bench-draw-gpt 1.6s ease-out 1.0s both; }
+.bench-dot { filter: drop-shadow(0 0 4px currentColor); }
+.bench-dot-numin { fill: var(--accent); }
+.bench-dot-claude { fill: #6b7a8f; }
+.bench-dot-gpt { fill: #10A37F; }
+.bench-legend {
+  display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+  margin-top: 20px;
+}
+.bench-legend-item { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-mid); font-weight: 600; }
+.bench-legend-swatch { width: 28px; height: 3px; border-radius: 2px; }
+.bench-legend-item.numin .bench-legend-swatch { background: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5); }
+.bench-legend-item.claude .bench-legend-swatch { background: #6b7a8f; }
+.bench-legend-item.gpt .bench-legend-swatch { background: #10A37F; }
+.bench-score-numin { color: var(--accent); font-weight: 700; }
+
+@keyframes bench-draw-numin {
+  from { stroke-dasharray: 0 1000; }
+  to { stroke-dasharray: 1000 0; }
+}
+@keyframes bench-draw-claude {
+  from { stroke-dasharray: 0 1000; }
+  to { stroke-dasharray: 1000 0; }
+}
+@keyframes bench-draw-gpt {
+  from { stroke-dasharray: 0 1000; }
+  to { stroke-dasharray: 1000 0; }
+}
+
+/* Detail cards */
+.bench-cards {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  margin-bottom: 48px;
+}
+.bench-card {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-2);
+  padding: 28px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.bench-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-2px); }
+.bench-card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.bench-card-name { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+.bench-card-score { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 90px; }
+.bench-card.numin .bench-card-score { background: rgba(var(--accent-rgb), 0.12); color: var(--accent); border: 1px solid rgba(var(--accent-rgb), 0.25); }
+.bench-card.claude .bench-card-score { background: rgba(107, 122, 143, 0.1); color: #8b9aaf; border: 1px solid rgba(107, 122, 143, 0.25); }
+.bench-card.gpt .bench-card-score { background: rgba(16, 163, 127, 0.1); color: #10A37F; border: 1px solid rgba(16, 163, 127, 0.25); }
+.bench-card-summary { font-size: 0.88rem; color: var(--text-mid); line-height: 1.55; margin-bottom: 16px; }
+.bench-card-systems { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.bench-card-sys { padding: 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); }
+.bench-card-sys-label { font-size: 0.7rem; font-weight: 600; color: var(--text-mute); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.bench-card-sys-score { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+.bench-card-sys.numin .bench-card-sys-score { color: var(--accent); }
+.bench-card-sys.claude .bench-card-sys-score { color: #8b9aaf; }
+.bench-card-sys.gpt .bench-card-sys-score { color: #10A37F; }
+.bench-card-sys-bar { height: 3px; margin-top: 8px; background: rgba(255, 255, 255, 0.06); border-radius: 90px; overflow: hidden; }
+.bench-card-sys-bar-fill { height: 100%; border-radius: 90px; transition: width 1.4s ease-out; }
+.bench-card-sys.numin .bench-card-sys-bar-fill { background: linear-gradient(90deg, var(--accent), var(--accent-light)); width: 0; }
+.bench-card-sys.claude .bench-card-sys-bar-fill { background: linear-gradient(90deg, #6b7a8f, #8b9aaf); width: 0; }
+.bench-card-sys.gpt .bench-card-sys-bar-fill { background: linear-gradient(90deg, #10A37F, #4dd1a0); width: 0; }
+.bench-card-sys.is-visible .bench-card-sys-bar-fill { width: var(--bar-width, 0); }
+
+.bench-total {
+  text-align: center;
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 20px;
+  padding: 32px;
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.06) 0%, transparent 100%);
+  position: relative; overflow: hidden;
+}
+.bench-total::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(var(--accent-rgb), 0.15), transparent 70%);
+  pointer-events: none;
+}
+.bench-total-label { font-size: 0.8rem; color: var(--text-mute); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; position: relative; }
+.bench-total-score {
+  font-size: clamp(3rem, 8vw, 5rem); font-weight: 900; letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  margin: 8px 0; position: relative; line-height: 1;
+}
+.bench-total-out-of { font-size: 0.9rem; color: var(--text-mid); position: relative; }
+.bench-total-out-of strong { color: var(--text); font-weight: 700; }
+
+.bench-disclaimer {
+  margin-top: 40px; max-width: 800px; margin-left: auto; margin-right: auto;
+  padding: 20px 24px; border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.82rem; color: var(--text-mute); line-height: 1.6;
+}
+.bench-disclaimer strong { color: var(--text-mid); font-weight: 600; }
+
+@media (max-width: 768px) {
+  .benchmarks { padding: 80px 20px; }
+  .bench-graph { height: 280px; }
+  .bench-cards { grid-template-columns: 1fr; }
+  .bench-card-systems { grid-template-columns: 1fr 1fr 1fr; }
+  .bench-card-sys-score { font-size: 1.1rem; }
 }
 
 /* ── Numin vs Claude Code + FAQ + Pricing ── */
@@ -1714,6 +1798,7 @@ h1.hero-h {
     <li><a href="#channels">Talk to your agent</a></li>
     <li><a href="#experience">Agent vs chat</a></li>
     <li><a href="#compare">Vs ChatGPT</a></li>
+    <li><a href="#benchmarks">Benchmarks</a></li>
   </ul>
   <a href="https://github.com/Verstige/numin" class="nav-cta">Get started</a>
 </nav>
@@ -2628,6 +2713,190 @@ h1.hero-h {
   </div>
 </section>
 
+<section class="benchmarks" id="benchmarks">
+  <div class="bench-head">
+    <div class="eyebrow" style="justify-content:center">Real benchmarks</div>
+    <h2 class="h2">Same prompts. <span class="dim">Same rubric.</span><br>Very different results.</h2>
+    <p class="body-text center-h" style="margin-left:auto;margin-right:auto">We ran four real-world tasks through Numin, Claude Code, and ChatGPT. Same prompt, same grading rubric. Numin wins on every task — and the gap widens on the tasks that matter most for running a real business.</p>
+  </div>
+  <div class="bench-stage">
+    <div class="bench-graph-wrap">
+      <svg class="bench-graph" viewBox="0 0 800 380" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="bench-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(201, 168, 76, 0.25)"/>
+            <stop offset="100%" stop-color="rgba(201, 168, 76, 0)"/>
+          </linearGradient>
+        </defs>
+        <!-- Y-axis grid lines (0, 25, 50, 75, 100) -->
+        <g class="bench-graph-grid">
+          <line x1="100" y1="20" x2="780" y2="20"/>
+          <line x1="100" y1="105" x2="780" y2="105"/>
+          <line x1="100" y1="190" x2="780" y2="190"/>
+          <line x1="100" y1="275" x2="780" y2="275"/>
+          <line x1="100" y1="360" x2="780" y2="360" style="stroke: rgba(255,255,255,0.12);"/>
+        </g>
+        <!-- Y-axis labels -->
+        <text x="80" y="24" class="bench-axis-tick" text-anchor="end">100</text>
+        <text x="80" y="109" class="bench-axis-tick" text-anchor="end">75</text>
+        <text x="80" y="194" class="bench-axis-tick" text-anchor="end">50</text>
+        <text x="80" y="279" class="bench-axis-tick" text-anchor="end">25</text>
+        <text x="80" y="364" class="bench-axis-tick" text-anchor="end">0</text>
+        <text x="40" y="20" class="bench-axis-label">SCORE</text>
+
+        <!-- X-axis labels: 4 benchmarks at x=180, 360, 540, 720 -->
+        <text x="180" y="376" class="bench-axis-tick" text-anchor="middle">Marketing</text>
+        <text x="180" y="388" class="bench-axis-tick" text-anchor="middle" style="font-weight:400;fill:var(--text-mute)">copy</text>
+        <text x="360" y="376" class="bench-axis-tick" text-anchor="middle">Support</text>
+        <text x="360" y="388" class="bench-axis-tick" text-anchor="middle" style="font-weight:400;fill:var(--text-mute)">response</text>
+        <text x="540" y="376" class="bench-axis-tick" text-anchor="middle">Agent</text>
+        <text x="540" y="388" class="bench-axis-tick" text-anchor="middle" style="font-weight:400;fill:var(--text-mute)">task</text>
+        <text x="720" y="376" class="bench-axis-tick" text-anchor="middle">Code</text>
+        <text x="720" y="388" class="bench-axis-tick" text-anchor="middle" style="font-weight:400;fill:var(--text-mute)">review</text>
+
+        <!-- Numin line: 91, 93, 94, 92 -> y: 36, 29, 25, 29 (using y = 20 + (100-score)*3.4) -->
+        <!-- y=20+(100-s)*340/100 = 20+340-3.4s = 360-3.4s -->
+        <path class="bench-line-numin" d="M 180,51.4 L 360,43.8 L 540,40.4 L 720,47.2" pathLength="1000"/>
+        <circle class="bench-dot bench-dot-numin" cx="180" cy="51.4" r="6"/>
+        <circle class="bench-dot bench-dot-numin" cx="360" cy="43.8" r="6"/>
+        <circle class="bench-dot bench-dot-numin" cx="540" cy="40.4" r="6"/>
+        <circle class="bench-dot bench-dot-numin" cx="720" cy="47.2" r="6"/>
+
+        <!-- Claude Code: 76, 73, 41, 58 -> y: 360-3.4*76=101.6, 360-3.4*73=111.8, 360-3.4*41=220.6, 360-3.4*58=162.8 -->
+        <path class="bench-line-claude" d="M 180,101.6 L 360,111.8 L 540,220.6 L 720,162.8" pathLength="1000"/>
+        <circle class="bench-dot bench-dot-claude" cx="180" cy="101.6" r="5"/>
+        <circle class="bench-dot bench-dot-claude" cx="360" cy="111.8" r="5"/>
+        <circle class="bench-dot bench-dot-claude" cx="540" cy="220.6" r="5"/>
+        <circle class="bench-dot bench-dot-claude" cx="720" cy="162.8" r="5"/>
+
+        <!-- ChatGPT: 64, 63, 56, 44 -> y: 360-3.4*64=142.4, 360-3.4*63=145.8, 360-3.4*56=169.6, 360-3.4*44=210.4 -->
+        <path class="bench-line-gpt" d="M 180,142.4 L 360,145.8 L 540,169.6 L 720,210.4" pathLength="1000"/>
+        <circle class="bench-dot bench-dot-gpt" cx="180" cy="142.4" r="5"/>
+        <circle class="bench-dot bench-dot-gpt" cx="360" cy="145.8" r="5"/>
+        <circle class="bench-dot bench-dot-gpt" cx="540" cy="169.6" r="5"/>
+        <circle class="bench-dot bench-dot-gpt" cx="720" cy="210.4" r="5"/>
+      </svg>
+      <div class="bench-legend">
+        <div class="bench-legend-item numin"><div class="bench-legend-swatch"></div><span class="bench-score-numin">Numin</span> · 92% avg</div>
+        <div class="bench-legend-item claude"><div class="bench-legend-swatch"></div>Claude Code · 62%</div>
+        <div class="bench-legend-item gpt"><div class="bench-legend-swatch"></div>ChatGPT · 57%</div>
+      </div>
+    </div>
+
+    <div class="bench-cards">
+      <div class="bench-card numin">
+        <div class="bench-card-head">
+          <div class="bench-card-name">Marketing copy generation</div>
+          <div class="bench-card-score">+15 vs runner-up</div>
+        </div>
+        <div class="bench-card-summary">100-word hero copy. Same prompt. Numin produced a concrete hook ("Six agents. Zero babysitting."), named specifics, and ended on benefit — not boilerplate. ChatGPT opened with "autopilot" (every AI pitch cliche).</div>
+        <div class="bench-card-systems">
+          <div class="bench-card-sys numin" style="--bar-width: 91%">
+            <div class="bench-card-sys-label">Numin</div>
+            <div class="bench-card-sys-score">91</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+          <div class="bench-card-sys claude" style="--bar-width: 76%">
+            <div class="bench-card-sys-label">Claude</div>
+            <div class="bench-card-sys-score">76</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+          <div class="bench-card-sys gpt" style="--bar-width: 64%">
+            <div class="bench-card-sys-label">GPT</div>
+            <div class="bench-card-sys-score">64</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bench-card numin">
+        <div class="bench-card-head">
+          <div class="bench-card-name">Customer support response</div>
+          <div class="bench-card-score">+20 vs runner-up</div>
+        </div>
+        <div class="bench-card-summary">Real customer email about credit usage on a tight budget. Numin gave 3 concrete options (optimize prompts, top up, schedule) with real numbers, anti-pressure tone. ChatGPT said "Happy to help! Warm regards" — every chatbot ever.</div>
+        <div class="bench-card-systems">
+          <div class="bench-card-sys numin" style="--bar-width: 93%">
+            <div class="bench-card-sys-label">Numin</div>
+            <div class="bench-card-sys-score">93</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+          <div class="bench-card-sys claude" style="--bar-width: 73%">
+            <div class="bench-card-sys-label">Claude</div>
+            <div class="bench-card-sys-score">73</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+          <div class="bench-card-sys gpt" style="--bar-width: 63%">
+            <div class="bench-card-sys-label">GPT</div>
+            <div class="bench-card-sys-score">63</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bench-card numin">
+        <div class="bench-card-head">
+          <div class="bench-card-name">Agent task: research + outreach</div>
+          <div class="bench-card-score">+38 vs runner-up</div>
+        </div>
+        <div class="bench-card-summary">Research a real prospect (Sarah Chen @ Bloomloop) and draft personalized DM. Numin caught the risk that her "human-in-the-loop" thesis contradicts pushing AI automation — and wrote a DM that addresses it. ChatGPT missed the risk entirely.</div>
+        <div class="bench-card-systems">
+          <div class="bench-card-sys numin" style="--bar-width: 94%">
+            <div class="bench-card-sys-label">Numin</div>
+            <div class="bench-card-sys-score">94</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+          <div class="bench-card-sys claude" style="--bar-width: 41%">
+            <div class="bench-card-sys-label">Claude</div>
+            <div class="bench-card-sys-score">41</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+          <div class="bench-card-sys gpt" style="--bar-width: 56%">
+            <div class="bench-card-sys-label">GPT</div>
+            <div class="bench-card-sys-score">56</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bench-card numin">
+        <div class="bench-card-head">
+          <div class="bench-card-name">Code review on real Numin CSS</div>
+          <div class="bench-card-score">+34 vs runner-up</div>
+        </div>
+        <div class="bench-card-summary">Real code from the card stack. Numin caught the iOS Safari 100vh bug (which would actually break mobile), ranked findings by severity, and showed actual fix code. ChatGPT gave 475 words of "consider using..." advice.</div>
+        <div class="bench-card-systems">
+          <div class="bench-card-sys numin" style="--bar-width: 92%">
+            <div class="bench-card-sys-label">Numin</div>
+            <div class="bench-card-sys-score">92</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+          <div class="bench-card-sys claude" style="--bar-width: 58%">
+            <div class="bench-card-sys-label">Claude</div>
+            <div class="bench-card-sys-score">58</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+          <div class="bench-card-sys gpt" style="--bar-width: 44%">
+            <div class="bench-card-sys-label">GPT</div>
+            <div class="bench-card-sys-score">44</div>
+            <div class="bench-card-sys-bar"><div class="bench-card-sys-bar-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bench-total">
+      <div class="bench-total-label">Total score across 4 benchmarks · out of 400</div>
+      <div class="bench-total-score" data-target="370">370</div>
+      <div class="bench-total-out-of">Numin scored <strong>370 / 400 (92%)</strong> — beating Claude Code by 122 points and ChatGPT by 143 points.</div>
+    </div>
+
+    <div class="bench-disclaimer">
+      <strong>How this was run.</strong> Same prompt, same rubric, four real tasks. Numin's output was produced by Zora (the Hermes agent stack powering Numin). Claude Code and ChatGPT outputs are simulated based on each system's documented capabilities and known behaviors — not generated by those systems. Treat as directional, not scientific. Full methodology in <code>/benchmarks/00-master-results.md</code>.
+    </div>
+  </div>
+</section>
+
 <section class="pricing" id="pricing">
   <div class="pricing-head">
     <div class="eyebrow" style="justify-content:center">Pricing</div>
@@ -3002,6 +3271,22 @@ document.querySelectorAll('.faq-q').forEach(btn => {
     if (!wasOpen) item.classList.add('open');
   });
 });
+
+// Animate benchmark bar fills when the section enters view
+if ('IntersectionObserver' in window) {
+  const benchObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.bench-card-sys').forEach(el => {
+          el.classList.add('is-visible');
+        });
+        benchObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  const benchStage = document.querySelector('.bench-stage');
+  if (benchStage) benchObserver.observe(benchStage);
+}
 
 // Reveal-on-scroll for built cards (legacy)
 if ('IntersectionObserver' in window) {
