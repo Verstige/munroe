@@ -172,15 +172,35 @@ For Munro's solo customer box ($99/mo + $499 setup), the Solo tier maps cleanly 
 
 **Hardware options on Orgo:** vCPU 1/2/4/8/16, RAM 4/8/16/32/64 GB, disk up to plan limit. Spect recommends: Solo (2vCPU/8GB/40GB), Business (4vCPU/16GB/80GB).
 
-### 7. Tier structure decision
+### 7. Tier structure (LOCKED July 14, 2026)
 
-Locked value-prop is `$499 setup + $99/mo`. The pricing section on the live site currently shows **5 tiers** ranging $0–$2,499. Recommendation:
+Five pricing tiers replaced with four clean ones on the live site:
 
-- **Keep 2 tiers**: DIY (free, your API key, you bring your own LLM) + Managed ($99/mo + $499 setup)
-- Drop Solo/Pro/Business/Enterprise until real demand forces them back
-- Orgo costs scale well: $29/mo Hacker plan (1 computer) covers the Solo tier with margin; $99/mo Startup covers Business
+| Tier | $/mo | Setup | Token cap | Audience |
+|---|---|---|---|---|
+| **DIY** | $0 | $499 | byo-key | Technical founders |
+| **Starter** | $50 | $499 | 1.7B | Solo operators |
+| **Pro** (most popular) | $99 | $499 | 5.1B | Daily operators |
+| **Scale** | $199 | $499 | 12.5B | Multi-agent teams |
+| **Enterprise** | custom | annual | negotiable | Compliance / on-prem |
 
-Decision deferred to a future session.
+**Strategic math behind this:** Munro's underlying LLM is MiniMax. Buying MiniMax's flagship Token Plan at $50/month for 12.5B tokens means the API cost per customer is amortized across every shared customer on the same plan. Munro's markup is on the box, the integration, and the human operator.
+
+**Margin per customer at scale (10+ customers sharing one Max plan):**
+- Starter ($50/mo): ~$45/mo margin after token cost
+- Pro ($99/mo): ~$93/mo margin
+- Scale ($199/mo): ~$192/mo margin
+- Enterprise: built on top, custom
+
+**Design choices reflected in the copy:**
+- "Six agents" → "Unlimited specialists" everywhere. The customer can spin up as many as they want.
+- "White-label" → "Enterprise" tier. We're not offering white-labeling; we offer capacity + compliance.
+- "Add-ons" tier removed. The custom work conversation now lives in Enterprise and a future "Contact sales" path.
+- Setup fee flat at $499 across all tiers. Selling setup as amortizable professional services, not a per-feature tax.
+- DIY only free for the monthly. Setup at $499 covers the work session ("we install on your Mac, you keep the binary").
+
+See `/Users/julylan/Projects/Numin/docs/index.html` `#pricing` section for the live implementation.
+
 
 ### 8. Closed-loop gate on admin publish form
 
