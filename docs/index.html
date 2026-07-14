@@ -1142,153 +1142,21 @@ h1.hero-h {
 .efficient-callout p { font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0; }
 .efficient-callout strong { color: var(--accent); font-weight: 700; }
 
-/* ── Card stack interaction (used by vs-claude, built, compare) ── */
-.stack {
-  position: relative;
-  padding: 0;
-  isolation: isolate;
-}
-.stack-sticky {
-  position: sticky;
-  top: 70px;
-  height: calc(100vh - 70px);
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-/* Stacked-deck: cards are positioned absolutely in a vertical stack.
-   The top card is at the center; subsequent cards are offset slightly
-   down + to the side so you can see the "deck" visual. */
-.stack-card {
-  position: absolute;
-  width: min(800px, 100%);
-  max-width: 800px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
-  padding: 40px 36px;
-  /* Default: future card hidden, ready to be added to deck */
-  opacity: 0;
-  transform: translate(-50%, -50%) translateY(0) scale(1);
-  transition: opacity 0.3s ease-out, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-  will-change: transform, opacity;
-  top: 50%; left: 50%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transform-origin: center bottom;
-}
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .stack-card { transition: none; }
-}
-/* Past card: scrolled away, way above */
-.stack-card.passed {
-  opacity: 0;
-  transform: translate(-50%, -50%) translateY(-120vh) scale(0.95);
-  pointer-events: none;
-}
-/* Future card: hidden but ready to fade in as deck indicator */
-.stack-card.exit {
-  /* Default: hidden below */
-  opacity: 0;
-  transform: translate(-50%, -50%) translateY(60vh) scale(0.9);
-  pointer-events: none;
-}
-/* When the JS sets --peek-depth > 0 (a future card is close to the active one),
-   show a partial peek below the active card. Cards 1, 2, 3 ahead get progressively
-   less visible. */
-.stack-card.exit[style*="--peek-depth"] {
-  opacity: var(--peek-opacity, 0);
-  transform: translate(-50%, -50%) translateY(calc(40px + var(--peek-depth, 0) * 18px)) scale(calc(0.94 - var(--peek-depth, 0) * 0.02));
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-/* Active card: front and center, full visibility */
-.stack-card.active {
-  opacity: 1;
-  transform: translate(-50%, -50%) translateY(0) scale(1);
-  pointer-events: auto;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(var(--accent-rgb), 0.18);
-  z-index: 100;
-}
-.stack-progress {
-  position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  pointer-events: none;
-}
-.stack-progress-bar {
-  width: 200px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 90px;
-  overflow: hidden;
-}
-.stack-progress-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-light));
-  transition: width 0.15s;
-  border-radius: 90px;
-}
-.stack-progress-label {
-  font-size: 0.7rem;
-  color: var(--text-mute);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-family: ui-monospace, monospace;
-}
-.stack-hint {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.7rem;
-  color: var(--text-mute);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-family: ui-monospace, monospace;
-  pointer-events: none;
+
 }
 @media (max-width: 768px) {
-  /* Mobile: kill the sticky deck illusion entirely.
-     Each card becomes a normal block in flow — readable, scannable. */
-  .stack { padding: 60px 0 80px; }
-  .stack-sticky {
-    position: static !important; top: auto !important; height: auto !important;
-    min-height: 0 !important; display: block !important; padding: 0 !important;
-  }
-  .stack-card {
-    position: static !important; top: auto !important; left: auto !important;
-    transform: none !important; width: 100% !important; max-width: 100% !important;
-    opacity: 1 !important; pointer-events: auto !important;
-    margin-bottom: 16px !important; padding: 28px 24px !important;
-    border-radius: 20px !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
-  }
-  .stack .stack-card.passed, .stack .stack-card.exit, .stack .stack-card.active {
-    transform: none !important; opacity: 1 !important; z-index: auto !important;
-  }
-  .stack-card { padding: 24px 22px; border-radius: 20px; }
-  .stack-card h3 { font-size: 1.25rem; }
-  .stack-card p { font-size: 0.9rem; }
-  .stack-head { margin-bottom: 16px; }
-  .stack-num { font-size: 0.65rem; letter-spacing: 0.1em; }
-  .stack-icon { width: 40px; height: 40px; }
-  .stack-icon .icon { width: 20px; height: 20px; }
-  .stack-row { grid-template-columns: 1fr; gap: 10px; }
-  .stack-side { padding: 16px; }
-  .stack-side-name { font-size: 0.7rem; }
-  .stack-side-text { font-size: 0.85rem; }
-  .stack-progress { bottom: 16px; }
-  .stack-progress-bar { width: 140px; }
-  .stack-progress-label { font-size: 0.6rem; }
-  .stack-hint { display: none; }
+  
+  .cv-card { padding: 24px 22px; border-radius: 20px; }
+  .cv-card h3 { font-size: 1.25rem; }
+  .cv-card p { font-size: 0.9rem; }
+  .cv-head { margin-bottom: 16px; }
+  .cv-num { font-size: 0.65rem; letter-spacing: 0.1em; }
+  .cv-icon { width: 40px; height: 40px; }
+  .cv-icon .icon { width: 20px; height: 20px; }
+  .cv-row { grid-template-columns: 1fr; gap: 10px; }
+  .cv-side { padding: 16px; }
+  .cv-side-name { font-size: 0.7rem; }
+  .cv-side-text { font-size: 0.85rem; }
   .vscc-h { padding: 80px 20px 0; }
   .vscc-h h2 { font-size: clamp(1.6rem, 8vw, 2.4rem) !important; }
   .compare-h { padding: 80px 20px 24px; }
@@ -1307,50 +1175,50 @@ h1.hero-h {
 }
 
 /* ── Card stack inner content (shared) ── */
-.stack-head {
+.cv-head {
   display: flex; align-items: center; gap: 12px;
   margin-bottom: 24px;
 }
-.stack-icon {
+.cv-icon {
   width: 48px; height: 48px; border-radius: 12px;
   background: rgba(var(--accent-rgb), 0.1);
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   display: flex; align-items: center; justify-content: center;
   color: var(--accent);
 }
-.stack-icon .icon { width: 24px; height: 24px; }
-.stack-num {
+.cv-icon .icon { width: 24px; height: 24px; }
+.cv-num {
   font-size: 0.75rem; font-weight: 800; color: var(--accent);
   letter-spacing: 0.14em;
   font-family: ui-monospace, monospace;
 }
-.stack-num + h3 { margin-top: 4px; }
-.stack-card h3 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 12px; }
-.stack-card p { font-size: 1rem; color: var(--text-mid); line-height: 1.6; margin-bottom: 20px; }
+.cv-num + h3 { margin-top: 4px; }
+.cv-card h3 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 12px; }
+.cv-card p { font-size: 1rem; color: var(--text-mid); line-height: 1.6; margin-bottom: 20px; }
 
 /* Two-column row used in vs-claude/compare stacks */
-.stack-row {
+.cv-row {
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin: 16px 0;
 }
-.stack-side {
+.cv-side {
   border-radius: 14px;
   padding: 20px;
 }
-.stack-side.opp {
+.cv-side.opp {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
-.stack-side.us {
+.cv-side.us {
   background: rgba(var(--accent-rgb), 0.06);
   border: 1px solid rgba(var(--accent-rgb), 0.2);
 }
-.stack-side-head {
+.cv-side-head {
   display: flex; align-items: center; gap: 10px;
   margin-bottom: 10px;
 }
-.stack-side-logo {
+.cv-side-logo {
   width: 28px; height: 28px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   background: rgba(255, 255, 255, 0.04);
@@ -1358,22 +1226,22 @@ h1.hero-h {
   padding: 4px;
   flex-shrink: 0;
 }
-.stack-side-logo img,
-.stack-side-logo svg { width: 100%; height: 100%; object-fit: contain; }
-.stack-side-name {
+.cv-side-logo img,
+.cv-side-logo svg { width: 100%; height: 100%; object-fit: contain; }
+.cv-side-name {
   font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-mid);
 }
-.stack-side.us .stack-side-name { color: var(--accent); }
-.stack-side-text {
+.cv-side.us .cv-side-name { color: var(--accent); }
+.cv-side-text {
   font-size: 0.92rem; line-height: 1.5;
   color: var(--text-mid);
 }
-.stack-side.us .stack-side-text { color: var(--text); font-weight: 500; }
+.cv-side.us .cv-side-text { color: var(--text); font-weight: 500; }
 @media (max-width: 768px) {
-  .stack-row { grid-template-columns: 1fr; }
-  .stack-card h3 { font-size: 1.25rem; }
+  .cv-row { grid-template-columns: 1fr; }
+  .cv-card h3 { font-size: 1.25rem; }
 }
 
 /* ── Benchmarks ── */
@@ -1847,6 +1715,145 @@ h1.hero-h {
    ============================================================ */
 .icon-sprite { display: none; }
 </style>
+  <!-- GSAP + ScrollTrigger for card animations -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+  <style id="card-animations">
+    /* ── GSAP-driven card scroll animations ── */
+    .card-track .cv-card {
+      opacity: 0;
+      transform: translateY(40px);
+      will-change: transform, opacity;
+    }
+    .card-track .cv-card.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .card-track {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 0 52px;
+    }
+    .cv-card {
+      position: relative;
+      width: 100%;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+      padding: 40px 36px;
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+    .cv-card:hover {
+      border-color: rgba(var(--accent-rgb), 0.4);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(var(--accent-rgb), 0.15);
+    }
+    .cv-head {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px;
+    }
+    .cv-num {
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--accent);
+      flex-shrink: 0;
+    }
+    .cv-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: rgba(var(--accent-rgb), 0.1);
+      border: 1px solid rgba(var(--accent-rgb), 0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .cv-icon .icon { width: 24px; height: 24px; }
+    .cv-card h3 {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em;
+      margin-bottom: 12px;
+    }
+    .cv-card p {
+      font-size: 1rem; color: var(--text-mid); line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .cv-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-top: 16px;
+    }
+    .cv-side {
+      border-radius: 14px; padding: 18px; border: 1px solid var(--border);
+    }
+    .cv-side.opp { background: rgba(255, 255, 255, 0.02); }
+    .cv-side.us {
+      background: rgba(var(--accent-rgb), 0.06);
+      border-color: rgba(var(--accent-rgb), 0.2);
+    }
+    .cv-side-head {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px;
+    }
+    .cv-side-logo {
+      width: 24px; height: 24px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cv-side-logo img,
+    .cv-side-logo svg { width: 100%; height: 100%; object-fit: contain; }
+    .cv-side-name {
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+    }
+    .cv-side.us .cv-side-name { color: var(--accent); }
+    .cv-side-text {
+      font-size: 0.88rem; color: var(--text-mid); line-height: 1.45;
+    }
+    .cv-side.us .cv-side-text { color: var(--text); font-weight: 500; }
+    @media (max-width: 768px) {
+      .card-track { padding: 0 16px; gap: 14px; }
+      .cv-card { padding: 24px 22px; border-radius: 18px; }
+      .cv-card h3 { font-size: 1.2rem; }
+      .cv-card p { font-size: 0.9rem; }
+      .cv-row { grid-template-columns: 1fr; gap: 10px; }
+      .cv-side { padding: 14px; }
+      .cv-side-name { font-size: 0.65rem; }
+      .cv-side-text { font-size: 0.82rem; }
+      .cv-head { margin-bottom: 14px; }
+      .cv-num { font-size: 0.62rem; }
+      .cv-icon { width: 36px; height: 36px; }
+      .cv-icon .icon { width: 18px; height: 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card-track .cv-card { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+
+  <!-- Card scroll animation -->
+  <script defer>
+    window.addEventListener('DOMContentLoaded', () => {
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      // For every .card-track, fade each card in as it scrolls into view.
+      document.querySelectorAll('.card-track').forEach(track => {
+        const cards = track.querySelectorAll('.cv-card');
+        gsap.to(cards, {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          ease: 'power2.out',
+          stagger: 0.12,
+          scrollTrigger: {
+            trigger: track,
+            start: 'top 80%',
+            end: 'bottom 60%',
+            toggleActions: 'play none none reverse'
+          }
+        });
+      });
+    });
+  </script>
 </head>
 <body data-skin="local">
 
@@ -2650,171 +2657,165 @@ h1.hero-h {
       </div>
     </div>
   </div>
-  <div class="stack" id="vscc-stack">
-    <div class="stack-sticky">
-      <div class="stack-card" data-label="Price">
-        <div class="stack-head">
-          <div class="stack-num">CARD 01 / 10</div>
+  <div class="card-track" id="vscc-stack-track">
+      <div class="cv-card" data-label="Price">
+        <div class="cv-head">
+          <div class="cv-num">CARD 01 / 10</div>
         </div>
         <h3>Quarter the price.</h3>
         <p>Munro Pro starts at $200/mo. Munro Solo starts at $50/mo. Compare to Claude Code's flat $200/mo with no flexibility, no setup help, no tiers.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head">
-              <div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div>
-              <div class="stack-side-name">Claude Code</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head">
+              <div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div>
+              <div class="cv-side-name">Claude Code</div>
             </div>
-            <div class="stack-side-text">$200/mo flat. No setup fee. No flexibility.</div>
+            <div class="cv-side-text">$200/mo flat. No setup fee. No flexibility.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head">
-              <div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div>
-              <div class="stack-side-name">Munro · from $50/mo</div>
+          <div class="cv-side us">
+            <div class="cv-side-head">
+              <div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div>
+              <div class="cv-side-name">Munro · from $50/mo</div>
             </div>
-            <div class="stack-side-text">From $50/mo + optional $299 setup. Up to 75% cheaper.</div>
+            <div class="cv-side-text">From $50/mo + optional $299 setup. Up to 75% cheaper.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Usage caps">
-        <div class="stack-head"><div class="stack-num">CARD 02 / 10</div></div>
+      <div class="cv-card" data-label="Usage caps">
+        <div class="cv-head"><div class="cv-num">CARD 02 / 10</div></div>
         <h3>No daily wall.</h3>
         <p>Claude Code has daily message limits and throttles you at peak hours. Munro runs on credits — you buy what you need, they roll over 12 months, and nothing stops mid-task.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">Daily message limits. Throttled at peak hours.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">Daily message limits. Throttled at peak hours.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Credit-based. Never throttled. No daily caps.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Credit-based. Never throttled. No daily caps.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Where it lives">
-        <div class="stack-head"><div class="stack-num">CARD 03 / 10</div></div>
+      <div class="cv-card" data-label="Where it lives">
+        <div class="cv-head"><div class="cv-num">CARD 03 / 10</div></div>
         <h3>Where you already are.</h3>
         <p>Claude Code lives in your terminal — one window, one session at a time. Munro lives in iMessage, WhatsApp, Telegram, and your browser. Pick up on your phone where you left off on your Mac.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">Your terminal. One window. One session at a time.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">Your terminal. One window. One session at a time.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">iMessage, WhatsApp, Telegram, web — every channel you already use.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">iMessage, WhatsApp, Telegram, web — every channel you already use.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Memory">
-        <div class="stack-head"><div class="stack-num">CARD 04 / 10</div></div>
+      <div class="cv-card" data-label="Memory">
+        <div class="cv-head"><div class="cv-num">CARD 04 / 10</div></div>
         <h3>Compounding intelligence.</h3>
         <p>Claude Code starts fresh every session. Munro builds permanent memory of your business. Every conversation makes it smarter about your clients, your decisions, your patterns.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">Per-session. Dies when you close the window.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">Per-session. Dies when you close the window.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Permanent. Learns your business over time. Never forgets.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Permanent. Learns your business over time. Never forgets.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Always on">
-        <div class="stack-head"><div class="stack-num">CARD 05 / 10</div></div>
+      <div class="cv-card" data-label="Always on">
+        <div class="cv-head"><div class="cv-num">CARD 05 / 10</div></div>
         <h3>Works while you sleep.</h3>
         <p>Claude Code waits for you to open it. Munro runs 24/7 — monitors overnight, briefs you in the morning, flags what's urgent. It never takes a day off.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">No. Waits for you to open it.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">No. Waits for you to open it.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Yes. Runs 24/7. Monitors, briefs, flags issues.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Yes. Runs 24/7. Monitors, briefs, flags issues.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Specialists">
-        <div class="stack-head"><div class="stack-num">CARD 06 / 10</div></div>
+      <div class="cv-card" data-label="Specialists">
+        <div class="cv-head"><div class="cv-num">CARD 06 / 10</div></div>
         <h3>Six specialists. One brain.</h3>
         <p>Claude Code is one generalist agent. Munro has six: ARIA for research, VANCE for build, NEXUS for planning, PRISM for content, APEX for sales, MUNRO for orchestration. Each owns a domain.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">One generalist agent.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">One generalist agent.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">6 specialists — research, build, plan, write, sell, orchestrate.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">6 specialists — research, build, plan, write, sell, orchestrate.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Custom training">
-        <div class="stack-head"><div class="stack-num">CARD 07 / 10</div></div>
+      <div class="cv-card" data-label="Custom training">
+        <div class="cv-head"><div class="cv-num">CARD 07 / 10</div></div>
         <h3>Trained on YOUR business.</h3>
         <p>Claude Code uses generic prompts you write yourself. Munro ingests your docs, your customer profiles, your past decisions. It answers like a teammate who's been at your company for years.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">Generic prompts you write yourself.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">Generic prompts you write yourself.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Pre-trained on your business during onboarding.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Pre-trained on your business during onboarding.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Tasks it does">
-        <div class="stack-head"><div class="stack-num">CARD 08 / 10</div></div>
+      <div class="cv-card" data-label="Tasks it does">
+        <div class="cv-head"><div class="cv-num">CARD 08 / 10</div></div>
         <h3>Closes the loop.</h3>
         <p>Claude Code suggests code, waits for review. Munro sends emails, updates CRM, books meetings, closes tickets — without asking. Real work, not suggestions.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">Suggests code, waits for review.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">Suggests code, waits for review.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Sends emails, updates CRM, books meetings, closes tickets — without asking.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Sends emails, updates CRM, books meetings, closes tickets — without asking.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Ownership">
-        <div class="stack-head"><div class="stack-num">CARD 09 / 10</div></div>
+      <div class="cv-card" data-label="Ownership">
+        <div class="cv-head"><div class="cv-num">CARD 09 / 10</div></div>
         <h3>Yours, not rented.</h3>
         <p>Claude Code can change pricing or shut down anytime. Munro runs on your Mac or your dedicated cloud Mac — you own the runtime, the data, the agent.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">Renting a tool. They can change pricing or shut it down.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">Renting a tool. They can change pricing or shut it down.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Your agent, your data, your Mac — you own the runtime.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Your agent, your data, your Mac — you own the runtime.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Best for">
-        <div class="stack-head"><div class="stack-num">CARD 10 / 10</div></div>
+      <div class="cv-card" data-label="Best for">
+        <div class="cv-head"><div class="cv-num">CARD 10 / 10</div></div>
         <h3>Different jobs.</h3>
         <p>Claude Code is for developers writing code. Munro is for entrepreneurs, CEOs, and operators running a business. Both have their place. We just built the second one.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="stack-side-name">Claude Code</div></div>
-            <div class="stack-side-text">Developers writing code.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-claude.svg" alt="Claude Code" /></div><div class="cv-side-name">Claude Code</div></div>
+            <div class="cv-side-text">Developers writing code.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Entrepreneurs, CEOs, and operators running a business.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Entrepreneurs, CEOs, and operators running a business.</div>
           </div>
         </div>
       </div>
-      <div class="stack-progress">
-        <div class="stack-progress-bar"><div class="stack-progress-fill"></div></div>
-        <div class="stack-progress-label">01 / 10 · Price</div>
-      </div>
-      <div class="stack-hint">Scroll to flip through ↓</div>
     </div>
   </div>
 </section>
@@ -3283,69 +3284,63 @@ h1.hero-h {
       <div class="built-stat"><div class="built-stat-num">∞</div><div class="built-stat-label">Memory</div></div>
     </div>
   </div>
-  <div class="stack" id="built-stack">
-    <div class="stack-sticky">
-      <div class="stack-card" data-label="Memory">
-        <div class="stack-head"><div class="stack-num">CARD 01 / 08 · INTELLIGENCE</div></div>
-        <div class="stack-icon"><svg class="icon"><use href="#i-brain"/></svg></div>
+  <div class="card-track" id="built-stack-track">
+      <div class="cv-card" data-label="Memory">
+        <div class="cv-head"><div class="cv-num">CARD 01 / 08 · INTELLIGENCE</div></div>
+        <div class="cv-icon"><svg class="icon"><use href="#i-brain"/></svg></div>
         <h3>Persistent memory</h3>
         <p>Your agent remembers every client, every preference, every decision — across sessions, across months, across years. It builds a model of your business that compounds over time. New team members onboard by reading the agent's memory.</p>
         <div class="bcard-stat">NEVER FORGETS</div>
       </div>
-      <div class="stack-card" data-label="Channels">
-        <div class="stack-head"><div class="stack-num">CARD 02 / 08 · CHANNELS</div></div>
-        <div class="stack-icon"><svg class="icon"><use href="#i-message-circle"/></svg></div>
+      <div class="cv-card" data-label="Channels">
+        <div class="cv-head"><div class="cv-num">CARD 02 / 08 · CHANNELS</div></div>
+        <div class="cv-icon"><svg class="icon"><use href="#i-message-circle"/></svg></div>
         <h3>Every messaging surface</h3>
         <p>iMessage, WhatsApp, Telegram, Discord, Slack, SMS, web chat, voice. Your agent reaches you wherever you already are. One conversation context across all of them — pick up on iPhone where you left off on Mac.</p>
         <div class="bcard-stat">7 SURFACES</div>
       </div>
-      <div class="stack-card" data-label="Skills">
-        <div class="stack-head"><div class="stack-num">CARD 03 / 08 · SKILLS</div></div>
-        <div class="stack-icon"><svg class="icon"><use href="#i-wand"/></svg></div>
+      <div class="cv-card" data-label="Skills">
+        <div class="cv-head"><div class="cv-num">CARD 03 / 08 · SKILLS</div></div>
+        <div class="cv-icon"><svg class="icon"><use href="#i-wand"/></svg></div>
         <h3>Skills that compose</h3>
         <p>A growing library of pre-built capabilities — email triage, calendar scheduling, CRM updates, invoicing, research, content drafting, code review, data analysis. Compose them like building blocks. Your agent picks the right skill for each task.</p>
         <div class="bcard-stat">COMPOSABLE</div>
       </div>
-      <div class="stack-card" data-label="Integrations">
-        <div class="stack-head"><div class="stack-num">CARD 04 / 08 · INTEGRATIONS</div></div>
-        <div class="stack-icon"><svg class="icon"><use href="#i-plug"/></svg></div>
+      <div class="cv-card" data-label="Integrations">
+        <div class="cv-head"><div class="cv-num">CARD 04 / 08 · INTEGRATIONS</div></div>
+        <div class="cv-icon"><svg class="icon"><use href="#i-plug"/></svg></div>
         <h3>1,000+ tools, native</h3>
         <p>Native integrations with Gmail, Outlook, Google Calendar, Apple Calendar, Slack, Notion, HubSpot, Salesforce, Stripe, Linear, GitHub, and hundreds more. Your agent doesn't just talk to these tools — it actually executes inside them.</p>
         <div class="bcard-stat">1000+</div>
       </div>
-      <div class="stack-card" data-label="Orchestration">
-        <div class="stack-head"><div class="stack-num">CARD 05 / 08 · ORCHESTRATION</div></div>
-        <div class="stack-icon"><svg class="icon"><use href="#i-network"/></svg></div>
+      <div class="cv-card" data-label="Orchestration">
+        <div class="cv-head"><div class="cv-num">CARD 05 / 08 · ORCHESTRATION</div></div>
+        <div class="cv-icon"><svg class="icon"><use href="#i-network"/></svg></div>
         <h3>Six specialists, one brain</h3>
         <p>ARIA for research. VANCE for build. NEXUS for planning. PRISM for content. APEX for sales. MUNRO for orchestration. Each owns a domain. They share context, hand off tasks, and coordinate without you.</p>
         <div class="bcard-stat">6 AGENTS</div>
       </div>
-      <div class="stack-card" data-label="Scheduling">
-        <div class="stack-head"><div class="stack-num">CARD 06 / 08 · SCHEDULING</div></div>
-        <div class="stack-icon"><svg class="icon"><use href="#i-clock"/></svg></div>
+      <div class="cv-card" data-label="Scheduling">
+        <div class="cv-head"><div class="cv-num">CARD 06 / 08 · SCHEDULING</div></div>
+        <div class="cv-icon"><svg class="icon"><use href="#i-clock"/></svg></div>
         <h3>Cron that actually works</h3>
         <p>Schedule anything — daily briefings, weekly reports, monthly invoicing, quarterly reviews. Your agent runs them in the background and surfaces results. No missed tasks, no forgotten deadlines.</p>
         <div class="bcard-stat">AUTOMATED</div>
       </div>
-      <div class="stack-card" data-label="Sub-agents">
-        <div class="stack-head"><div class="stack-num">CARD 07 / 08 · SUB-AGENTS</div></div>
-        <div class="stack-icon"><svg class="icon"><use href="#i-users"/></svg></div>
+      <div class="cv-card" data-label="Sub-agents">
+        <div class="cv-head"><div class="cv-num">CARD 07 / 08 · SUB-AGENTS</div></div>
+        <div class="cv-icon"><svg class="icon"><use href="#i-users"/></svg></div>
         <h3>Specialists on demand</h3>
         <p>Spin up a dedicated sub-agent for a project — a marketing agent for the launch, a research agent for due diligence, a coding agent for the MVP. They run, deliver, and report back. You stay focused on the main work.</p>
         <div class="bcard-stat">ON DEMAND</div>
       </div>
-      <div class="stack-card" data-label="Custom training">
-        <div class="stack-head"><div class="stack-num">CARD 08 / 08 · CUSTOM TRAINING</div></div>
-        <div class="stack-icon"><svg class="icon"><use href="#i-target"/></svg></div>
+      <div class="cv-card" data-label="Custom training">
+        <div class="cv-head"><div class="cv-num">CARD 08 / 08 · CUSTOM TRAINING</div></div>
+        <div class="cv-icon"><svg class="icon"><use href="#i-target"/></svg></div>
         <h3>Trained on your business</h3>
         <p>During onboarding, your agent ingests your docs, your past decisions, your customer profiles, your voice. It answers like someone who's been at your company for years — because it has read everything.</p>
         <div class="bcard-stat">YOU-TRAINED</div>
       </div>
-      <div class="stack-progress">
-        <div class="stack-progress-bar"><div class="stack-progress-fill"></div></div>
-        <div class="stack-progress-label">01 / 08 · Memory</div>
-      </div>
-      <div class="stack-hint">Scroll to flip through ↓</div>
     </div>
   </div>
 </section>
@@ -3381,118 +3376,112 @@ h1.hero-h {
     <h2 class="h2">This isn't <span class="dim">ChatGPT.</span><br>It's an <span class="accent-text">operating system.</span></h2>
     <p class="body-text center-h" style="margin-left:auto;margin-right:auto">Both AI. Both useful. Wildly different jobs. Scroll to flip through how Munro runs circles around ChatGPT for actual business operations.</p>
   </div>
-  <div class="stack" id="compare-stack">
-    <div class="stack-sticky">
-      <div class="stack-card" data-label="Memory">
-        <div class="stack-head"><div class="stack-num">CARD 01 / 07</div></div>
+  <div class="card-track" id="compare-stack-track">
+      <div class="cv-card" data-label="Memory">
+        <div class="cv-head"><div class="cv-num">CARD 01 / 07</div></div>
         <h3>Memory that compounds.</h3>
         <p>ChatGPT forgets everything when you close the tab. Every conversation starts from zero. Munro builds permanent, growing memory of your entire business — every client, every decision, every preference remembered.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="stack-side-name">ChatGPT</div></div>
-            <div class="stack-side-text">Forgets everything when you close the tab. Every conversation starts from zero.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="cv-side-name">ChatGPT</div></div>
+            <div class="cv-side-text">Forgets everything when you close the tab. Every conversation starts from zero.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Permanent, growing memory of your entire business. Remembers everything.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Permanent, growing memory of your entire business. Remembers everything.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Action">
-        <div class="stack-head"><div class="stack-num">CARD 02 / 07</div></div>
+      <div class="cv-card" data-label="Action">
+        <div class="cv-head"><div class="cv-num">CARD 02 / 07</div></div>
         <h3>Actions, not answers.</h3>
         <p>ChatGPT gives you text. You still have to copy, paste, send, update, schedule. Munro takes real action — sends emails, updates CRM, books meetings, closes tickets — without asking.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="stack-side-name">ChatGPT</div></div>
-            <div class="stack-side-text">Gives you text. You still have to copy, paste, send, update, schedule.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="cv-side-name">ChatGPT</div></div>
+            <div class="cv-side-text">Gives you text. You still have to copy, paste, send, update, schedule.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Takes real action. Sends emails, updates CRM, books meetings, closes tickets — without asking.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Takes real action. Sends emails, updates CRM, books meetings, closes tickets — without asking.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Context">
-        <div class="stack-head"><div class="stack-num">CARD 03 / 07</div></div>
+      <div class="cv-card" data-label="Context">
+        <div class="cv-head"><div class="cv-num">CARD 03 / 07</div></div>
         <h3>Your business, your context.</h3>
         <p>ChatGPT knows nothing about your business. Generic knowledge, same answers for everyone. Munro is trained specifically on YOUR business — reads your docs, knows your clients, learns your voice.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="stack-side-name">ChatGPT</div></div>
-            <div class="stack-side-text">Knows nothing about your business. Generic knowledge. Same answers for everyone.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="cv-side-name">ChatGPT</div></div>
+            <div class="cv-side-text">Knows nothing about your business. Generic knowledge. Same answers for everyone.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Trained specifically on YOUR business. Reads your docs, knows your clients.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Trained specifically on YOUR business. Reads your docs, knows your clients.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Agents">
-        <div class="stack-head"><div class="stack-num">CARD 04 / 07</div></div>
+      <div class="cv-card" data-label="Agents">
+        <div class="cv-head"><div class="cv-num">CARD 04 / 07</div></div>
         <h3>Specialists &gt; generalists.</h3>
         <p>ChatGPT is one generalist — good at many things, expert at nothing. Munro is six specialized AI executives — ARIA for research, VANCE for build, NEXUS for planning, PRISM for content, APEX for sales, MUNRO for orchestration.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="stack-side-name">ChatGPT</div></div>
-            <div class="stack-side-text">One generalist. Good at many things, expert at nothing.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="cv-side-name">ChatGPT</div></div>
+            <div class="cv-side-text">One generalist. Good at many things, expert at nothing.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">6 specialized AI executives — each one owns a domain.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">6 specialized AI executives — each one owns a domain.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Privacy">
-        <div class="stack-head"><div class="stack-num">CARD 05 / 07</div></div>
+      <div class="cv-card" data-label="Privacy">
+        <div class="cv-head"><div class="cv-num">CARD 05 / 07</div></div>
         <h3>Yours, not theirs.</h3>
         <p>ChatGPT trains their models on your conversations. Your data is their data. Munro runs 100% local or on your private cloud Mac. Your data never leaves. We can't read it. We never have access.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="stack-side-name">ChatGPT</div></div>
-            <div class="stack-side-text">Your conversations train their models. Your data is their data.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="cv-side-name">ChatGPT</div></div>
+            <div class="cv-side-text">Your conversations train their models. Your data is their data.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">100% local or your private cloud computer. Your data never leaves.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">100% local or your private cloud computer. Your data never leaves.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Always on">
-        <div class="stack-head"><div class="stack-num">CARD 06 / 07</div></div>
+      <div class="cv-card" data-label="Always on">
+        <div class="cv-head"><div class="cv-num">CARD 06 / 07</div></div>
         <h3>24/7 always on.</h3>
         <p>ChatGPT waits to be asked. Completely passive. Nothing happens unless you open it. Munro runs 24/7 autonomously — monitors overnight, briefs you in the morning, flags what's urgent.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="stack-side-name">ChatGPT</div></div>
-            <div class="stack-side-text">Waits to be asked. Completely passive. Nothing happens unless you open it.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="cv-side-name">ChatGPT</div></div>
+            <div class="cv-side-text">Waits to be asked. Completely passive. Nothing happens unless you open it.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Runs 24/7 autonomously. Monitors, briefs, flags issues — without you asking.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Runs 24/7 autonomously. Monitors, briefs, flags issues — without you asking.</div>
           </div>
         </div>
       </div>
-      <div class="stack-card" data-label="Hardware">
-        <div class="stack-head"><div class="stack-num">CARD 07 / 07</div></div>
+      <div class="cv-card" data-label="Hardware">
+        <div class="cv-head"><div class="cv-num">CARD 07 / 07</div></div>
         <h3>Yours, not rented.</h3>
         <p>ChatGPT lives in someone else's cloud. Dependent on their servers, their pricing, their terms. Munro runs on your Mac or your dedicated cloud Mac — you own the runtime, you own the agent.</p>
-        <div class="stack-row">
-          <div class="stack-side opp">
-            <div class="stack-side-head"><div class="stack-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="stack-side-name">ChatGPT</div></div>
-            <div class="stack-side-text">Lives in someone else's cloud. Dependent on their servers, their pricing, their terms.</div>
+        <div class="cv-row">
+          <div class="cv-side opp">
+            <div class="cv-side-head"><div class="cv-side-logo"><img src="logo-chatgpt.svg" alt="ChatGPT" /></div><div class="cv-side-name">ChatGPT</div></div>
+            <div class="cv-side-text">Lives in someone else's cloud. Dependent on their servers, their pricing, their terms.</div>
           </div>
-          <div class="stack-side us">
-            <div class="stack-side-head"><div class="stack-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="stack-side-name">Munro</div></div>
-            <div class="stack-side-text">Your Mac, or your dedicated cloud Mac. You own the runtime.</div>
+          <div class="cv-side us">
+            <div class="cv-side-head"><div class="cv-side-logo"><svg class="icon" style="width:18px;height:18px"><use href="#i-sparkles"/></svg></div><div class="cv-side-name">Munro</div></div>
+            <div class="cv-side-text">Your Mac, or your dedicated cloud Mac. You own the runtime.</div>
           </div>
         </div>
       </div>
-      <div class="stack-progress">
-        <div class="stack-progress-bar"><div class="stack-progress-fill"></div></div>
-        <div class="stack-progress-label">01 / 07 · Memory</div>
-      </div>
-      <div class="stack-hint">Scroll to flip through ↓</div>
     </div>
   </div>
 </section>
@@ -4124,135 +4113,7 @@ if ('IntersectionObserver' in window) {
   document.querySelectorAll('.bcard').forEach(el => observer.observe(el));
 }
 
-// Card stack interaction: cards flip through as user scrolls the section.
-// Each card gets one viewport-height of scroll for its transition. The stack's
-// sticky child pins while the section scrolls past.
 
-// First: size all stacks based on viewport height BEFORE initializing the interactions
-function sizeStacks() {
-  const vh = window.innerHeight;
-  document.querySelectorAll('.stack').forEach(stack => {
-    const cards = stack.querySelectorAll('.stack-card');
-    if (!cards.length) return;
-    const minHeight = cards.length * vh;
-    stack.style.minHeight = `${minHeight}px`;
-  });
-}
-sizeStacks();
-window.addEventListener('resize', sizeStacks);
-
-// Then: set up the card-stack scroll interaction
-(function() {
-  const stacks = document.querySelectorAll('.stack');
-  if (!stacks.length) return;
-
-  stacks.forEach(stack => {
-    const cards = Array.from(stack.querySelectorAll('.stack-card'));
-    const progressBar = stack.querySelector('.stack-progress-fill');
-    const progressLabel = stack.querySelector('.stack-progress-label');
-    const total = cards.length;
-    if (!total) return;
-
-    let currentIndex = -1;
-
-    function setActive(idx) {
-      const clamped = Math.min(total - 1, Math.max(0, idx));
-      if (clamped === currentIndex) return;
-      currentIndex = clamped;
-
-      // Note: card classes (active/passed/exit) are managed in update()
-      // based on fractional position for smooth transitions.
-
-      if (progressBar) {
-        const pct = total > 1 ? (clamped / (total - 1)) * 100 : 100;
-        progressBar.style.width = `${pct.toFixed(1)}%`;
-      }
-      if (progressLabel && cards[clamped]) {
-        const label = cards[clamped].getAttribute('data-label') || '';
-        progressLabel.textContent = `${String(clamped + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')} · ${label}`;
-      }
-
-      // Update background tone based on card index (cycles 1-10)
-      stack.setAttribute('data-bg-tone', ((clamped % 10) + 1).toString());
-    }
-
-    // Calculate scroll progress through the stack.
-    // Stacked-deck visual: each card is on top of the others, the active card
-    // is at the center, future cards are peeking out below (in the deck),
-    // past cards have been swiped up out of view.
-    let ticking = false;
-    function update() {
-      const stickyEl = stack.querySelector('.stack-sticky');
-      if (!stickyEl) return;
-      const stickyRect = stickyEl.getBoundingClientRect();
-      const stackRect = stack.getBoundingClientRect();
-
-      const stackHeight = stackRect.height;
-      const stickyHeight = stickyRect.height;
-      const totalScroll = Math.max(1, stackHeight - stickyHeight);
-      const scrolled = Math.max(0, -stickyRect.top);
-      const vh = window.innerHeight;
-      const sectionInView = stackRect.top < vh && stackRect.bottom > 0;
-      const progress = sectionInView
-        ? Math.min(1, scrolled / totalScroll)
-        : 0;
-
-      // exactIdx: 0 = card 0 is top of stack, total-1 = last card is top
-      const exactIdx = progress * (total - 1);
-
-      // For each card, set ONLY the class (active/passed/exit). The CSS
-      // handles the visual transform/opacity so transitions are smooth.
-      cards.forEach((card, i) => {
-        const dist = exactIdx - i;
-        // Clear all state classes
-        card.classList.remove('active', 'passed', 'exit');
-        card.style.zIndex = '';
-        if (dist < -0.05) {
-          // Future card: part of the deck below
-          card.classList.add('exit');
-          // Peek effect: cards 0-2 ahead show as a deck below
-          if (-dist <= 2.5) {
-            const peek = Math.max(0, Math.min(2, -dist));
-            const peekOpacity = Math.max(0, 0.55 - peek * 0.2);
-            card.style.setProperty('--peek-depth', peek);
-            card.style.setProperty('--peek-opacity', peekOpacity);
-          } else {
-            card.style.setProperty('--peek-depth', '0');
-            card.style.setProperty('--peek-opacity', '0');
-          }
-          card.style.zIndex = 10 + i;
-        } else if (dist > 1.05) {
-          // Past card: scrolled away
-          card.classList.add('passed');
-        } else {
-          // Active card or in transition
-          card.classList.add('active');
-          card.style.zIndex = 100 + i;
-        }
-      });
-
-      // Dominant card index for progress bar / label
-      const intIdx = Math.round(exactIdx);
-      setActive(intIdx);
-      ticking = false;
-    }
-
-    function onScroll() {
-      if (!ticking) {
-        window.requestAnimationFrame(update);
-        ticking = true;
-      }
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    setTimeout(update, 200);
-    setActive(0);
-  });
-})();
-
-
-// Card stack interaction handles vscc + built + compare automatically
 
 // Mobile-test mode: ?mobile=1 forces a 390px container so we can audit mobile layout
 // from a desktop browser. Renders inside a styled wrapper to simulate the viewport.
