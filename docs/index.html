@@ -2278,6 +2278,198 @@ h1.hero-h {
     @media (prefers-reduced-motion: reduce) {
       .card-track .cv-card { opacity: 1 !important; transform: none !important; }
     }
+
+    /* ====== DIY Qualification Modal ====== */
+    .modal[hidden] { display: none !important; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 5vh 24px 24px;
+      overflow-y: auto;
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 13, 15, 0.85);
+      backdrop-filter: blur(4px);
+      cursor: pointer;
+    }
+    .modal-card {
+      position: relative;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 760px;
+      width: 100%;
+      padding: 56px 56px 40px;
+      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.6);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .modal-close:hover {
+      color: var(--text);
+      border-color: rgba(var(--accent-rgb), 0.5);
+      background: rgba(var(--accent-rgb), 0.04);
+    }
+    .modal-close:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .modal-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h2 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin: 12px 0 16px;
+      color: var(--text);
+    }
+    .modal-sub {
+      font-size: 0.95rem;
+      color: var(--text-mid);
+      line-height: 1.6;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .modal-body {
+      margin-bottom: 32px;
+    }
+    .modal-section {
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .modal-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .modal-section h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--accent);
+      margin: 0 0 16px;
+    }
+    .modal-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .modal-list li {
+      font-size: 0.92rem;
+      color: var(--text-mid);
+      line-height: 1.65;
+      margin-bottom: 14px;
+      padding-left: 16px;
+      position: relative;
+    }
+    .modal-list li:last-child {
+      margin-bottom: 0;
+    }
+    .modal-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+    .modal-list li strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+    .modal-list code {
+      font-family: ui-monospace, "SF Mono", monospace;
+      font-size: 0.85em;
+      padding: 1px 6px;
+      background: rgba(var(--accent-rgb), 0.08);
+      border: 1px solid rgba(var(--accent-rgb), 0.2);
+      border-radius: 4px;
+      color: var(--accent);
+    }
+    .modal-section-summary {
+      background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.06) 0%, rgba(var(--accent-rgb), 0.02) 100%);
+      border: 1px solid rgba(var(--accent-rgb), 0.2);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-top: 8px;
+    }
+    .modal-section-summary h3 {
+      color: var(--accent);
+    }
+    .modal-section-summary p {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.65;
+      margin: 0 0 14px;
+    }
+    .modal-section-summary p:last-child {
+      margin-bottom: 0;
+    }
+    .modal-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      padding-top: 8px;
+    }
+    .modal-footer .price-cta-primary {
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+    }
+    .modal-secondary {
+      background: transparent;
+      border: none;
+      color: var(--text-mute);
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 8px 16px;
+      transition: color 0.2s;
+      font-family: inherit;
+    }
+    .modal-secondary:hover {
+      color: var(--text);
+    }
+    @media (max-width: 640px) {
+      .modal-card {
+        padding: 48px 24px 32px;
+      }
+      .modal-header h2 {
+        font-size: 1.4rem;
+      }
+      .modal {
+        padding: 3vh 12px 12px;
+      }
+    }
   </style>
 
   <!-- Card scroll animation -->
@@ -4194,7 +4386,7 @@ h1.hero-h {
         <li>Built on the same runtime as our hosted plans</li>
         <li class="no">No support call &mdash; install only</li>
       </ul>
-      <a href="#faq" class="price-cta">Start DIY</a>
+      <button type="button" class="price-cta" data-open-modal="diy-qualify">Is DIY right for me?</button>
     </div>
 
     <div class="price-card">
@@ -4611,6 +4803,153 @@ if ('IntersectionObserver' in window) {
   };
 })();
 </script>
+<!-- DIY Qualification Modal -->
+<div class="modal" id="diy-qualify" role="dialog" aria-modal="true" aria-labelledby="diy-modal-title" hidden>
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-card" role="document">
+    <button type="button" class="modal-close" data-close-modal aria-label="Close">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
 
+    <div class="modal-header">
+      <div class="eyebrow" style="justify-content:center">DIY qualification checklist</div>
+      <h2 id="diy-modal-title">What it actually takes to run an agent on your own computer.</h2>
+      <p class="modal-sub">The DIY plan is real. People do it. But it's not "free" the way most people read free &mdash; it's free of monthly fees, and not free of effort. Here's the full list of what's required for the agent to run smoothly on hardware you own.</p>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="modal-section">
+        <h3>1. The computer itself</h3>
+        <ul class="modal-list">
+          <li><strong>Always on.</strong> The agent needs to run 24/7 to reply when customers text at 2am. That means the machine can't sleep, can't lid-close, can't power down for updates. A laptop you close at night is not "always on" &mdash; the agent goes unreachable. A desktop works. A server in a closet works. A laptop with the lid open and power settings disabled works (but produces heat and fan noise).</li>
+          <li><strong>macOS 13+ (Ventura) or Ubuntu 22.04+.</strong> The agent runtime is tested on these. Windows works through WSL2 but isn't a first-class path &mdash; you'll debug more.</li>
+          <li><strong>8 GB RAM minimum, 16 GB recommended.</strong> The agent + Chrome (for the web-fetch engine) + OS = 4&ndash;6 GB steady state. With 8 GB you'll feel the disk-swap under load. With 16 GB there's headroom for parallel specialists.</li>
+          <li><strong>40 GB free disk.</strong> The runtime, the skill library, the conversation history, the agent's memory, and the web-fetch cache. Adds up fast if you don't prune. SSD strongly preferred &mdash; the agent reads/writes memory constantly.</li>
+          <li><strong>Stable home or office internet.</strong> Symmetric 25 Mbps minimum, 100 Mbps recommended. The agent calls MiniMax (or your own LLM) over the network. Slow uplink = slow agent. Dropped packets = the agent gives up mid-response and the customer sees nothing.</li>
+          <li><strong>Static IP or dynamic DNS.</strong> Telegram bots, WhatsApp webhooks, iMessage bridges all need to reach your machine. A consumer ISP that rotates IPs daily will break things. Cloudflare Tunnel or Tailscale Funnel solve this for ~$0&ndash;5/mo but they need to be set up.</li>
+        </ul>
+      </div>
+
+      <div class="modal-section">
+        <h3>2. The operating overhead</h3>
+        <ul class="modal-list">
+          <li><strong>OS security updates.</strong> macOS prompts you every other week. Ubuntu unattended-upgrades run automatically but need monitoring. Skipping these is a security risk on a machine that's always on and reachable from the public internet.</li>
+          <li><strong>Disk space monitoring.</strong> The agent's memory and conversation history grow ~50 MB&ndash;500 MB per month. Conversation exports and skill cache add more. The drive fills up, the agent starts failing in weird ways, you don't notice for two weeks. Set up <code>ncdu</code> or a cron job that warns at 80% full.</li>
+          <li><strong>Backup of agent state.</strong> When the disk dies (and it will, eventually), you lose all the agent's memory, every conversation, every learned preference. Backups are not optional. A daily snapshot to Backblaze B2 or S3 costs ~$1/mo and saves you from catastrophe.</li>
+          <li><strong>Power and connectivity redundancy.</strong> If your building loses power for 4 hours, the agent is offline for 4 hours. If your ISP has an outage, same. For 99% uptime you need a UPS and a backup internet connection (phone hotspot works). For 99.9% you need a colo or a real cloud box.</li>
+          <li><strong>Physical access.</strong> You'll need to fix things. The terminal freezes. The disk fills up. A skill needs reinstalling. A channel breaks. The Mac restarts after an update and the agent doesn't auto-start. Plan for 2&ndash;4 hours per month of hands-on maintenance.</li>
+        </ul>
+      </div>
+
+      <div class="modal-section">
+        <h3>3. The integrations you need to wire yourself</h3>
+        <ul class="modal-list">
+          <li><strong>A Telegram bot, made by you.</strong> Open Telegram, message @BotFather, type /newbot, get a token. Paste it into the agent config. The token is a long string like <code>7123456789:AAH...</code>. Don't lose it.</li>
+          <li><strong>Or an iMessage bridge (BlueBubbles).</strong> BlueBubbles is a third-party server that turns iMessage into a regular API. It needs to be running on the same Mac that has your iMessage account signed in. Apple has revoked BlueBubbles' certificates before; it works again, but it can break without warning.</li>
+          <li><strong>Or a WhatsApp Business API account.</strong> Meta charges per conversation. Or use Twilio's sandbox. Either way, the integration code is custom, you maintain it, and the API may change on you.</li>
+          <li><strong>Or a Discord bot.</strong> Easier than Telegram (no business verification), you create a bot in the Developer Portal, you get a token, you wire it up.</li>
+          <li><strong>Calendar, email, and contact sync.</strong> If the agent is going to draft emails, it needs an SMTP credential or an OAuth flow. If it's going to read your calendar, it needs CalDAV or Google API tokens. Each integration is a small project the first time you set it up.</li>
+          <li><strong>An LLM API key.</strong> OpenAI, Anthropic, or your own MiniMax subscription. You bring the key. The agent has a default model but you can swap. If the key expires or hits a rate limit, the agent stops responding until you fix it.</li>
+        </ul>
+      </div>
+
+      <div class="modal-section">
+        <h3>4. The day-to-day work</h3>
+        <ul class="modal-list">
+          <li><strong>Reading the agent's logs.</strong> When the agent does something unexpected, you need to dig into the conversation history, the model logs, the channel output. Each new failure mode teaches you something but takes 15&ndash;60 minutes to diagnose.</li>
+          <li><strong>Updating skills when we ship them.</strong> When Munroe ships a new skill, DIY customers get a notification and pull from a Git repo. You run <code>git pull</code>, restart the agent, hope nothing broke. Two minutes per update, weekly.</li>
+          <li><strong>Renegotiating with your LLM provider.</strong> When you hit rate limits, when pricing changes, when a new model launches that's better. DIY customers own this themselves.</li>
+          <li><strong>Teaching the agent about your business.</strong> Out of the box the agent doesn't know you. DIY customers spend the first 1&ndash;2 hours "training" it &mdash; feeding it your business context, your voice, your preferences. Or they skip that and the agent stays generic forever.</li>
+        </ul>
+      </div>
+
+      <div class="modal-section">
+        <h3>5. The risk you're taking on</h3>
+        <ul class="modal-list">
+          <li><strong>No SLA.</strong> DIY is best-effort. We provide the install and the GitHub repo. We don't provide 24/7 monitoring or response. If the agent breaks at 11pm on a Friday, you fix it Monday morning.</li>
+          <li><strong>No security review.</strong> The agent is running on your hardware, with your data, accessible from the public internet if you wired Telegram correctly. We don't pen-test your setup. You own the security posture.</li>
+          <li><strong>No compliance documentation.</strong> SOC 2, HIPAA, GDPR compliance &mdash; DIY doesn't include any of that. If your business needs compliance, the hosted plans are required.</li>
+          <li><strong>You become the on-call engineer.</strong> When a customer texts the agent at 2am and the agent is down because your ISP had an outage, that's your problem, not ours.</li>
+        </ul>
+      </div>
+
+      <div class="modal-section modal-section-summary">
+        <h3>What Munroe Cloud does for you</h3>
+        <p>The $50&ndash;$199/mo hosted plans handle everything in this list. Always-on infrastructure, daily backups, OS updates, channel wiring, security patches, monitoring. You show up and use the agent. We show up and keep the lights on.</p>
+        <p>The DIY plan is for founders who have the time, the skills, and the interest in doing this themselves &mdash; and who have a home setup that can handle "always on" for years. Most people don't. The hosted plans exist because most people shouldn't have to.</p>
+        <p>If you've read this and thought "yeah, I can do that" &mdash; great. The DIY plan is $499 setup, then $0/mo. <strong>Start DIY</strong> when you're ready.</p>
+        <p>If you've read this and thought "that's a lot" &mdash; that's exactly what Munroe Cloud is for.</p>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <a href="#pricing" class="price-cta price-cta-primary" data-close-modal>See hosted plans</a>
+      <button type="button" class="modal-secondary" data-close-modal>Close this checklist</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // Modal logic
+  var modal = document.getElementById('diy-qualify');
+  if (!modal) return;
+
+  function openModal() {
+    modal.removeAttribute('hidden');
+    document.body.style.overflow = 'hidden';
+    var closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) setTimeout(function() { closeBtn.focus(); }, 50);
+  }
+
+  function closeModal() {
+    modal.setAttribute('hidden', '');
+    document.body.style.overflow = '';
+  }
+
+  // Open triggers
+  var triggers = document.querySelectorAll('[data-open-modal="diy-qualify"]');
+  for (var i = 0; i < triggers.length; i++) {
+    triggers[i].addEventListener('click', function(e) {
+      e.preventDefault();
+      openModal();
+    });
+  }
+
+  // Close triggers
+  var closers = modal.querySelectorAll('[data-close-modal]');
+  for (var j = 0; j < closers.length; j++) {
+    closers[j].addEventListener('click', function(e) {
+      e.preventDefault();
+      closeModal();
+    });
+  }
+
+  // Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !modal.hasAttribute('hidden')) {
+      closeModal();
+    }
+  });
+
+  // Focus trap
+  modal.addEventListener('keydown', function(e) {
+    if (e.key !== 'Tab') return;
+    var focusable = modal.querySelectorAll('button, a, [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+})();
+</script>
 </body>
 </html>
