@@ -1,6 +1,6 @@
-# Munro
+# Munroe
 
-Munro is an AI agent platform. You buy a subscription, we provision a private virtual computer running your agent, wire it to your messaging app of choice, and your agent does work for you 24/7.
+Munroe is an AI agent platform. You buy a subscription, we provision a private virtual computer running your agent, wire it to your messaging app of choice, and your agent does work for you 24/7.
 
 It learns your voice. Every week we ship new skills you can teach it.
 
@@ -37,7 +37,7 @@ src/                 ← legacy Vite + Firebase app from earlier prototype (kept
 
 ## Brand
 
-- Name: **Munro**
+- Name: **Munroe**
 - Tagline: _The AI agent that knows your business_
 - Color: gold `#C9A84C` on black `#0D0D0F`
 

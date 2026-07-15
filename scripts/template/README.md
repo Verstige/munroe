@@ -1,4 +1,4 @@
-# Munro Code Template — `system/munro-code@1.0.0`
+# Munroe Code Template — `system/munroe-code@1.0.0`
 
 This is the Orgo template definition for the customer-facing agent box. Every new customer's box spins up from this template, which extends the upstream Hermes template with our proprietary skill library and the crawl4ai web-fetch engine.
 
@@ -6,7 +6,7 @@ This is the Orgo template definition for the customer-facing agent box. Every ne
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  system/munro-code@1.0.0                                        │
+│  system/munroe-code@1.0.0                                        │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  FROM system/hermes-agent@1.0.0                                │
@@ -74,17 +74,17 @@ curl -X POST "https://www.orgo.ai/api/templates?auto_build=true&force=true" \
   --data-binary @template.yaml
 
 # 5. Poll until status: ready
-curl https://www.orgo.ai/api/templates/default/munro-code/1.0.0/build \
+curl https://www.orgo.ai/api/templates/default/munroe-code/1.0.0/build \
   -H "Authorization: Bearer $ORGO_API_KEY"
 ```
 
 **After publishing**, every `provision.sh` call automatically uses this template_ref:
 
 ```json
-{ "template_ref": "default/munro-code@1.0.0" }
+{ "template_ref": "default/munroe-code@1.0.0" }
 ```
 
-(The current `provision.sh` uses `system/munro-code@1.0.0` — once we publish our own, we switch to `default/munro-code@1.0.0`.)
+(The current `provision.sh` uses `system/munroe-code@1.0.0` — once we publish our own, we switch to `default/munroe-code@1.0.0`.)
 
 ## Bumping versions
 

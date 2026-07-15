@@ -1,6 +1,6 @@
-# Munro Code Skill Library
+# Munroe Code Skill Library
 
-_Every customer box ships with **Munro Code**: Hermes agent + 53 pre-installed skills._
+_Every customer box ships with **Munroe Code**: Hermes agent + 53 pre-installed skills._
 
 The customer sees **9 categories** of skills in their dashboard. The **agent infrastructure layer** (12 skills) runs silently — it's what makes the agent adaptive, proactive, and self-improving. Customers don't pick those; we maintain them.
 
@@ -118,7 +118,7 @@ _Wearables, calories, body data._
 
 ## What we ship silently (Agent Infrastructure)
 
-These 12 skills ship in every Munro Code box but don't appear on the customer skill picker. They're how the agent thinks, learns, and improves itself. We maintain and update them centrally — customers get improvements automatically.
+These 12 skills ship in every Munroe Code box but don't appear on the customer skill picker. They're how the agent thinks, learns, and improves itself. We maintain and update them centrally — customers get improvements automatically.
 
 | Skill | What it does |
 |---|---|
@@ -149,7 +149,7 @@ COPY ./inherited/* /root/.hermes/inherited/
 RUN hermes doctor
 ```
 
-This is the strategic asset Munro sells: **the same skill library, tuned and battle-tested, baked into every customer's box from minute zero.** A new customer doesn't install skills — they get them.
+This is the strategic asset Munroe sells: **the same skill library, tuned and battle-tested, baked into every customer's box from minute zero.** A new customer doesn't install skills — they get them.
 
 **When we ship a new skill, every existing customer gets it on next agent restart.**
 
@@ -157,7 +157,7 @@ This is the strategic asset Munro sells: **the same skill library, tuned and bat
 
 ## The Web Fetch Layer
 
-Every Munro Code box ships with **crawl4ai** (Apache-2.0, 73k stars on GitHub) pre-installed. It's the silent web-fetching engine that handles cases where the customer's agent needs to pull content from the public web but the dedicated skill for that doesn't cover the case.
+Every Munroe Code box ships with **crawl4ai** (Apache-2.0, 73k stars on GitHub) pre-installed. It's the silent web-fetching engine that handles cases where the customer's agent needs to pull content from the public web but the dedicated skill for that doesn't cover the case.
 
 **What this gives customers:**
 - No per-fetch API costs.

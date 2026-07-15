@@ -1,0 +1,83 @@
+
+MUNRO · CUSTOMER ONBOARDING WORKFLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+  CUSTOMER SIDE
+  ─────────────
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  ① Pays through the landing page form                                   │
+  │  ② Submits onboarding form (email, goals, current stack, channel pick)  │
+  │  ③ Telegram only: opens @BotFather on Telegram → /newbot → pastes      │
+  │     the bot token back into the form                                    │
+  └─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+  OPERATOR SIDE  (you, sitting at this Mac)
+  ──────────────────────────────────────────
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  ④ Receives a Telegram DM: "new customer, julie@example.com, token X"  │
+  │  ⑤ Runs:  ./onboard.sh --email julie@example.com \                       │
+  │                  --channel telegram --bot-token "$X"                    │
+  └─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼   orgo ssh w23xyz → box is yours
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │  LINUX BOX ON ORGO CLOUD  (booted with system/hermes-agent@1.0.0)      │
+  │  ╔═══════════════════════════════════════════════════════════════════╗  │
+  │  ║  ⑥ apt update && curl -fsSL install.hermes.io | bash              ║  │
+  │  ║  ⑦ write ~ /.hermes/config.yaml  (per-customer values)             ║  │
+  │  ║  ⑧ hermes channels wire telegram --token "$X" --customer julie@   ║  │
+  │  ║  ⑨ hermes doctor           →    (must-pass sanity check)          ║  │
+  │  ║  ⑩ hermes ping             →    (smoke-test the agent model call)  ║  │
+  │  ╚═══════════════════════════════════════════════════════════════════╝  │
+  └─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                ┌───────────────────┴─────────────────────┐
+                ▼                                         ▼
+  ┌────────────────────────────────────┐  ┌──────────────────────────────────────┐
+  │  ⑪  DM you (operator):              │  │  ⑫  Customer texts the bot:          │
+  │  ✓ julie@example.com                │  │  "Hey Munroe, what's on my plate?"    │
+  │  live on box w23xyz                 │  │                                      │
+  │  channel: telegram                  │  │  → Agent replies via same channel.   │
+  │  next: empty her inbox              │  │                                      │
+  └────────────────────────────────────┘  └──────────────────────────────────────┘
+                                                              │
+                                                              ▼
+                              ┌─────────────────────────────────────────────┐
+                              │  ⏱  Day 2, 7, 30:                          │
+                              │  • Agent runs 24/7 on the box.             │
+                              │  • Customer texts in natural language.      │
+                              │  • New skills ship weekly to her dashboard.│
+                              │  • You ping the box on `#daily-ops` rhythm.│
+                              └─────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+TIMING BUDGET  (per customer)
+──────────────────────────
+SSH session:           ~30 seconds (boot is <500ms on Orgo)
+Install Hermes:        ~20 seconds (curl | bash from your release URL)
+Config + channel wire: ~30 seconds
+Smoke test:            ~10 seconds
+DM to operator:        ~2 seconds
+─────────────────────────────────────
+Total wall-clock:      ≈ 90 seconds per customer  (excluding HERMES ping latency)
+
+═══════════════════════════════════════════════════════════════════════════════
+WHAT I NEED TO BUILD THIS
+─────────────────────────
+Required env vars in your shell or .env, never committed:
+   ORGO_API_KEY              (from https://www.orgo.ai/start)
+   ORGO_WORKSPACE_ID         (create POST /api/workspaces once; name it "munro")
+   HERMES_INSTALL_CMD        (the curl-install one-liner I need from you)
+   TELEGRAM_BOT_TOKEN_PATTERN  (regex so we can validate the customer's token shape)
+   MUNRO_OPS_BOT_TOKEN       (yours, for DMs back to you)
+   MUNRO_OPS_CHAT_ID         (your telegram chat id)
+   SUPABASE_URL + SERVICE_KEY (or fall back to local pending_setup.json)
+
+═══════════════════════════════════════════════════════════════════════════════
+CHANNEL DECISION TREE
+─────────────────────
+telegram    →  customer creates bot via @BotFather, sends you token, you paste into onb►
+iMessage    →  BlueBubbles gateway on the box; customer scans QR from their iPhone        ►
+whatsapp    →  Meta Business API or Twilio sandbox; shared Twilio creds wired per-customer ►
+discord    →  bot invited to customer's server; bot token; channel wiring                    ►

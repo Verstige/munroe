@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build-template.sh — Stage the Munro Code template artifacts
+# build-template.sh — Stage the Munroe Code template artifacts
 #
 # Pulls skills from ~/Projects/zoras-memory-system/skills/ into
 # scripts/template/skills/, plus any prompts/inherited/bin we maintain.
@@ -14,11 +14,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
 # Source of truth paths
-# Skills now live in a Munro-owned folder so we can grow them independently
+# Skills now live in a Munroe-owned folder so we can grow them independently
 # of the upstream zoras-memory-system repo.
-SKILLS_SRC="$HOME/Projects/Munro/munro-code/munro-skills"
-PROMPTS_SRC="$HOME/Projects/Munro/munro-code/munro-prompts"
-INHERITED_SRC="$HOME/Projects/Munro/munro-code/munro-inherited"
+SKILLS_SRC="$HOME/Projects/Munroe/munro-code/munroe-skills"
+PROMPTS_SRC="$HOME/Projects/Munroe/munro-code/munroe-prompts"
+INHERITED_SRC="$HOME/Projects/Munroe/munro-code/munroe-inherited"
 OPENMONTAGE_SRC="$HOME/Projects/Numin/skills/openmontage-patterns.md"
 
 # Destination paths
@@ -28,7 +28,7 @@ INHERITED_DST="./inherited"
 BIN_DST="./bin"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Building Munro Code template artifacts"
+echo "Building Munroe Code template artifacts"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # 1. Skills (53 skills from the canonical repo)

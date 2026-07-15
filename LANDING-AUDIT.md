@@ -1,4 +1,4 @@
-# Munro Landing Audit
+# Munroe Landing Audit
 
 _Run July 14, 2026 — post animation fix._
 
@@ -12,12 +12,12 @@ _Run July 14, 2026 — post animation fix._
 |---|---|---|---|---|
 | 1 | `#channels` | Always-on access | Talk to your agent. From anywhere. | **KEEP** |
 | 2 | `#composio` | Connect everything | Your tools. All of them. One agent. | **KEEP** |
-| 3 | `#skills` | What Munro can do | An operator. A specialist. A team. | **REVIEW** |
+| 3 | `#skills` | What Munroe can do | An operator. A specialist. A team. | **REVIEW** |
 | 4 | `#marketplace` | Skills that grow with you | A new skill every week. | **KEEP** |
-| 5 | `#inherited` | Built once. Free for everyone. | Every Munro inherits six disciplines. | **KEEP** |
-| 6 | `#vs-claude` | The honest comparison | Munro vs Claude Code | **KEEP** |
+| 5 | `#inherited` | Built once. Free for everyone. | Every Munroe inherits six disciplines. | **KEEP** |
+| 6 | `#vs-claude` | The honest comparison | Munroe vs Claude Code | **KEEP** |
 | 7 | `#cloud-what` | Your private cloud computer | Dedicated Apple Silicon. | **REVIEW** |
-| 8 | `#advantage` | The Munro advantage | Most AI tools answer questions. | **KEEP** |
+| 8 | `#advantage` | The Munroe advantage | Most AI tools answer questions. | **KEEP** |
 | 9 | `#personality` | Different by design | One of these remembers you. | **KEEP** |
 | 10 | `#experience` | The experience difference | An agent isn't a chat LLM. | **REVIEW** |
 | 11 | `#workflow` | The way you actually work | Built for the operators | **KEEP** |
@@ -41,7 +41,7 @@ These are doing real work. Don't touch.
 - **#marketplace** — Skills carousel. The flywheel narrative.
 - **#inherited** — Six disciplines. The "what's actually in the box" section.
 - **#vs-claude** — Deep comparison. Captures "real estate" against the most-mentioned competitor.
-- **#advantage** — "Most AI tools answer questions. Munro runs your business." Core positioning.
+- **#advantage** — "Most AI tools answer questions. Munroe runs your business." Core positioning.
 - **#personality** — Day 1 / Day 90. The relational differentiator.
 - **#workflow** — Industries showcase. ICP breadth signal.
 - **#built** — Card stack: 8 capability cards (memory, channels, skills, etc.).
@@ -59,7 +59,7 @@ These are doing real work. Don't touch.
 
 **Why flagged:** This section overlaps with `#marketplace` (8 skill cards just added Jul 14). Visitor sees:
 
-1. What Munro can do (12 cards, comprehensive)
+1. What Munroe can do (12 cards, comprehensive)
 2. Skills marketplace carousel (8 cards, "weekly drop")
 
 Both are right after each other. Two-of-the-same read.
@@ -80,7 +80,7 @@ Both are right after each other. Two-of-the-same read.
 
 ### #experience — "An agent isn't a chat LLM. It's the next level."
 
-**Why flagged:** Same idea as #advantage ("ChatGPT is a conversation, Munro is an operating system"). One sentence apart from #personality's barista-vs-colleague. Three sections in a row making the same point.
+**Why flagged:** Same idea as #advantage ("ChatGPT is a conversation, Munroe is an operating system"). One sentence apart from #personality's barista-vs-colleague. Three sections in a row making the same point.
 
 **Recommendation:** Combine #advantage + #experience + #personality into a single, tighter "Why this is different" section with: (a) the operating-system pivot line, (b) the barista/colleague compare, (c) the agent-vs-chatbot checklist. Saves 2 sections (~600px scroll).
 
@@ -122,7 +122,7 @@ Visitor gets *two* tables of "here's what you pay for." Same mental job.
 
 ## Code-clean status
 
-- ✅ All "numin" / "Numin" / "NUMIN" references → "Munro" (verified: 0 remaining)
+- ✅ All "numin" / "Numin" / "NUMIN" references → "Munroe" (verified: 0 remaining)
 - ✅ `<title>` aligned with narrative
 - ✅ `meta description`, `og:description`, `twitter:description` all use the narrative
 - ✅ All anchor links (`#channels`, `#cloud`, `#composio`, etc.) resolve to existing sections

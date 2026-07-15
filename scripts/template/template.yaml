@@ -1,11 +1,11 @@
 apiVersion: orgo.ai/v1
 kind: Template
 metadata:
-  name: munro-code
+  name: munroe-code
   namespace: default
   version: 1.0.0
   description: >
-    Munro Code is a custom agent runtime: Hermes + 53 proprietary skills +
+    Munroe Code is a custom agent runtime: Hermes + 53 proprietary skills +
     crawl4ai. Every customer box spins up from this template, so the same
     skill library ships to every customer at minute zero.
 spec:
@@ -66,12 +66,12 @@ spec:
       kind: shell
       script: |
         hermes doctor
-        echo "Munro Code box online."
+        echo "Munroe Code box online."
         echo "Skills installed: $(ls /root/.hermes/skills/ | wc -l)"
 
   # Metadata for the customer dashboard
   metadata:
-    brand: "Munro Code"
+    brand: "Munroe Code"
     version: "1.0.0"
     skill_count: 53
     web_engine: "crawl4ai 0.9.2"

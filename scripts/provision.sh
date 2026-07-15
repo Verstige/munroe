@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Munro — provision a new customer
+# Munroe — provision a new customer
 # Usage: ./provision.sh <customer-email> <tier> [channel]
 #   tier:        solo | business
 #   channel:     telegram | imessage | discord | whatsapp (default: telegram)
@@ -39,7 +39,7 @@ if [[ -z "$CUSTOMER_EMAIL" ]]; then
   exit 1
 fi
 
-# Sanity: tier enum (the two plans we'll sell via Munro)
+# Sanity: tier enum (the two plans we'll sell via Munroe)
 case "$TIER" in
   solo|business) ;;
   *) echo "Unknown tier: $TIER (valid: solo, business)"; exit 1 ;;
@@ -61,7 +61,7 @@ if [[ -z "${ORGO_WORKSPACE_ID:-}" ]]; then
   echo "  curl -X POST https://www.orgo.ai/api/workspaces \"
   echo "    -H \"Authorization: Bearer \$ORGO_API_KEY\" \"
   echo "    -H \"Content-Type: application/json\" \"
-  echo "    -d \"{\\\"name\\\": \\\"munro\\\"}\""
+  echo "    -d \"{\\\"name\\\": \\\"munroe\\\"}\""
   exit 1
 fi
 
@@ -71,10 +71,10 @@ declare -A CPU=([solo]=2 [business]=4)
 declare -A DISK=([solo]=40 [business]=80)
 
 SAFE_NAME=$(echo "$CUSTOMER_EMAIL" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
-BOX_NAME="munro-${SAFE_NAME}"
+BOX_NAME="munroe-${SAFE_NAME}"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Provisioning Munro for: $CUSTOMER_EMAIL"
+echo "Provisioning Munroe for: $CUSTOMER_EMAIL"
 echo "  Tier:    $TIER (${CPU[$TIER]}cpu/${RAM[$TIER]}gb/${DISK[$TIER]}gb)"
 echo "  Channel: $CHANNEL"
 echo "  Box:     $BOX_NAME"
@@ -91,7 +91,7 @@ ORGO_RESP=$(curl -sS -X POST "https://www.orgo.ai/api/computers" \
   -d "$(printf '{
     "workspace_id": "%s",
     "name": "%s",
-    "template_ref": "system/munro-code@1.0.0",
+    "template_ref": "system/munroe-code@1.0.0",
     "ram": %s,
     "cpu": %s,
     "disk_size_gb": %s,

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Munro Dashboard</title>
-  <meta name="description" content="Manage your Munro AI agent. Billing, agent access, and the skills marketplace." />
+  <title>Your Munroe Dashboard</title>
+  <meta name="description" content="Manage your Munroe AI agent. Billing, agent access, and the skills marketplace." />
   <link rel="icon" href="favicon.ico" />
   <style>
     :root {
@@ -56,7 +56,7 @@
 <body>
 
   <nav class="nav">
-    <a href="index.html" class="nav-brand">Munro<span class="dot">.</span></a>
+    <a href="index.html" class="nav-brand">Munroe<span class="dot">.</span></a>
     <span class="nav-user">signed in as julylan@example.com</span>
   </nav>
 
@@ -70,7 +70,7 @@
       <!-- Quick connect card -->
       <div class="card">
         <div class="card-eyebrow">YOUR AGENT</div>
-        <h3>Connect to your Munro</h3>
+        <h3>Connect to your Munroe</h3>
         <p>Open the virtual desktop where your agent runs and the channels where it talks to you.</p>
         <div style="display:flex; gap:8px; flex-wrap: wrap;">
           <a href="https://app.orgo.ai/" class="btn">Open Virtual Desktop</a>
@@ -94,7 +94,7 @@
       Skill marketplace
       <span class="feed-tag"><span class="dot"></span> 3 NEW THIS WEEK</span>
     </h2>
-    <p class="lede" style="margin-bottom: 24px;">Every card is a skill your agent can learn. Click <strong>Teach my Munro</strong> to send the source. Your agent reads it and the capability sticks — forever.</p>
+    <p class="lede" style="margin-bottom: 24px;">Every card is a skill your agent can learn. Click <strong>Teach my Munroe</strong> to send the source. Your agent reads it and the capability sticks — forever.</p>
 
     <div class="skills-grid">
 
@@ -105,7 +105,7 @@
         </div>
         <p class="skill-sum">A 7am summary of meetings, deadlines, what's urgent, what to ignore. Reads your calendar, email, last night's open tasks.</p>
         <div class="skill-meta"><span>COMPOSE</span><span>ASYNC DAILY</span></div>
-        <button class="btn" data-skill="daily-briefing">Teach my Munro</button>
+        <button class="btn" data-skill="daily-briefing">Teach my Munroe</button>
       </div>
 
       <div class="skill-card">
@@ -115,7 +115,7 @@
         </div>
         <p class="skill-sum">Detects when two threads contradict or ask for the same thing twice, drafts a single clean reply and a follow-up for the older thread.</p>
         <div class="skill-meta"><span>EMAIL OPS</span><span>OPT-IN</span></div>
-        <button class="btn" data-skill="inbox-resolver">Teach my Munro</button>
+        <button class="btn" data-skill="inbox-resolver">Teach my Munroe</button>
       </div>
 
       <div class="skill-card">
@@ -125,7 +125,7 @@
         </div>
         <p class="skill-sum">Reads 5 of your past emails and learns the cadence, length, formality of your style. Drafts in your voice, not agent-voice.</p>
         <div class="skill-meta"><span>CONTENT</span><span>OPT-IN</span></div>
-        <button class="btn" data-skill="voice-match">Teach my Munro</button>
+        <button class="btn" data-skill="voice-match">Teach my Munroe</button>
       </div>
 
       <div class="skill-card">
@@ -173,7 +173,7 @@
         <span class="badge-mute">JUL 12</span>
       </div>
       <div style="display:flex; justify-content: space-between; align-items: center; padding: 14px 0;">
-        <span style="font-size: .85rem;">Munro provisioned · welcome</span>
+        <span style="font-size: .85rem;">Munroe provisioned · welcome</span>
         <span class="badge-mute">JUL 11</span>
       </div>
     </div>
@@ -184,7 +184,7 @@
     document.querySelectorAll('.btn[data-skill]').forEach(btn => {
       btn.addEventListener('click', () => {
         const skill = btn.dataset.skill;
-        btn.textContent = 'Sending to your Munro...';
+        btn.textContent = 'Sending to your Munroe...';
         btn.disabled = true;
         // In production: POST /api/skills/learn { skill, source: "<repo URL>" }
         // For now, demo mock:

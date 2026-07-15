@@ -1,4 +1,4 @@
-# Munro — Runbook
+# Munroe — Runbook
 
 _Final state, July 14, 2026._
 
@@ -6,13 +6,13 @@ This is the source of truth for what's shipped, what's pending, and what decisio
 
 ---
 
-## What is Munro
+## What is Munroe
 
-Munro is an AI agent platform. Customers buy a subscription; we provision a private Linux cloud computer running the Hermes agent, wire it to one of four messaging channels (iMessage / Telegram / WhatsApp / Discord), and the agent runs 24/7 doing work for them. The customer never sees the LLM behind it (we default to MiniMax for cost; you can bring your own key). Customers name their own agent.
+Munroe is an AI agent platform. Customers buy a subscription; we provision a private Linux cloud computer running the Hermes agent, wire it to one of four messaging channels (iMessage / Telegram / WhatsApp / Discord), and the agent runs 24/7 doing work for them. The customer never sees the LLM behind it (we default to MiniMax for cost; you can bring your own key). Customers name their own agent.
 
-The brand promise: Munro **finds the signal in the noise.** The platform markets six inherited disciplines (scored decisions, liveness, separate reviewer, real "done" definition, reusable code, layered memory) that ship as defaults — no opt-in required.
+The brand promise: Munroe **finds the signal in the noise.** The platform markets six inherited disciplines (scored decisions, liveness, separate reviewer, real "done" definition, reusable code, layered memory) that ship as defaults — no opt-in required.
 
-The underlying model is **MiniMax** (M3 · 1M context · multimodal). Munro is positioned against Claude Code (the Anthropic competitor) on token volume &mdash; MiniMax's flagship Token Plan at $50/mo offers 5.1B tokens/mo versus Claude Code Max 5x at $100/mo with capped usage. Munro absorbs MiniMax as its model and adds the box, channels, specialist configuration, and human ops. **Same model family, different posture.**
+The underlying model is **MiniMax** (M3 · 1M context · multimodal). Munroe is positioned against Claude Code (the Anthropic competitor) on token volume &mdash; MiniMax's flagship Token Plan at $50/mo offers 5.1B tokens/mo versus Claude Code Max 5x at $100/mo with capped usage. Munroe absorbs MiniMax as its model and adds the box, channels, specialist configuration, and human ops. **Same model family, different posture.**
 
 **Pricing proof-point:** Starter $50/mo / 1.7B tokens vs Claude Code Pro at $17–20/mo (capped). Pro $99/mo / 5.1B tokens vs Claude Code Max 5x from $100/mo (5× cap). The customer-facing comparison table lives on the live site (`#pricing-compare`).
 
@@ -29,7 +29,7 @@ The brand mark is a **constellation** — peak + cardinal ticks + focal dot, gol
 
 ## Live NOW
 
-- **Landing page**: `https://verstige.github.io/numin-io/` — fully rebranded to Munro, 17 sections, GSAP-driven card animations, Constellation mark in nav, mobile-responsive.
+- **Landing page**: `https://verstige.github.io/numin-io/` — fully rebranded to Munroe, 17 sections, GSAP-driven card animations, Constellation mark in nav, mobile-responsive.
 
   Sections in order:
   ```
@@ -172,7 +172,7 @@ The provisioning script (`scripts/provision.sh`) handles the full flow: creates 
 - **Startup** $99/mo + $10 AI credits · 4 computers · small teams
 - **Scale** $399/mo + $50 AI credits · 16 computers · production
 
-For Munro's solo customer box ($99/mo + $499 setup), the Solo tier maps cleanly to Orgo's Hacker plan at $29/mo (covered by margin). The $99 to Munro, the customer gets the box + integration + human ops. For business tier, 2 computers maps to Startup. Scale is for teams running multiple customers on one box.
+For Munroe's solo customer box ($99/mo + $499 setup), the Solo tier maps cleanly to Orgo's Hacker plan at $29/mo (covered by margin). The $99 to Munroe, the customer gets the box + integration + human ops. For business tier, 2 computers maps to Startup. Scale is for teams running multiple customers on one box.
 
 **Hardware options on Orgo:** vCPU 1/2/4/8/16, RAM 4/8/16/32/64 GB, disk up to plan limit. Spect recommends: Solo (2vCPU/8GB/40GB), Business (4vCPU/16GB/80GB).
 
@@ -188,7 +188,7 @@ Five pricing tiers replaced with four clean ones on the live site:
 | **Scale** | $199 | $499 | 12.5B | Multi-agent teams |
 | **Enterprise** | custom | annual | negotiable | Compliance / on-prem |
 
-**Strategic math behind this:** Munro's underlying LLM is MiniMax. Buying MiniMax's flagship Token Plan at $50/month for 12.5B tokens means the API cost per customer is amortized across every shared customer on the same plan. Munro's markup is on the box, the integration, and the human operator.
+**Strategic math behind this:** Munroe's underlying LLM is MiniMax. Buying MiniMax's flagship Token Plan at $50/month for 12.5B tokens means the API cost per customer is amortized across every shared customer on the same plan. Munroe's markup is on the box, the integration, and the human operator.
 
 **Margin per customer at scale (10+ customers sharing one Max plan):**
 - Starter ($50/mo): ~$45/mo margin after token cost
@@ -246,6 +246,6 @@ If resuming:
 
 **Blocking first revenue:** Stripe (you create the products), Supabase (you create the project), then I can wire provisioning and dashboards together.
 
-**Fast-follow:** domain (so the URL says Munro), GH Pages slug rename, hosting for the dashboards.
+**Fast-follow:** domain (so the URL says Munroe), GH Pages slug rename, hosting for the dashboards.
 
 Policy and product decisions above are not blocking ship — they're flagged for after first customer.
