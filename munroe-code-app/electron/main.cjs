@@ -101,11 +101,15 @@ async function createWindow() {
 
 ipcMain.handle('munroe:bootstrap', async (event) => {
   ensureRendererTrusted(event);
-  const api = await loadService();
-  const initial = process.env.MUNROE_INITIAL_PROJECT || process.cwd();
-  await api.registerProject(initial);
-  for (const project of await api.listProjects()) registeredProjects.set(project.path, project);
-  return { initialProject: initial, projects: await api.listProjects() };
+  try {
+    const api = await loadService();
+    const initial = process.env.MUNROE_INITIAL_PROJECT || process.cwd();
+    await api.registerProject(initial);
+    for (const project of await api.listProjects()) registeredProjects.set(project.path, project);
+    return { initialProject: initial, projects: await api.listProjects() };
+  } catch (error) {
+    return { error: { message: String(error?.message || error) } };
+  }
 });
 
 ipcMain.handle('munroe:project:choose', async (event) => {

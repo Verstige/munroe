@@ -34,6 +34,10 @@ export default function App() {
 
   useEffect(() => {
     window.munroe.bootstrap().then(async data => {
+      if (data && data.error) {
+        setError(String(data.error.message || 'Munroe service is unavailable.'));
+        return;
+      }
       setProject(data.initialProject)
       setProjects(data.projects)
       await loadConversations(data.initialProject)

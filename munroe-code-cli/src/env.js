@@ -29,11 +29,18 @@ export async function readEnvFile(file) {
 }
 
 export function munroeHome(env = process.env) {
-  return path.resolve(env.MUNROE_HOME || path.join(os.homedir(), '.munroe'));
+  const home = env.MUNROE_HOME;
+  const fallback = path.join(os.homedir() || '/tmp', '.munroe');
+  if (!home) return fallback;
+  if (home === '.munroe' || home === '~/.munroe') return fallback;
+  const resolved = path.resolve(home);
+  // Refuse obviously unsafe targets; fall back to user home.
+  if (resolved === '/' || resolved === path.sep) return fallback;
+  return resolved;
 }
 
-export async function loadEnvLayers(cwd) {
-  const layers = [await readEnvFile(path.join(munroeHome(), '.env'))];
+export async function loadEnvLayers(cwd, env = process.env) {
+  const layers = [await readEnvFile(path.join(munroeHome(env), '.env'))];
   if (cwd) layers.push(await readEnvFile(path.join(cwd, '.munroe', '.env')));
   return Object.assign({}, ...layers);
 }
