@@ -25,6 +25,29 @@ export type TurnEvent =
 
 export type Checkpoint = { id?: string; index?: string; label: string; createdAt?: string }
 export type ThreadSummary = { id: string; title?: string; createdAt?: string; updatedAt?: string }
+export type CronJob = {
+  id: string
+  status: string
+  name: string
+  schedule: string
+  nextRun: string
+  lastRun: string
+  lastStatus: string
+  mode: string
+  script: string
+}
+export type CronStatus = { running: boolean; message: string }
+export type Attachment = { path: string; name: string }
+export type About = {
+  product: string
+  version: string
+  desktop: string
+  runtime: string
+  api: string
+  buildCommit: string
+  docs: string
+  support: string
+}
 
 export interface MunroeBridge {
   bootstrap(): Promise<{ initialProject: string; projects: Project[]; error?: { message: string } }>
@@ -51,6 +74,13 @@ export interface MunroeBridge {
   createCheckpoint(cwd: string): Promise<Checkpoint | null>
   rollbackCheckpoint(cwd: string, id: string): Promise<boolean>
   runSlash(command: string, cwd: string): Promise<{ text: string; usage: Usage | null }>
+  cronList(): Promise<{ jobs: CronJob[]; status: CronStatus }>
+  cronPause(id: string): Promise<boolean>
+  cronResume(id: string): Promise<boolean>
+  cronRun(id: string): Promise<boolean>
+  cronDelete(id: string): Promise<boolean>
+  addAttachment(payload: { name: string; data: string; cwd?: string }): Promise<Attachment>
+  about(): Promise<About>
   onTurnEvent(handler: (event: TurnEvent) => void): () => void
 }
 

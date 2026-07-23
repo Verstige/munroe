@@ -1,7 +1,10 @@
 const { app, BrowserWindow, dialog, ipcMain, shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
+const os = require('os')
+const crypto = require('crypto')
 const { pathToFileURL } = require('url')
+const { mkdir, writeFile } = require('node:fs/promises')
 
 const ALLOWED_DEV_ORIGINS = new Set(['http://127.0.0.1:5177', 'http://localhost:5177'])
 const RENDERER_PERMISSIONS = new Set(['safe', 'standard'])
@@ -43,6 +46,7 @@ let mainWindow
 let service
 let turn
 let threads
+let cron
 
 async function loadService() {
   if (service) return service;
@@ -118,6 +122,15 @@ async function createWindow() {
   const devUrl = app.isPackaged ? null : (process.env.MUNROE_DEV_SERVER && ALLOWED_DEV_ORIGINS.has(process.env.MUNROE_DEV_SERVER) ? process.env.MUNROE_DEV_SERVER : null);
   if (devUrl) await mainWindow.loadURL(devUrl);
   else await mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+}
+
+async function loadCron() {
+  if (cron) return cron;
+  const cronPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'munroe-code-cli', 'src', 'cron.js')
+    : path.join(__dirname, '..', '..', 'munroe-code-cli', 'src', 'cron.js');
+  cron = await import(pathToFileURL(cronPath).href);
+  return cron;
 }
 
 async function resolveProjectPath(value) {
@@ -201,16 +214,19 @@ ipcMain.handle('munroe:chat:send', async (event, payload) => {
 
 ipcMain.handle('munroe:turn:start', async (event, payload) => {
   ensureRendererTrusted(event);
-  if (!payload || typeof payload.prompt !== 'string' || payload.prompt.trim().length === 0) throw new Error('Enter a message.');
+  if (!payload || typeof payload.prompt !== 'string') throw new Error('Enter a message.');
+  const hasImages = Array.isArray(payload.images) && payload.images.length > 0;
+  if (payload.prompt.trim().length === 0 && !hasImages) throw new Error('Enter a message.');
+  if (payload.prompt.length > 100000) throw new Error('Message is too long.');
   const project = safeProjectPath(payload.cwd);
   const permissions = payload.permissions ? safePermissions(payload.permissions) : undefined;
   const turnModule = await loadTurn();
   const handle = await turnModule.startTurn({
     cwd: project,
-    prompt: payload.prompt,
+    prompt: payload.prompt || 'Review the attached files.',
     model: payload.model,
     permissions,
-    images: Array.isArray(payload.images) ? payload.images : [],
+    images: hasImages ? payload.images.filter((p) => typeof p === 'string') : [],
     sessionId: payload.sessionId,
     onEvent: (event) => {
       try {
@@ -336,6 +352,73 @@ ipcMain.handle('munroe:project:open', async (event, cwd) => {
   const project = safeProjectPath(cwd);
   shell.openPath(project);
   return { opened: true };
+});
+
+ipcMain.handle('munroe:cron:list', async (event) => {
+  ensureRendererTrusted(event);
+  const c = await loadCron();
+  const [jobs, status] = await Promise.all([c.listCronJobs(), c.cronStatus()]);
+  return { jobs, status };
+});
+
+ipcMain.handle('munroe:cron:pause', async (event, id) => {
+  ensureRendererTrusted(event);
+  if (typeof id !== 'string' || !id) throw new Error('id required.');
+  const c = await loadCron();
+  return c.pauseCronJob(id);
+});
+
+ipcMain.handle('munroe:cron:resume', async (event, id) => {
+  ensureRendererTrusted(event);
+  if (typeof id !== 'string' || !id) throw new Error('id required.');
+  const c = await loadCron();
+  return c.resumeCronJob(id);
+});
+
+ipcMain.handle('munroe:cron:run', async (event, id) => {
+  ensureRendererTrusted(event);
+  if (typeof id !== 'string' || !id) throw new Error('id required.');
+  const c = await loadCron();
+  return c.runCronJob(id);
+});
+
+ipcMain.handle('munroe:cron:delete', async (event, id) => {
+  ensureRendererTrusted(event);
+  if (typeof id !== 'string' || !id) throw new Error('id required.');
+  const c = await loadCron();
+  return c.deleteCronJob(id);
+});
+
+ipcMain.handle('munroe:attachments:add', async (event, payload) => {
+  ensureRendererTrusted(event);
+  if (!payload || typeof payload.name !== 'string' || typeof payload.data !== 'string') {
+    throw new Error('Invalid attachment.');
+  }
+  if (payload.data.length > 50 * 1024 * 1024) throw new Error('Attachment too large.');
+  const project = payload.cwd ? safeProjectPath(payload.cwd) : os.tmpdir();
+  const dir = path.join(project, '.munroe', 'attachments');
+  await mkdir(dir, { recursive: true });
+  const buffer = Buffer.from(payload.data, 'base64');
+  const safeName = payload.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 64) || 'attachment';
+  const file = path.join(dir, `${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${safeName}`);
+  await writeFile(file, buffer);
+  return { path: file, name: payload.name };
+});
+
+ipcMain.handle('munroe:about', async (event) => {
+  ensureRendererTrusted(event);
+  const api = await loadService();
+  const version = require('../package.json').version;
+  return {
+    product: 'Munroe Code',
+    version,
+    desktop: 'macOS',
+    runtime: 'Hermes',
+    api: 'Munroe Code CLI 1.0.0',
+    buildCommit: process.env.MUNROE_BUILD_COMMIT || 'dev',
+    docs: 'https://github.com/Verstige/munroe',
+    support: 'https://github.com/Verstige/munroe/issues',
+  };
 });
 
 app.whenReady().then(createWindow);

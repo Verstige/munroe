@@ -101,14 +101,18 @@ export async function startTurn(options) {
   const envLayers = await loadEnvLayers(options.cwd);
   const mergedEnv = envWithKeys({ ...process.env, ...envLayers }, MODEL_CREDENTIAL_KEYS);
   const runtimePath = await findRuntime({ env: mergedEnv });
-  const before = await captureGitSnapshot(options.cwd);
+  const before = await snapshotWithHashes(options.cwd);
   const sessionId = options.sessionId || `munroe-${crypto.randomUUID()}`;
+  const attachmentNote = Array.isArray(options.images) && options.images.length
+    ? `\n\n[Attached files — read these paths with tools if needed]\n${options.images.map((p) => `- ${p}`).join('\n')}`
+    : '';
+  const prompt = `${options.prompt || ''}${attachmentNote}`;
   const invocation = buildRuntimeInvocation({
     runtimePath,
     cwd: options.cwd,
     config,
     env: mergedEnv,
-    prompt: options.prompt,
+    prompt,
     interactive: false,
   });
   const usageArgIndex = invocation.args.indexOf('--usage-file');
@@ -116,6 +120,7 @@ export async function startTurn(options) {
   const turnId = crypto.randomUUID();
   let aborted = false;
   let child = null;
+  let fullText = '';
   const task = (async () => {
     try {
       options.onEvent({ type: 'turnStarted', turnId });
@@ -131,9 +136,11 @@ export async function startTurn(options) {
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
         for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-          options.onEvent({ type: 'agentMessageDelta', delta: trimmed + '\n' });
+          const trimmed = line.trimEnd();
+          if (!trimmed && !line.includes('\n')) continue;
+          const delta = `${trimmed}\n`;
+          fullText += delta;
+          options.onEvent({ type: 'agentMessageDelta', delta });
         }
       };
       child.stdout.on('data', (chunk) => {
@@ -150,32 +157,34 @@ export async function startTurn(options) {
         child.on('error', () => resolve(-1));
       });
       if (buffer.trim()) {
+        fullText += buffer.trim();
         options.onEvent({ type: 'agentMessageDelta', delta: buffer.trim() });
       }
       if (aborted) {
         options.onEvent({ type: 'turnInterrupted' });
         return;
       }
-      const before = await snapshotWithHashes(options.cwd);
       const after = await snapshotWithHashes(options.cwd);
       const changes = await diffGitSnapshots(before, after);
       for (const change of changes) {
         options.onEvent({ type: 'fileChange', path: change.path, kind: change.kind });
       }
       let usage = null;
-      for (let attempt = 0; attempt < 10; attempt += 1) {
-        try {
-          usage = JSON.parse(await fs.readFile(usagePath, 'utf8'));
-          break;
-        } catch (error) {
-          await new Promise((resolve) => setTimeout(resolve, 200));
+      if (usagePath) {
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          try {
+            usage = JSON.parse(await fs.readFile(usagePath, 'utf8'));
+            break;
+          } catch {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+          }
         }
       }
       if (usage) {
         options.onEvent({ type: 'usage', tokens: usage.total_tokens ?? 0, cost: usage.estimated_cost_usd ?? 0 });
       }
       if (code === 0) {
-        options.onEvent({ type: 'turnCompleted', text: buffer.trim(), sessionId });
+        options.onEvent({ type: 'turnCompleted', text: fullText.trim(), sessionId });
       } else {
         options.onEvent({ type: 'turnFailed', message: `Runtime exited with code ${code}` });
       }

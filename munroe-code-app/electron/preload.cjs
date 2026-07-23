@@ -25,6 +25,13 @@ contextBridge.exposeInMainWorld('munroe', {
   createCheckpoint: (cwd) => ipcRenderer.invoke('munroe:checkpoints:create', cwd),
   rollbackCheckpoint: (cwd, id) => ipcRenderer.invoke('munroe:checkpoints:rollback', cwd, id),
   runSlash: (command, cwd) => ipcRenderer.invoke('munroe:slash', command, cwd),
+  cronList: () => ipcRenderer.invoke('munroe:cron:list'),
+  cronPause: (id) => ipcRenderer.invoke('munroe:cron:pause', id),
+  cronResume: (id) => ipcRenderer.invoke('munroe:cron:resume', id),
+  cronRun: (id) => ipcRenderer.invoke('munroe:cron:run', id),
+  cronDelete: (id) => ipcRenderer.invoke('munroe:cron:delete', id),
+  addAttachment: (payload) => ipcRenderer.invoke('munroe:attachments:add', payload),
+  about: () => ipcRenderer.invoke('munroe:about'),
   onTurnEvent: (handler) => {
     const listener = (_event, payload) => handler(payload);
     ipcRenderer.on('munroe:turn:event', listener);

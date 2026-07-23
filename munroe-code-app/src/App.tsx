@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bot, ChevronDown, Code2, Folder, FolderOpen, GitBranch, Menu, MessageSquarePlus, RotateCcw, Save, Send, Settings2, ShieldCheck, Sparkles, Square, TerminalSquare, X } from 'lucide-react'
-import type { Checkpoint, Conversation, Message, Project, ProjectStatus, ThreadSummary, TurnEvent, Usage } from './types'
+import { Bell, Bot, ChevronDown, Clock, Code2, Folder, FolderOpen, GitBranch, Info, Menu, MessageSquarePlus, Paperclip, Pause, Play, RefreshCcw, RotateCcw, Save, Search, Send, Settings2, ShieldCheck, Sparkles, Square, TerminalSquare, Trash2, X, Zap } from 'lucide-react'
+import type { About, Attachment, Checkpoint, Conversation, CronJob, CronStatus, Message, Project, ProjectStatus, ThreadSummary, TurnEvent, Usage } from './types'
 
 const MODEL_OPTIONS = [
   { value: 'auto', label: 'Auto', detail: 'Best available intelligence' },
@@ -22,7 +22,12 @@ const SLASH_COMMANDS = [
   { value: '/compact', label: 'Compact', detail: 'Compact the thread history' },
   { value: '/interrupt', label: 'Interrupt', detail: 'Cancel the running turn' },
   { value: '/rollback', label: 'Rollback', detail: 'Restore last checkpoint' },
+  { value: '/cron', label: 'Cron', detail: 'Run a scheduled job now' },
+  { value: '/attach', label: 'Attach', detail: 'Attach a file to the next turn' },
 ]
+
+type Notification = { id: string; kind: 'info' | 'success' | 'error'; title: string; body?: string; createdAt: number }
+type PaletteAction = { id: string; group: string; title: string; detail?: string; run: () => void | Promise<void> }
 
 type StreamItem =
   | { kind: 'agent'; text: string }
@@ -59,6 +64,16 @@ function mergeCommandOutput(items: StreamItem[], toolCallId: string, chunk: stri
   return next
 }
 
+function formatElapsed(ms: number) {
+  const seconds = Math.max(0, Math.floor(ms / 1000))
+  if (seconds < 60) return `${seconds}s`
+  const minutes = Math.floor(seconds / 60)
+  const rem = seconds % 60
+  if (minutes < 60) return `${minutes}m ${rem.toString().padStart(2, '0')}s`
+  const hours = Math.floor(minutes / 60)
+  return `${hours}h ${(minutes % 60).toString().padStart(2, '0')}m`
+}
+
 export default function App() {
   const [project, setProject] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
@@ -80,7 +95,22 @@ export default function App() {
   const [threadSearch, setThreadSearch] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [activeTurnId, setActiveTurnId] = useState<string | null>(null)
+  const [turnStartedAt, setTurnStartedAt] = useState<number | null>(null)
+  const [now, setNow] = useState(() => Date.now())
+  const [cronJobs, setCronJobs] = useState<CronJob[]>([])
+  const [cronStatus, setCronStatus] = useState<CronStatus | null>(null)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [paletteOpen, setPaletteOpen] = useState(false)
+  const [paletteQuery, setPaletteQuery] = useState('')
+  const [aboutOpen, setAboutOpen] = useState(false)
+  const [aboutInfo, setAboutInfo] = useState<About | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const composerRef = useRef<HTMLTextAreaElement>(null)
+  const projectRef = useRef(project)
+  const activeIdRef = useRef(activeId)
+  projectRef.current = project
+  activeIdRef.current = activeId
 
   const active = useMemo(() => conversations.find((c) => c.id === activeId) ?? null, [conversations, activeId])
   const messages = active?.messages ?? []
@@ -96,6 +126,8 @@ export default function App() {
       await loadConversations(data.initialProject)
       await refreshThreads()
       await refreshCheckpoints(data.initialProject)
+      await refreshCron()
+      try { setAboutInfo(await window.munroe.about()) } catch (e) { /* ignore */ }
     }).catch(e => setError(String(e.message || e)))
   }, [])
 
@@ -106,23 +138,39 @@ export default function App() {
         setBusy(true)
         setError('')
         setStreamItems([])
+        setTurnStartedAt(Date.now())
         return
       }
       if (event.type === 'turnCompleted') {
         setBusy(false)
         setActiveTurnId(null)
+        setTurnStartedAt(null)
+        notify('success', 'Turn completed')
+        const cwd = projectRef.current
+        const convId = activeIdRef.current
+        const text = event.text?.trim()
+        if (cwd && convId && text) {
+          void window.munroe.appendMessage(cwd, convId, { role: 'assistant', content: text }).then((updated) => {
+            setConversations((current) => [updated, ...current.filter((c) => c.id !== updated.id)])
+            setStreamItems([])
+          }).catch(() => { /* keep stream items if persist fails */ })
+        }
         return
       }
       if (event.type === 'turnFailed') {
         setBusy(false)
         setActiveTurnId(null)
+        setTurnStartedAt(null)
         setError(event.message)
         setStreamItems((items) => [...items, { kind: 'error', message: event.message }])
+        notify('error', 'Turn failed', event.message)
         return
       }
       if (event.type === 'turnInterrupted') {
         setBusy(false)
         setActiveTurnId(null)
+        setTurnStartedAt(null)
+        notify('info', 'Turn interrupted')
         setStreamItems((items) => [...items, { kind: 'error', message: 'Interrupted' }])
         return
       }
@@ -148,6 +196,7 @@ export default function App() {
       }
       if (event.type === 'fileChange') {
         setStreamItems((items) => [...items, { kind: 'file', path: event.path, change: event.kind }])
+        notify('info', `${event.kind} ${event.path}`)
         return
       }
       if (event.type === 'planProposed') {
@@ -164,6 +213,171 @@ export default function App() {
   }, [])
 
   useEffect(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), [streamItems.length, messages.length, busy])
+
+  useEffect(() => {
+    if (!turnStartedAt || !busy) return
+    const id = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(id)
+  }, [turnStartedAt, busy])
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const isMeta = event.metaKey || event.ctrlKey
+      if (isMeta && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setPaletteOpen((v) => !v)
+        setPaletteQuery('')
+      } else if (event.key === 'Escape') {
+        setPaletteOpen(false)
+        setSlashOpen(false)
+        setAboutOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  function notify(kind: 'info' | 'success' | 'error', title: string, body?: string) {
+    const id = crypto.randomUUID()
+    setNotifications((current) => [...current, { id, kind, title, body, createdAt: Date.now() }])
+    window.setTimeout(() => {
+      setNotifications((current) => current.filter((item) => item.id !== id))
+    }, 6000)
+  }
+
+  async function refreshCron() {
+    try {
+      const result = await window.munroe.cronList()
+      setCronJobs(result.jobs)
+      setCronStatus(result.status)
+    } catch (e) {
+      setCronJobs([])
+      setCronStatus({ running: false, message: String((e as Error).message || e) })
+    }
+  }
+
+  async function pauseCron(id: string) {
+    const ok = await window.munroe.cronPause(id)
+    notify(ok ? 'success' : 'error', ok ? 'Cron job paused' : 'Failed to pause cron job')
+    await refreshCron()
+  }
+
+  async function resumeCron(id: string) {
+    const ok = await window.munroe.cronResume(id)
+    notify(ok ? 'success' : 'error', ok ? 'Cron job resumed' : 'Failed to resume cron job')
+    await refreshCron()
+  }
+
+  async function runCron(id: string) {
+    const ok = await window.munroe.cronRun(id)
+    notify(ok ? 'success' : 'error', ok ? 'Cron job queued' : 'Failed to run cron job')
+    await refreshCron()
+  }
+
+  async function deleteCron(id: string) {
+    if (!confirm('Remove this scheduled job? This cannot be undone.')) return
+    const ok = await window.munroe.cronDelete(id)
+    notify(ok ? 'success' : 'error', ok ? 'Cron job removed' : 'Failed to remove cron job')
+    await refreshCron()
+  }
+
+  async function fileToBase64(file: File): Promise<string> {
+    const buffer = await file.arrayBuffer()
+    const bytes = new Uint8Array(buffer)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i])
+    return btoa(binary)
+  }
+
+  async function attachFiles() {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.multiple = true
+    input.onchange = async () => {
+      const files = Array.from(input.files || [])
+      const added: Attachment[] = []
+      for (const file of files) {
+        try {
+          const data = await fileToBase64(file)
+          const result = await window.munroe.addAttachment({ name: file.name, data, cwd: project })
+          added.push(result)
+        } catch (e) {
+          notify('error', `Failed to attach ${file.name}`, String((e as Error).message || e))
+        }
+      }
+      if (added.length > 0) {
+        setAttachments((current) => [...current, ...added])
+        notify('success', `Attached ${added.length} file${added.length > 1 ? 's' : ''}`)
+      }
+    }
+    input.click()
+  }
+
+  function removeAttachment(path: string) {
+    setAttachments((current) => current.filter((item) => item.path !== path))
+  }
+
+  useEffect(() => {
+    const onPaste = async (event: ClipboardEvent) => {
+      const items = event.clipboardData?.items
+      if (!items) return
+      for (const item of Array.from(items)) {
+        if (!item.type.startsWith('image/')) continue
+        const file = item.getAsFile()
+        if (!file) continue
+        event.preventDefault()
+        try {
+          const data = await fileToBase64(file)
+          const result = await window.munroe.addAttachment({ name: file.name || 'pasted-image.png', data, cwd: project })
+          setAttachments((current) => [...current, result])
+          notify('success', 'Image pasted')
+        } catch (e) {
+          notify('error', 'Failed to paste image', String((e as Error).message || e))
+        }
+        break
+      }
+    }
+    document.addEventListener('paste', onPaste)
+    return () => document.removeEventListener('paste', onPaste)
+  }, [project])
+
+  async function openAbout() {
+    setAboutOpen(true)
+    if (!aboutInfo) {
+      try { setAboutInfo(await window.munroe.about()) } catch (e) { /* ignore */ }
+    }
+  }
+
+  function runPaletteAction(action: PaletteAction) {
+    setPaletteOpen(false)
+    setPaletteQuery('')
+    void action.run()
+  }
+
+  const paletteActions: PaletteAction[] = [
+    { id: 'new-conversation', group: 'Conversations', title: 'New conversation', run: newConversation },
+    { id: 'clear-conversations', group: 'Conversations', title: 'Clear all conversations', run: clearConversations },
+    { id: 'switch-project', group: 'Project', title: 'Switch project', run: chooseProject },
+    { id: 'open-project', group: 'Project', title: 'Open project in Finder', run: () => window.munroe.openProject(project) },
+    { id: 'save-checkpoint', group: 'Checkpoints', title: 'Save checkpoint', run: createCheckpoint },
+    { id: 'refresh-threads', group: 'Workspace', title: 'Refresh threads', run: refreshThreads },
+    { id: 'refresh-checkpoints', group: 'Workspace', title: 'Refresh checkpoints', run: () => refreshCheckpoints(project) },
+    { id: 'refresh-cron', group: 'Workspace', title: 'Refresh cron jobs', run: refreshCron },
+    { id: 'attach-files', group: 'Composer', title: 'Attach files', run: attachFiles },
+    { id: 'open-settings', group: 'App', title: 'Open settings', run: () => setSettingsOpen(true) },
+    { id: 'open-about', group: 'App', title: 'About Munroe Code', run: openAbout },
+    ...MODEL_OPTIONS.map((option) => ({
+      id: `model-${option.value}`,
+      group: 'Model',
+      title: `Switch model → ${option.label}`,
+      detail: option.detail,
+      run: () => changeModel(option.value as 'auto' | 'minimax' | 'kimi'),
+    })),
+  ]
+  const filteredActions = paletteActions.filter((action) => {
+    if (!paletteQuery.trim()) return true
+    return `${action.title} ${action.detail || ''} ${action.group}`.toLowerCase().includes(paletteQuery.toLowerCase())
+  })
 
   async function loadConversations(cwd: string) {
     try {
@@ -282,8 +496,17 @@ export default function App() {
 
   async function send() {
     const prompt = draft.trim()
-    if (!prompt || !project || busy) return
+    if ((!prompt && attachments.length === 0) || !project || busy) return
+    const attachmentPaths = attachments.map((item) => item.path)
+    const attachmentNote = attachmentPaths.length
+      ? `\n\n[Attached files — read these paths with tools if needed]\n${attachmentPaths.map((p) => `- ${p}`).join('\n')}`
+      : ''
+    const fullPrompt = `${prompt || 'Review the attached files.'}${attachmentNote}`
+    const userVisible = attachmentPaths.length
+      ? `${prompt || 'Attached files'}${attachmentPaths.map((p) => `\n📎 ${p.split('/').pop()}`).join('')}`
+      : prompt
     setDraft('')
+    setAttachments([])
     setError('')
     setStreamItems([])
     if (prompt.startsWith('/')) {
@@ -297,16 +520,20 @@ export default function App() {
       }
       return
     }
-    let updated = await window.munroe.appendMessage(project, activeId!, { role: 'user', content: prompt })
+    const updated = await window.munroe.appendMessage(project, activeId!, { role: 'user', content: userVisible })
     setConversations((current) => [updated, ...current.filter((c) => c.id !== updated.id)])
     try {
-      const result = await window.munroe.startTurn({ cwd: project, prompt, model, permissions })
-      const finalMessage = await window.munroe.appendMessage(project, activeId!, { role: 'assistant', content: '' })
-      void result
-      void finalMessage
+      await window.munroe.startTurn({
+        cwd: project,
+        prompt: fullPrompt,
+        model,
+        permissions,
+        images: attachmentPaths,
+      })
     } catch (e) {
       setBusy(false)
       setActiveTurnId(null)
+      setTurnStartedAt(null)
       setError(String((e as Error).message || e))
     }
   }
@@ -411,9 +638,33 @@ export default function App() {
           ))}
         </nav>
 
+        <div className="section-label">CRON {cronStatus && <span className={cronStatus.running ? 'live-dot' : 'live-dot offline'} style={{ marginLeft: 6, verticalAlign: 'middle' }} />}</div>
+        <nav className="conversation-list">
+          {cronJobs.length === 0 ? <span className="empty-hint">{cronStatus ? cronStatus.message || 'No cron jobs' : 'No cron jobs'}</span> : cronJobs.slice(0, 6).map(job => (
+            <div key={job.id} className="cron-row">
+              <div className="cron-row-head">
+                <span className={job.status === 'active' ? 'live-dot' : 'live-dot offline'} />
+                <small>{job.name || job.id}</small>
+              </div>
+              <small className="cron-schedule">{job.schedule || 'no schedule'}</small>
+              <div className="cron-actions">
+                {job.status === 'active' ? (
+                  <button onClick={() => pauseCron(job.id)} title="Pause"><Pause size={10} /></button>
+                ) : (
+                  <button onClick={() => resumeCron(job.id)} title="Resume"><Play size={10} /></button>
+                )}
+                <button onClick={() => runCron(job.id)} title="Run now"><Zap size={10} /></button>
+                <button onClick={() => deleteCron(job.id)} title="Remove" className="danger"><Trash2 size={10} /></button>
+              </div>
+            </div>
+          ))}
+        </nav>
+
         <div className="sidebar-bottom">
           <div className="status-line"><span className={status?.runtime === 'available' ? 'live-dot' : 'live-dot offline'} /> {runtimeLabel}</div>
+          <button onClick={() => setPaletteOpen(true)}><Search size={15} /> Command palette <small>⌘K</small></button>
           <button onClick={() => setSettingsOpen((v) => !v)}><Settings2 size={15} /> Settings</button>
+          <button onClick={openAbout}><Info size={15} /> About</button>
         </div>
       </aside>
 
@@ -432,6 +683,7 @@ export default function App() {
             <select aria-label="Permission mode" value={permissions} onChange={e => changePermissions(e.target.value as 'safe' | 'standard')}>
               {PERMISSION_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
+            {busy && <span className="activity-timer"><Clock size={11} /> {formatElapsed(now - (turnStartedAt ?? now))}</span>}
             {busy && <button className="interrupt" onClick={interrupt}><Square size={13} /> Interrupt</button>}
           </div>
         </header>
@@ -533,11 +785,33 @@ export default function App() {
               <span><strong>{cmd.value}</strong><small>{cmd.detail}</small></span>
             </button>)}
           </div>}
+          {attachments.length > 0 && (
+            <div className="attachment-chips">
+              {attachments.map((item) => (
+                <span key={item.path} className="attachment-chip">
+                  <Paperclip size={11} />
+                  {item.name}
+                  <button onClick={() => removeAttachment(item.path)} aria-label={`Remove ${item.name}`}><X size={11} /></button>
+                </span>
+              ))}
+            </div>
+          )}
           <div className="composer">
-            <textarea value={draft} onChange={e => { setDraft(e.target.value); setSlashQuery(e.target.value) }} onKeyDown={onKeyDown} placeholder={slashOpen ? 'Pick a slash command' : 'Message Munroe Code — type / for commands'} rows={1} />
+            <textarea
+              ref={composerRef}
+              value={draft}
+              onChange={e => { setDraft(e.target.value); setSlashQuery(e.target.value) }}
+              onKeyDown={onKeyDown}
+              placeholder={slashOpen ? 'Pick a slash command' : 'Message Munroe Code — type / for commands, paste images, or attach files'}
+              rows={1}
+            />
             <div className="composer-bottom">
-              <div className="context-pills"><span><Folder size={12} />{project.split('/').pop() || 'No project'}</span><span><ShieldCheck size={12} />{permissionsLabel}</span></div>
-              <button className="send" disabled={!draft.trim() || busy || status?.runtime !== 'available'} onClick={send}>{busy ? <Square size={14} /> : <Send size={15} />}</button>
+              <div className="context-pills">
+                <span><Folder size={12} />{project.split('/').pop() || 'No project'}</span>
+                <span><ShieldCheck size={12} />{permissionsLabel}</span>
+                <button type="button" className="attach-btn" onClick={attachFiles} title="Attach files"><Paperclip size={12} /> Attach</button>
+              </div>
+              <button className="send" disabled={(!draft.trim() && attachments.length === 0) || busy || status?.runtime !== 'available'} onClick={send}>{busy ? <Square size={14} /> : <Send size={15} />}</button>
             </div>
           </div>
           <div className="footer-meta">
@@ -546,6 +820,55 @@ export default function App() {
           </div>
         </footer>
       </main>
+
+      <div className="toast-stack" aria-live="polite">
+        {notifications.map((note) => (
+          <div key={note.id} className={`toast toast-${note.kind}`}>
+            <strong>{note.title}</strong>
+            {note.body && <p>{note.body}</p>}
+          </div>
+        ))}
+      </div>
+
+      {paletteOpen && <div className="palette-backdrop" onClick={() => setPaletteOpen(false)}>
+        <div className="palette" onClick={(event) => event.stopPropagation()}>
+          <div className="palette-search">
+            <Search size={14} />
+            <input autoFocus value={paletteQuery} onChange={(e) => setPaletteQuery(e.target.value)} placeholder="Search commands, models, projects…" />
+            <small>⌘K</small>
+          </div>
+          <div className="palette-list">
+            {filteredActions.length === 0 ? <span className="empty-hint">No matches</span> : filteredActions.map((action) => (
+              <button key={action.id} className="palette-row" onClick={() => runPaletteAction(action)}>
+                <span className="palette-group">{action.group}</span>
+                <span className="palette-title">{action.title}</span>
+                {action.detail && <small>{action.detail}</small>}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>}
+
+      {aboutOpen && <div className="palette-backdrop" onClick={() => setAboutOpen(false)}>
+        <div className="about-card" onClick={(event) => event.stopPropagation()}>
+          <header className="settings-header">
+            <h3>About Munroe Code</h3>
+            <button className="settings-close" onClick={() => setAboutOpen(false)}><X size={14} /></button>
+          </header>
+          {aboutInfo ? (
+            <>
+              <div className="settings-row"><label>Product</label><span>{aboutInfo.product}</span></div>
+              <div className="settings-row"><label>Desktop</label><span>{aboutInfo.desktop}</span></div>
+              <div className="settings-row"><label>Version</label><span>{aboutInfo.version}</span></div>
+              <div className="settings-row"><label>Runtime</label><span>{aboutInfo.runtime}</span></div>
+              <div className="settings-row"><label>API</label><span>{aboutInfo.api}</span></div>
+              <div className="settings-row"><label>Build</label><span>{aboutInfo.buildCommit}</span></div>
+              <div className="settings-row"><label>Docs</label><span><a href={aboutInfo.docs}>{aboutInfo.docs}</a></span></div>
+              <div className="settings-row"><label>Support</label><span><a href={aboutInfo.support}>{aboutInfo.support}</a></span></div>
+            </>
+          ) : <p className="settings-hint">Loading…</p>}
+        </div>
+      </div>}
     </div>
   )
 }
