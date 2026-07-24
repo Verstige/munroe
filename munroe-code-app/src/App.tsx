@@ -10,6 +10,7 @@ const MODEL_OPTIONS = [
   { value: 'openai', label: 'OpenAI', detail: 'Your OpenAI API key' },
   { value: 'anthropic', label: 'Anthropic', detail: 'Your Anthropic API key' },
   { value: 'google', label: 'Google', detail: 'Your Gemini API key' },
+  { value: 'xai', label: 'xAI Grok', detail: 'Your xAI / Grok API key' },
 ]
 const PERMISSION_OPTIONS = [
   { value: 'safe', label: 'Safe', detail: 'Read and review only' },
@@ -670,7 +671,7 @@ export default function App() {
       group: 'Model',
       title: `Switch model → ${option.label}`,
       detail: option.detail,
-      run: () => changeModel(option.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google'),
+      run: () => changeModel(option.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google' | 'xai'),
     })),
   ]
   const filteredActions = paletteActions.filter((action) => {
@@ -684,7 +685,7 @@ export default function App() {
         window.munroe.loadProject(cwd),
         window.munroe.projectStatus(cwd),
       ])
-      if (['auto', 'minimax', 'kimi', 'openrouter', 'openai', 'anthropic', 'google'].includes(projectStatus.model)) {
+      if (['auto', 'minimax', 'kimi', 'openrouter', 'openai', 'anthropic', 'google', 'xai'].includes(projectStatus.model)) {
         setModel(projectStatus.model)
       }
       if (projectStatus.permissions === 'safe' || projectStatus.permissions === 'standard') {
@@ -738,7 +739,7 @@ export default function App() {
     setStreamItems([])
   }
 
-  async function changeModel(next: 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google') {
+  async function changeModel(next: 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google' | 'xai') {
     setModel(next)
     if (project) {
       try {
@@ -1089,7 +1090,7 @@ export default function App() {
             <div className="model-control">
               <button onClick={() => setModelOpen((v) => !v)}><Sparkles size={14} /> {MODEL_BY_VALUE[model]?.label ?? model}<ChevronDown size={13} /></button>
               {modelOpen && <div className="model-menu">
-                {MODEL_OPTIONS.map(option => <button key={option.value} className={option.value === model ? 'selected' : ''} onClick={() => { changeModel(option.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google'); setModelOpen(false) }}>
+                {MODEL_OPTIONS.map(option => <button key={option.value} className={option.value === model ? 'selected' : ''} onClick={() => { changeModel(option.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google' | 'xai'); setModelOpen(false) }}>
                   <span><strong>{option.label}</strong><small>{option.detail}</small></span>{option.value === model && <span className="check">✓</span>}
                 </button>)}
               </div>}
@@ -1112,7 +1113,7 @@ export default function App() {
             <legend>Intelligence</legend>
             <div className="settings-control">
               <label htmlFor="settings-model">Model</label>
-              <select id="settings-model" value={model} onChange={e => changeModel(e.target.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google')}>
+              <select id="settings-model" value={model} onChange={e => changeModel(e.target.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google' | 'xai')}>
                 {MODEL_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label} — {option.detail}</option>)}
               </select>
             </div>

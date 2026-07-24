@@ -132,6 +132,7 @@ const MODEL_CREDENTIAL_KEYS = [
   'GEMINI_API_KEY',
   'ANTHROPIC_API_KEY',
   'OPENAI_API_KEY',
+  'XAI_API_KEY',
 ];
 
 export async function projectRuntimeStatus(cwd, env = process.env) {

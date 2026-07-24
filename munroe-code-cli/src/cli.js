@@ -180,7 +180,7 @@ export async function main(args, { cwd = process.cwd() } = {}) {
       console.log(state.config.model);
       return 0;
     }
-    if (!VALID_MODELS.has(policy)) throw new Error('Model must be auto, minimax, or kimi.');
+    if (!VALID_MODELS.has(policy)) throw new Error(`Model must be one of: ${[...VALID_MODELS].join(', ')}.`);
     await saveProjectConfig(cwd, { model: policy });
     console.log(`Model policy set to ${policy}.`);
     return 0;

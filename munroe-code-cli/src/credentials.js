@@ -52,6 +52,14 @@ export const LLM_PROVIDERS = [
     primaryKey: 'GOOGLE_API_KEY',
     modelPolicy: 'google',
   },
+  {
+    id: 'xai',
+    label: 'xAI Grok',
+    detail: 'Grok models via xAI API key',
+    keys: ['XAI_API_KEY'],
+    primaryKey: 'XAI_API_KEY',
+    modelPolicy: 'xai',
+  },
 ];
 
 const ALL_KEYS = [...new Set(LLM_PROVIDERS.flatMap((p) => p.keys))];

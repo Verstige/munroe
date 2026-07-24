@@ -13,6 +13,7 @@ const PROVIDER_DEFAULT_MODELS = {
   openai: 'openai/gpt-5',
   anthropic: 'anthropic/claude-sonnet-4',
   google: 'google/gemini-2.5-pro',
+  xai: 'xai/grok-4',
 };
 
 export function resolveModelPolicy(policy, env = process.env) {
@@ -23,6 +24,7 @@ export function resolveModelPolicy(policy, env = process.env) {
     openai: Boolean(env.OPENAI_API_KEY),
     anthropic: Boolean(env.ANTHROPIC_API_KEY),
     google: Boolean(env.GOOGLE_API_KEY || env.GEMINI_API_KEY),
+    xai: Boolean(env.XAI_API_KEY),
   };
 
   if (policy === 'kimi') {
@@ -43,6 +45,9 @@ export function resolveModelPolicy(policy, env = process.env) {
   if (policy === 'google') {
     return { provider: 'google', model: PROVIDER_DEFAULT_MODELS.google, label: 'Google', accessConfigured: modelAccess.google };
   }
+  if (policy === 'xai') {
+    return { provider: 'xai', model: PROVIDER_DEFAULT_MODELS.xai, label: 'xAI Grok', accessConfigured: modelAccess.xai };
+  }
 
   if (policy === 'auto') {
     if (modelAccess.minimax) {
@@ -62,6 +67,9 @@ export function resolveModelPolicy(policy, env = process.env) {
     }
     if (modelAccess.google) {
       return { provider: 'google', model: PROVIDER_DEFAULT_MODELS.google, label: 'Munroe Auto', accessConfigured: true };
+    }
+    if (modelAccess.xai) {
+      return { provider: 'xai', model: PROVIDER_DEFAULT_MODELS.xai, label: 'Munroe Auto', accessConfigured: true };
     }
     return { provider: null, model: null, label: 'Munroe Auto', accessConfigured: false };
   }

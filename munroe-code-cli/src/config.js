@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-export const VALID_MODELS = new Set(['auto', 'minimax', 'kimi', 'openrouter', 'openai', 'anthropic', 'google']);
+export const VALID_MODELS = new Set(['auto', 'minimax', 'kimi', 'openrouter', 'openai', 'anthropic', 'google', 'xai']);
 export const VALID_PERMISSIONS = new Set(['safe', 'standard', 'trusted']);
 
 const DEFAULT_CONFIG = Object.freeze({

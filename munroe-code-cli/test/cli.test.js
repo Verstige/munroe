@@ -64,6 +64,17 @@ test('explicit policies include a default model per provider', () => {
   assert.equal(resolveModelPolicy('auto', { MINIMAX_API_KEY: 'x' }).model, 'minimax/minimax-m2');
 });
 
+test('xai policy uses XAI_API_KEY and grok default model', () => {
+  assert.equal(resolveModelPolicy('xai', {}).accessConfigured, false);
+  assert.deepEqual(resolveModelPolicy('xai', { XAI_API_KEY: 'x' }), {
+    provider: 'xai',
+    model: 'xai/grok-4',
+    label: 'xAI Grok',
+    accessConfigured: true,
+  });
+  assert.equal(resolveModelPolicy('auto', { XAI_API_KEY: 'x' }).provider, 'xai');
+});
+
 test('runtime invocation uses argv arrays and safe project defaults', () => {
   const invocation = buildRuntimeInvocation({
     runtimePath: '/opt/runtime',

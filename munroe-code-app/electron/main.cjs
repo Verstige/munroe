@@ -370,7 +370,7 @@ ipcMain.handle('munroe:project:update', async (event, cwd, updates) => {
   const project = safeProjectPath(cwd);
   if (!updates || typeof updates !== 'object') throw new Error('Updates required.');
   const allowed = {};
-  if (updates.model && ['auto', 'minimax', 'kimi', 'openrouter', 'openai', 'anthropic', 'google'].includes(updates.model)) allowed.model = updates.model;
+  if (updates.model && ['auto', 'minimax', 'kimi', 'openrouter', 'openai', 'anthropic', 'google', 'xai'].includes(updates.model)) allowed.model = updates.model;
   if (updates.permissions && ['safe', 'standard'].includes(updates.permissions)) allowed.permissions = updates.permissions;
   if (Object.keys(allowed).length === 0) return await (await loadService()).loadProject(project);
   const api = await loadService();
