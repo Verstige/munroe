@@ -4,8 +4,8 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 import { ensureProjectState, stateDir } from './config.js';
-import { buildRuntimeInvocation, findRuntime } from './runtime.js';
-import { loadEnvLayers, envWithKeys } from './env.js';
+import { buildRuntimeInvocation, findRuntime, resolveModelPolicy } from './runtime.js';
+import { loadEnvLayers, envWithKeys, loadProviderEnv } from './env.js';
 
 const MODEL_CREDENTIAL_KEYS = [
   'MINIMAX_API_KEY',
@@ -99,8 +99,22 @@ export async function startTurn(options) {
     ...(options.model ? { model: options.model } : {}),
     ...(options.permissions ? { permissions: options.permissions } : {}),
   };
-  const envLayers = await loadEnvLayers(options.cwd);
+  const envLayers = await loadProviderEnv(options.cwd);
   const mergedEnv = envWithKeys({ ...process.env, ...envLayers }, MODEL_CREDENTIAL_KEYS);
+  const policy = resolveModelPolicy(config.model, mergedEnv);
+  if (!policy.accessConfigured || !policy.provider) {
+    const turnId = crypto.randomUUID();
+    const message = 'No valid API key configured for this model. Open Settings → AI providers & API keys, paste a real key, then try again.';
+    queue.setTimeout(() => {
+      options.onEvent({ type: 'turnStarted', turnId });
+      options.onEvent({ type: 'turnFailed', message });
+    }, 0);
+    return {
+      turnId,
+      async abort() {},
+      async approve() {},
+    };
+  }
   const runtimePath = await findRuntime({ env: mergedEnv });
   const before = await snapshotWithHashes(options.cwd);
   const sessionId = options.sessionId || `munroe-${crypto.randomUUID()}`;
@@ -122,12 +136,17 @@ export async function startTurn(options) {
   let aborted = false;
   let child = null;
   let fullText = '';
+  let stderrText = '';
   const task = (async () => {
     try {
       options.onEvent({ type: 'turnStarted', turnId });
       child = spawn(invocation.command, invocation.args, {
         cwd: invocation.cwd,
-        env: invocation.env,
+        env: {
+          ...invocation.env,
+          HOME: invocation.env.HOME || process.env.HOME || '',
+          PATH: invocation.env.PATH || process.env.PATH || '',
+        },
         shell: false,
         stdio: ['ignore', 'pipe', 'pipe'],
       });
@@ -150,12 +169,17 @@ export async function startTurn(options) {
       });
       child.stderr.on('data', (chunk) => {
         if (aborted) return;
-        options.onEvent({ type: 'commandExecOutput', toolCallId: 'runtime', stream: 'stderr', chunk: chunk.toString('utf8') });
+        const text = chunk.toString('utf8');
+        stderrText += text;
+        options.onEvent({ type: 'commandExecOutput', toolCallId: 'runtime', stream: 'stderr', chunk: text });
       });
       const code = await new Promise((resolve) => {
         if (!child) return resolve(-1);
         child.on('close', (c) => resolve(c ?? -1));
-        child.on('error', () => resolve(-1));
+        child.on('error', (err) => {
+          stderrText += String(err?.message || err);
+          resolve(-1);
+        });
       });
       if (buffer.trim()) {
         fullText += buffer.trim();
@@ -184,10 +208,21 @@ export async function startTurn(options) {
       if (usage) {
         options.onEvent({ type: 'usage', tokens: usage.total_tokens ?? 0, cost: usage.estimated_cost_usd ?? 0 });
       }
-      if (code === 0) {
-        options.onEvent({ type: 'turnCompleted', text: fullText.trim(), sessionId });
+      const text = fullText.trim();
+      if (code === 0 && text) {
+        options.onEvent({ type: 'turnCompleted', text, sessionId });
+      } else if (code === 0 && !text) {
+        const detail = stderrText.trim().slice(0, 500);
+        options.onEvent({
+          type: 'turnFailed',
+          message: detail || 'Model returned an empty response. Check your API key in Settings → AI providers.',
+        });
       } else {
-        options.onEvent({ type: 'turnFailed', message: `Runtime exited with code ${code}` });
+        const detail = stderrText.trim().slice(0, 500);
+        options.onEvent({
+          type: 'turnFailed',
+          message: detail || `Runtime exited with code ${code}`,
+        });
       }
     } catch (error) {
       options.onEvent({ type: 'turnFailed', message: String(error instanceof Error ? error.message : error) });

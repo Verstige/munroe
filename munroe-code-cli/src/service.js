@@ -5,9 +5,9 @@ import path from 'node:path';
 
 import { ensureProjectState, loadProjectConfig, projectSessionName, saveProjectConfig, stateDir } from './config.js';
 import { buildRuntimeInvocation, findRuntime, resolveModelPolicy } from './runtime.js';
-import { loadEnvLayers, munroeHome, envWithKeys } from './env.js';
+import { loadEnvLayers, munroeHome, envWithKeys, loadProviderEnv } from './env.js';
 
-export { parseEnvFile, readEnvFile, loadEnvLayers, munroeHome, envWithKeys } from './env.js';
+export { parseEnvFile, readEnvFile, loadEnvLayers, loadProviderEnv, munroeHome, envWithKeys } from './env.js';
 
 async function readJson(file, fallback) {
   try {
@@ -137,7 +137,7 @@ const MODEL_CREDENTIAL_KEYS = [
 
 export async function projectRuntimeStatus(cwd, env = process.env) {
   const state = await ensureProjectState(cwd);
-  const envLayers = await loadEnvLayers(cwd, env);
+  const envLayers = await loadProviderEnv(cwd, env);
   const mergedEnv = envWithKeys({ ...env, ...envLayers }, MODEL_CREDENTIAL_KEYS);
   const model = resolveModelPolicy(state.config.model, mergedEnv);
   let runtimePath = null;
@@ -162,7 +162,7 @@ export async function queryMunroe({ cwd, prompt, model = null, permissions = nul
   if (model || permissions) await saveProjectConfig(cwd, config);
   if (permissions === 'trusted') throw new Error('Trusted mode cannot be enabled programmatically.');
   const runtimePath = await findRuntime({ env });
-  const envLayers = await loadEnvLayers(cwd);
+  const envLayers = await loadProviderEnv(cwd, env);
   const mergedEnv = envWithKeys({ ...env, ...envLayers }, MODEL_CREDENTIAL_KEYS);
   const invocation = buildRuntimeInvocation({
     runtimePath,
@@ -176,7 +176,11 @@ export async function queryMunroe({ cwd, prompt, model = null, permissions = nul
   const usagePath = usageIndex > 0 ? invocation.args[usageIndex] : null;
   const result = spawnSync(invocation.command, invocation.args, {
     cwd: invocation.cwd,
-    env: invocation.env,
+    env: {
+      ...invocation.env,
+      HOME: invocation.env.HOME || env.HOME || process.env.HOME || '',
+      PATH: invocation.env.PATH || env.PATH || process.env.PATH || '',
+    },
     shell: false,
     encoding: 'utf8',
     maxBuffer: 8 * 1024 * 1024,

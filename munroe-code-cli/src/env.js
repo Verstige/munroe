@@ -19,6 +19,13 @@ export function parseEnvFile(contents) {
   return result;
 }
 
+export function isPlaceholderSecret(value) {
+  if (value == null) return true;
+  const text = String(value).trim();
+  if (!text) return true;
+  return /^(stub|test|xxx+|todo|changeme|your[_-]?.*|replace[_-]?me|dummy|null|undefined)$/i.test(text);
+}
+
 export async function readEnvFile(file) {
   try {
     return parseEnvFile(await readFile(file, 'utf8'));
@@ -42,14 +49,31 @@ export function munroeHome(env = process.env) {
 export async function loadEnvLayers(cwd, env = process.env) {
   const layers = [await readEnvFile(path.join(munroeHome(env), '.env'))];
   if (cwd) layers.push(await readEnvFile(path.join(cwd, '.munroe', '.env')));
-  return Object.assign({}, ...layers);
+  const merged = Object.assign({}, ...layers);
+  for (const [key, value] of Object.entries(merged)) {
+    if (isPlaceholderSecret(value)) delete merged[key];
+  }
+  return merged;
+}
+
+/** Provider credentials: Hermes home env (base) + Munroe env layers (override). */
+export async function loadProviderEnv(cwd, env = process.env) {
+  const home = env.HOME || os.homedir() || '';
+  const hermesEnv = await readEnvFile(path.join(home, '.hermes', '.env'));
+  for (const [key, value] of Object.entries(hermesEnv)) {
+    if (isPlaceholderSecret(value)) delete hermesEnv[key];
+  }
+  const munroeEnv = await loadEnvLayers(cwd, env);
+  // Munroe/project keys win over Hermes home keys; process.env handled in envWithKeys.
+  return { ...hermesEnv, ...munroeEnv };
 }
 
 export function envWithKeys(base, keys) {
   const next = { ...base };
   for (const key of keys) {
-    if (key in next) continue;
-    if (process.env[key]) next[key] = process.env[key];
+    if (key in next && !isPlaceholderSecret(next[key])) continue;
+    if (process.env[key] && !isPlaceholderSecret(process.env[key])) next[key] = process.env[key];
+    else if (isPlaceholderSecret(next[key])) delete next[key];
   }
   return next;
 }

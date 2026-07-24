@@ -177,15 +177,33 @@ export default function App() {
         setBusy(false)
         setActiveTurnId(null)
         setTurnStartedAt(null)
-        notify('success', 'Turn completed')
         const cwd = projectRef.current
         const convId = activeIdRef.current
         const text = event.text?.trim()
-        if (cwd && convId && text) {
+        if (!text) {
+          const message = 'Model returned an empty response. Check Settings → AI providers & API keys.'
+          setError(message)
+          setStreamItems((items) => [...items, { kind: 'error', message }])
+          notify('error', 'No response', message)
+          return
+        }
+        notify('success', 'Turn completed')
+        if (cwd && convId) {
           void window.munroe.appendMessage(cwd, convId, { role: 'assistant', content: text }).then((updated) => {
             setConversations((current) => [updated, ...current.filter((c) => c.id !== updated.id)])
             setStreamItems([])
-          }).catch(() => { /* keep stream items if persist fails */ })
+          }).catch((e) => {
+            setStreamItems((items) => {
+              const hasAgent = items.some((item) => item.kind === 'agent')
+              return hasAgent ? items : [...items, { kind: 'agent', text }]
+            })
+            setError(String((e as Error).message || e))
+          })
+        } else {
+          setStreamItems((items) => {
+            const hasAgent = items.some((item) => item.kind === 'agent')
+            return hasAgent ? items : [{ kind: 'agent', text }]
+          })
         }
         return
       }

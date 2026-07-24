@@ -121,6 +121,7 @@ export function buildRuntimeInvocation({
     cwd: path.resolve(cwd),
     env: {
       ...env,
+      PATH: runtimePathEnv(env),
       HERMES_SESSION_SOURCE: 'munroe-code',
       MUNROE_PRODUCT: 'Munroe Code',
     },
@@ -135,16 +136,40 @@ export async function findRuntime({ env = process.env, pathEntries = null } = {}
     return env.MUNROE_RUNTIME_PATH;
   }
 
-  const entries = pathEntries ?? (env.PATH ?? '').split(path.delimiter);
+  const home = env.HOME || env.USERPROFILE || '';
+  const extras = [
+    path.join(home, '.local', 'bin'),
+    path.join(home, '.hermes', 'bin'),
+    '/opt/homebrew/bin',
+    '/usr/local/bin',
+    '/usr/bin',
+  ];
+  const fromPath = (env.PATH ?? '').split(path.delimiter).filter(Boolean);
+  const entries = pathEntries ?? [...new Set([...fromPath, ...extras])];
+
   for (const entry of entries) {
     if (!entry) continue;
-    const candidate = path.join(entry, 'hermes');
-    try {
-      await access(candidate);
-      return candidate;
-    } catch {
-      // Continue searching.
+    for (const name of ['hermes', 'munroe-runtime']) {
+      const candidate = path.join(entry, name);
+      try {
+        await access(candidate);
+        return candidate;
+      } catch {
+        // Continue searching.
+      }
     }
   }
-  throw new Error('Munroe runtime not found. Install the Munroe runtime before continuing.');
+  throw new Error('Munroe runtime not found. Install Hermes/Munroe runtime, or set MUNROE_RUNTIME_PATH.');
+}
+
+export function runtimePathEnv(env = process.env) {
+  const home = env.HOME || env.USERPROFILE || '';
+  const extras = [
+    path.join(home, '.local', 'bin'),
+    path.join(home, '.hermes', 'bin'),
+    '/opt/homebrew/bin',
+    '/usr/local/bin',
+  ].filter(Boolean);
+  const current = (env.PATH || '').split(path.delimiter).filter(Boolean);
+  return [...new Set([...extras, ...current])].join(path.delimiter);
 }
