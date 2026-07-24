@@ -7,11 +7,6 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    minify: 'esbuild',
-  },
-  esbuild: {
-    minifyIdentifiers: false,
-    minifySyntax: true,
-    minifyWhitespace: true,
+    minify: false,
   },
 });

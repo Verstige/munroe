@@ -182,7 +182,7 @@ export default function MunroeApp() {
   }, [])
 
   useEffect(() => {
-    const unsubscribe = window.munroe.onTurnEvent((event) => {
+    const subscriptionId = window.munroe.onTurnEvent((event) => {
       try {
         if (!event || typeof event !== 'object' || !event.type) return
         if (event.type === 'turnStarted') {
@@ -297,15 +297,25 @@ export default function MunroeApp() {
         setError(String((err as Error)?.message || err || 'UI event error'))
       }
     })
-    return unsubscribe
+    return () => {
+      try {
+        window.munroe.offTurnEvent(subscriptionId)
+      } catch {
+        /* ignore */
+      }
+    }
   }, [])
 
-  useEffect(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), [streamItems.length, messages.length, busy])
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [streamItems.length, messages.length, busy])
 
   useEffect(() => {
     if (!turnStartedAt || !busy) return
     const id = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(id)
+    return () => {
+      window.clearInterval(id)
+    }
   }, [turnStartedAt, busy])
 
   useEffect(() => {

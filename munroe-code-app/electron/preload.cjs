@@ -1,5 +1,17 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
+const turnEventHandlers = new Map()
+
+ipcRenderer.on('munroe:turn:event', (_event, payload) => {
+  for (const handler of turnEventHandlers.values()) {
+    try {
+      handler(payload)
+    } catch (error) {
+      console.error('munroe turn handler error', error)
+    }
+  }
+})
+
 contextBridge.exposeInMainWorld('munroe', {
   bootstrap: () => ipcRenderer.invoke('munroe:bootstrap'),
   chooseProject: () => ipcRenderer.invoke('munroe:project:choose'),
@@ -50,9 +62,18 @@ contextBridge.exposeInMainWorld('munroe', {
   credentialsList: () => ipcRenderer.invoke('munroe:credentials:list'),
   credentialsSave: (updates) => ipcRenderer.invoke('munroe:credentials:save', updates),
   credentialsClear: (key) => ipcRenderer.invoke('munroe:credentials:clear', key),
+  /**
+   * Subscribe to turn stream events.
+   * Returns a subscription id string (NOT a function) so React effect cleanups
+   * never depend on contextBridge-proxied function values (which can break as destroy_).
+   */
   onTurnEvent: (handler) => {
-    const listener = (_event, payload) => handler(payload);
-    ipcRenderer.on('munroe:turn:event', listener);
-    return () => ipcRenderer.removeListener('munroe:turn:event', listener);
+    const id = `turn-${Date.now()}-${Math.random().toString(16).slice(2)}`
+    if (typeof handler === 'function') turnEventHandlers.set(id, handler)
+    return id
+  },
+  offTurnEvent: (id) => {
+    if (typeof id === 'string') turnEventHandlers.delete(id)
+    return true
   },
 })

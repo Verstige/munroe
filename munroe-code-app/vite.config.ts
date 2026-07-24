@@ -7,14 +7,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    // Prevent esbuild from mangling top-level names into collisions with React
-    // internals (e.g. App→Ne, ErrorBoundary→Pe overwriting unstable_now).
-    // That produced "l is not a function" / blank error boundary on navigation.
-    minify: 'esbuild',
-  },
-  esbuild: {
-    minifyIdentifiers: false,
-    minifySyntax: true,
-    minifyWhitespace: true,
+    // Desktop app: prefer correctness over tiny bundles.
+    // Identifier mangling previously collided with React internals
+    // (App→Ne, ErrorBoundary→Pe) and produced runtime crashes.
+    minify: false,
   },
 })

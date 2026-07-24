@@ -146,7 +146,8 @@ export interface MunroeBridge {
   credentialsList(): Promise<CredentialsStatus>
   credentialsSave(updates: Record<string, string>): Promise<CredentialsStatus>
   credentialsClear(key: string): Promise<CredentialsStatus>
-  onTurnEvent(handler: (event: TurnEvent) => void): () => void
+  onTurnEvent(handler: (event: TurnEvent) => void): string
+  offTurnEvent(id: string): boolean | void
 }
 
 declare global { interface Window { munroe: MunroeBridge } }
