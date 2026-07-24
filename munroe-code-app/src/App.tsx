@@ -89,7 +89,7 @@ function formatElapsed(ms: number) {
   return `${hours}h ${(minutes % 60).toString().padStart(2, '0')}m`
 }
 
-export default function App() {
+export default function MunroeApp() {
   const [project, setProject] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -786,11 +786,21 @@ export default function App() {
 
   async function newConversation() {
     if (!project) return
-    const item = await window.munroe.newConversation(project)
-    setConversations((current) => [item, ...current])
-    setActiveId(item.id)
-    setUsage(null)
-    setStreamItems([])
+    try {
+      const item = await window.munroe.newConversation(project)
+      if (!item?.id) throw new Error('Failed to create conversation')
+      setConversations((current) => [item, ...current.filter((c) => c?.id !== item.id)])
+      setActiveId(item.id)
+      activeIdRef.current = item.id
+      setUsage(null)
+      setStreamItems([])
+      setError('')
+      setBusy(false)
+    } catch (e) {
+      const message = String((e as Error).message || e)
+      setError(message)
+      notify('error', 'Could not create conversation', message)
+    }
   }
 
   async function changeModel(next: 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google' | 'xai') {
