@@ -49,6 +49,7 @@ let threads
 let cron
 let systems
 let mcp
+let credentials
 
 async function loadService() {
   if (service) return service;
@@ -151,6 +152,15 @@ async function loadMcp() {
     : path.join(__dirname, '..', '..', 'munroe-code-cli', 'src', 'mcp.js');
   mcp = await import(pathToFileURL(mcpPath).href);
   return mcp;
+}
+
+async function loadCredentials() {
+  if (credentials) return credentials;
+  const credentialsPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'munroe-code-cli', 'src', 'credentials.js')
+    : path.join(__dirname, '..', '..', 'munroe-code-cli', 'src', 'credentials.js');
+  credentials = await import(pathToFileURL(credentialsPath).href);
+  return credentials;
 }
 
 async function resolveProjectPath(value) {
@@ -360,7 +370,7 @@ ipcMain.handle('munroe:project:update', async (event, cwd, updates) => {
   const project = safeProjectPath(cwd);
   if (!updates || typeof updates !== 'object') throw new Error('Updates required.');
   const allowed = {};
-  if (updates.model && ['auto', 'minimax', 'kimi'].includes(updates.model)) allowed.model = updates.model;
+  if (updates.model && ['auto', 'minimax', 'kimi', 'openrouter', 'openai', 'anthropic', 'google'].includes(updates.model)) allowed.model = updates.model;
   if (updates.permissions && ['safe', 'standard'].includes(updates.permissions)) allowed.permissions = updates.permissions;
   if (Object.keys(allowed).length === 0) return await (await loadService()).loadProject(project);
   const api = await loadService();
@@ -558,6 +568,24 @@ ipcMain.handle('munroe:mcp:test', async (event, name) => {
   ensureRendererTrusted(event);
   if (typeof name !== 'string' || !name.trim()) throw new Error('Name required.');
   return (await loadMcp()).testMcpServer(name.trim());
+});
+
+ipcMain.handle('munroe:credentials:list', async (event) => {
+  ensureRendererTrusted(event);
+  return (await loadCredentials()).listCredentialStatus();
+});
+
+ipcMain.handle('munroe:credentials:save', async (event, updates) => {
+  ensureRendererTrusted(event);
+  if (!updates || typeof updates !== 'object') throw new Error('Updates required.');
+  // Never log or echo secrets. Module stores only known key names.
+  return (await loadCredentials()).saveCredentials(updates);
+});
+
+ipcMain.handle('munroe:credentials:clear', async (event, key) => {
+  ensureRendererTrusted(event);
+  if (typeof key !== 'string' || !key.trim()) throw new Error('Key required.');
+  return (await loadCredentials()).clearCredential(key.trim());
 });
 
 app.whenReady().then(createWindow);

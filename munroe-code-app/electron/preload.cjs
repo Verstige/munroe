@@ -47,6 +47,9 @@ contextBridge.exposeInMainWorld('munroe', {
   mcpInstall: (name) => ipcRenderer.invoke('munroe:mcp:install', name),
   mcpRemove: (name) => ipcRenderer.invoke('munroe:mcp:remove', name),
   mcpTest: (name) => ipcRenderer.invoke('munroe:mcp:test', name),
+  credentialsList: () => ipcRenderer.invoke('munroe:credentials:list'),
+  credentialsSave: (updates) => ipcRenderer.invoke('munroe:credentials:save', updates),
+  credentialsClear: (key) => ipcRenderer.invoke('munroe:credentials:clear', key),
   onTurnEvent: (handler) => {
     const listener = (_event, payload) => handler(payload);
     ipcRenderer.on('munroe:turn:event', listener);

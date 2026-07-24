@@ -73,6 +73,28 @@ export type McpCatalogEntry = {
   available: boolean
   source: string
 }
+export type CredentialKeyStatus = {
+  key: string
+  configured: boolean
+  source: 'munroe-env' | 'shell' | 'none'
+  masked: string
+}
+export type CredentialProviderStatus = {
+  id: string
+  label: string
+  detail: string
+  modelPolicy: string
+  configured: boolean
+  source: 'munroe-env' | 'shell' | 'none'
+  primaryKey: string
+  masked: string
+  keys: CredentialKeyStatus[]
+}
+export type CredentialsStatus = {
+  path: string
+  providers: CredentialProviderStatus[]
+  configuredCount: number
+}
 
 export interface MunroeBridge {
   bootstrap(): Promise<{ initialProject: string; projects: Project[]; error?: { message: string } }>
@@ -121,6 +143,9 @@ export interface MunroeBridge {
   mcpInstall(name: string): Promise<{ ok: boolean; message: string }>
   mcpRemove(name: string): Promise<{ ok: boolean; message: string }>
   mcpTest(name: string): Promise<{ ok: boolean; message: string }>
+  credentialsList(): Promise<CredentialsStatus>
+  credentialsSave(updates: Record<string, string>): Promise<CredentialsStatus>
+  credentialsClear(key: string): Promise<CredentialsStatus>
   onTurnEvent(handler: (event: TurnEvent) => void): () => void
 }
 

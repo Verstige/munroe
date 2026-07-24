@@ -136,16 +136,17 @@ const MODEL_CREDENTIAL_KEYS = [
 
 export async function projectRuntimeStatus(cwd, env = process.env) {
   const state = await ensureProjectState(cwd);
-  const model = resolveModelPolicy(state.config.model, env);
+  const envLayers = await loadEnvLayers(cwd, env);
+  const mergedEnv = envWithKeys({ ...env, ...envLayers }, MODEL_CREDENTIAL_KEYS);
+  const model = resolveModelPolicy(state.config.model, mergedEnv);
   let runtimePath = null;
-  try { runtimePath = await findRuntime({ env }); } catch { /* ignored */ }
-  const envLayers = await loadEnvLayers(cwd);
+  try { runtimePath = await findRuntime({ env: mergedEnv }); } catch { /* ignored */ }
   return {
     model: state.config.model,
     permissions: state.config.permissions,
     modelLabel: model.label,
     modelAccessConfigured: model.accessConfigured,
-    envLayers: Object.keys(envLayers),
+    envLayers: Object.keys(envLayers).filter((key) => MODEL_CREDENTIAL_KEYS.includes(key)),
     runtime: runtimePath ? 'available' : 'missing',
   };
 }

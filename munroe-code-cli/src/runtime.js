@@ -10,6 +10,8 @@ const PROVIDER_DEFAULT_MODELS = {
   minimax: 'minimax/minimax-m2',
   kimi: 'kimi/kimi-k2',
   openrouter: 'openrouter/auto',
+  openai: 'openai/gpt-5',
+  anthropic: 'anthropic/claude-sonnet-4',
   google: 'google/gemini-2.5-pro',
 };
 
@@ -18,15 +20,28 @@ export function resolveModelPolicy(policy, env = process.env) {
     minimax: Boolean(env.MINIMAX_API_KEY),
     kimi: Boolean(env.KIMI_API_KEY || env.KIMI_CODING_API_KEY),
     openrouter: Boolean(env.OPENROUTER_API_KEY),
+    openai: Boolean(env.OPENAI_API_KEY),
+    anthropic: Boolean(env.ANTHROPIC_API_KEY),
     google: Boolean(env.GOOGLE_API_KEY || env.GEMINI_API_KEY),
   };
 
   if (policy === 'kimi') {
     return { provider: 'kimi', model: PROVIDER_DEFAULT_MODELS.kimi, label: 'Munroe Kimi', accessConfigured: modelAccess.kimi };
   }
-
   if (policy === 'minimax') {
     return { provider: 'minimax', model: PROVIDER_DEFAULT_MODELS.minimax, label: 'Munroe Core', accessConfigured: modelAccess.minimax };
+  }
+  if (policy === 'openrouter') {
+    return { provider: 'openrouter', model: PROVIDER_DEFAULT_MODELS.openrouter, label: 'OpenRouter', accessConfigured: modelAccess.openrouter };
+  }
+  if (policy === 'openai') {
+    return { provider: 'openai', model: PROVIDER_DEFAULT_MODELS.openai, label: 'OpenAI', accessConfigured: modelAccess.openai };
+  }
+  if (policy === 'anthropic') {
+    return { provider: 'anthropic', model: PROVIDER_DEFAULT_MODELS.anthropic, label: 'Anthropic', accessConfigured: modelAccess.anthropic };
+  }
+  if (policy === 'google') {
+    return { provider: 'google', model: PROVIDER_DEFAULT_MODELS.google, label: 'Google', accessConfigured: modelAccess.google };
   }
 
   if (policy === 'auto') {
@@ -38,6 +53,12 @@ export function resolveModelPolicy(policy, env = process.env) {
     }
     if (modelAccess.openrouter) {
       return { provider: 'openrouter', model: PROVIDER_DEFAULT_MODELS.openrouter, label: 'Munroe Auto', accessConfigured: true };
+    }
+    if (modelAccess.openai) {
+      return { provider: 'openai', model: PROVIDER_DEFAULT_MODELS.openai, label: 'Munroe Auto', accessConfigured: true };
+    }
+    if (modelAccess.anthropic) {
+      return { provider: 'anthropic', model: PROVIDER_DEFAULT_MODELS.anthropic, label: 'Munroe Auto', accessConfigured: true };
     }
     if (modelAccess.google) {
       return { provider: 'google', model: PROVIDER_DEFAULT_MODELS.google, label: 'Munroe Auto', accessConfigured: true };

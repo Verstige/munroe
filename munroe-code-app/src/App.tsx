@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bell, Bot, ChevronDown, Clock, Code2, Folder, FolderOpen, GitBranch, Info, Link2, Menu, MessageSquarePlus, Mic, MicOff, Paperclip, Pause, Play, Plug, RefreshCcw, RotateCcw, Save, Search, Send, Settings2, ShieldCheck, Sparkles, Square, TerminalSquare, Trash2, X, Zap } from 'lucide-react'
-import type { About, Attachment, Checkpoint, ComputerUseStatus, Conversation, CronJob, CronStatus, McpCatalogEntry, McpServer, MemoryStatus, Message, ProfileInfo, Project, ProjectStatus, ThreadSummary, TurnEvent, Usage } from './types'
+import type { About, Attachment, Checkpoint, ComputerUseStatus, Conversation, CredentialsStatus, CredentialProviderStatus, CronJob, CronStatus, McpCatalogEntry, McpServer, MemoryStatus, Message, ProfileInfo, Project, ProjectStatus, ThreadSummary, TurnEvent, Usage } from './types'
 
 const MODEL_OPTIONS = [
   { value: 'auto', label: 'Auto', detail: 'Best available intelligence' },
   { value: 'minimax', label: 'Core', detail: 'Fast, capable, long context' },
   { value: 'kimi', label: 'Kimi', detail: 'Deep coding and reasoning' },
+  { value: 'openrouter', label: 'OpenRouter', detail: 'Your OpenRouter key + models' },
+  { value: 'openai', label: 'OpenAI', detail: 'Your OpenAI API key' },
+  { value: 'anthropic', label: 'Anthropic', detail: 'Your Anthropic API key' },
+  { value: 'google', label: 'Google', detail: 'Your Gemini API key' },
 ]
 const PERMISSION_OPTIONS = [
   { value: 'safe', label: 'Safe', detail: 'Read and review only' },
@@ -125,6 +129,9 @@ export default function App() {
   const [mcpCommand, setMcpCommand] = useState('npx')
   const [mcpArgs, setMcpArgs] = useState('')
   const [mcpAuth, setMcpAuth] = useState<'none' | 'oauth' | 'header'>('none')
+  const [credentials, setCredentials] = useState<CredentialsStatus | null>(null)
+  const [credentialDrafts, setCredentialDrafts] = useState<Record<string, string>>({})
+  const [credentialsBusy, setCredentialsBusy] = useState(false)
   const recognitionRef = useRef<any>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const composerRef = useRef<HTMLTextAreaElement>(null)
@@ -151,6 +158,7 @@ export default function App() {
       try { setAboutInfo(await window.munroe.about()) } catch (e) { /* ignore */ }
       void refreshSystems()
       void refreshMcp()
+      void refreshCredentials()
     }).catch(e => setError(String(e.message || e)))
   }, [])
 
@@ -295,6 +303,62 @@ export default function App() {
       setMcpCatalog(catalog.entries || [])
     } catch (e) {
       notify('error', 'Failed to load MCP connections', String((e as Error).message || e))
+    }
+  }
+
+  async function refreshCredentials() {
+    try {
+      const status = await window.munroe.credentialsList()
+      setCredentials(status)
+      const drafts: Record<string, string> = {}
+      for (const provider of status.providers || []) {
+        drafts[provider.primaryKey] = provider.masked || ''
+      }
+      setCredentialDrafts(drafts)
+    } catch (e) {
+      notify('error', 'Failed to load AI provider credentials', String((e as Error).message || e))
+    }
+  }
+
+  async function saveProviderKey(provider: CredentialProviderStatus) {
+    const value = (credentialDrafts[provider.primaryKey] || '').trim()
+    if (!value) {
+      notify('error', 'Paste an API key first')
+      return
+    }
+    if (value.includes('••••')) {
+      notify('info', `${provider.label} already saved`)
+      return
+    }
+    setCredentialsBusy(true)
+    try {
+      const status = await window.munroe.credentialsSave({ [provider.primaryKey]: value })
+      setCredentials(status)
+      const drafts: Record<string, string> = {}
+      for (const item of status.providers || []) drafts[item.primaryKey] = item.masked || ''
+      setCredentialDrafts(drafts)
+      if (project) setStatus(await window.munroe.projectStatus(project))
+      notify('success', `${provider.label} connected`, `Saved to ${status.path}`)
+    } catch (e) {
+      notify('error', 'Failed to save API key', String((e as Error).message || e))
+    } finally {
+      setCredentialsBusy(false)
+    }
+  }
+
+  async function clearProviderKey(provider: CredentialProviderStatus) {
+    if (!confirm(`Remove saved ${provider.label} API key from Munroe?`)) return
+    setCredentialsBusy(true)
+    try {
+      const status = await window.munroe.credentialsClear(provider.primaryKey)
+      setCredentials(status)
+      setCredentialDrafts((current) => ({ ...current, [provider.primaryKey]: '' }))
+      if (project) setStatus(await window.munroe.projectStatus(project))
+      notify('info', `${provider.label} disconnected`)
+    } catch (e) {
+      notify('error', 'Failed to clear API key', String((e as Error).message || e))
+    } finally {
+      setCredentialsBusy(false)
     }
   }
 
@@ -606,7 +670,7 @@ export default function App() {
       group: 'Model',
       title: `Switch model → ${option.label}`,
       detail: option.detail,
-      run: () => changeModel(option.value as 'auto' | 'minimax' | 'kimi'),
+      run: () => changeModel(option.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google'),
     })),
   ]
   const filteredActions = paletteActions.filter((action) => {
@@ -620,7 +684,7 @@ export default function App() {
         window.munroe.loadProject(cwd),
         window.munroe.projectStatus(cwd),
       ])
-      if (projectStatus.model === 'auto' || projectStatus.model === 'minimax' || projectStatus.model === 'kimi') {
+      if (['auto', 'minimax', 'kimi', 'openrouter', 'openai', 'anthropic', 'google'].includes(projectStatus.model)) {
         setModel(projectStatus.model)
       }
       if (projectStatus.permissions === 'safe' || projectStatus.permissions === 'standard') {
@@ -674,7 +738,7 @@ export default function App() {
     setStreamItems([])
   }
 
-  async function changeModel(next: 'auto' | 'minimax' | 'kimi') {
+  async function changeModel(next: 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google') {
     setModel(next)
     if (project) {
       try {
@@ -1025,7 +1089,7 @@ export default function App() {
             <div className="model-control">
               <button onClick={() => setModelOpen((v) => !v)}><Sparkles size={14} /> {MODEL_BY_VALUE[model]?.label ?? model}<ChevronDown size={13} /></button>
               {modelOpen && <div className="model-menu">
-                {MODEL_OPTIONS.map(option => <button key={option.value} className={option.value === model ? 'selected' : ''} onClick={() => { changeModel(option.value as 'auto' | 'minimax' | 'kimi'); setModelOpen(false) }}>
+                {MODEL_OPTIONS.map(option => <button key={option.value} className={option.value === model ? 'selected' : ''} onClick={() => { changeModel(option.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google'); setModelOpen(false) }}>
                   <span><strong>{option.label}</strong><small>{option.detail}</small></span>{option.value === model && <span className="check">✓</span>}
                 </button>)}
               </div>}
@@ -1048,11 +1112,54 @@ export default function App() {
             <legend>Intelligence</legend>
             <div className="settings-control">
               <label htmlFor="settings-model">Model</label>
-              <select id="settings-model" value={model} onChange={e => changeModel(e.target.value as 'auto' | 'minimax' | 'kimi')}>
+              <select id="settings-model" value={model} onChange={e => changeModel(e.target.value as 'auto' | 'minimax' | 'kimi' | 'openrouter' | 'openai' | 'anthropic' | 'google')}>
                 {MODEL_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label} — {option.detail}</option>)}
               </select>
             </div>
             <p className="settings-hint">{status?.modelAccessConfigured ? 'Credentials detected for this provider.' : 'No credentials detected for this provider.'}</p>
+          </fieldset>
+
+          <fieldset className="settings-group">
+            <legend>AI providers & API keys</legend>
+            <p className="settings-hint">
+              Connect your own LLM accounts. Keys are stored only in <code>{credentials?.path || '~/.munroe/.env'}</code> (mode 600) — never in git or the app bundle.
+            </p>
+            <div className="settings-actions" style={{ marginBottom: 8 }}>
+              <button className="settings-action" onClick={() => void refreshCredentials()} disabled={credentialsBusy}><RefreshCcw size={13} /> Refresh</button>
+            </div>
+            {(credentials?.providers || []).map((provider) => (
+              <div key={provider.id} className="credential-row">
+                <div className="credential-head">
+                  <span className={provider.configured ? 'live-dot' : 'live-dot offline'} />
+                  <div>
+                    <strong>{provider.label}</strong>
+                    <small>{provider.detail} · {provider.primaryKey}{provider.configured ? ` · ${provider.source}` : ''}</small>
+                  </div>
+                </div>
+                <div className="credential-fields">
+                  <input
+                    type="password"
+                    autoComplete="off"
+                    spellCheck={false}
+                    placeholder={provider.configured ? provider.masked || '•••• saved' : `Paste ${provider.primaryKey}`}
+                    value={credentialDrafts[provider.primaryKey] ?? ''}
+                    onChange={(e) => setCredentialDrafts((current) => ({ ...current, [provider.primaryKey]: e.target.value }))}
+                    onFocus={() => {
+                      const current = credentialDrafts[provider.primaryKey] || ''
+                      if (current.includes('••••')) setCredentialDrafts((drafts) => ({ ...drafts, [provider.primaryKey]: '' }))
+                    }}
+                  />
+                  <button className="settings-action" disabled={credentialsBusy} onClick={() => void saveProviderKey(provider)}>Save</button>
+                  {provider.configured && provider.source === 'munroe-env' && (
+                    <button className="settings-action danger" disabled={credentialsBusy} onClick={() => void clearProviderKey(provider)}>Clear</button>
+                  )}
+                  {provider.configured && provider.source === 'shell' && (
+                    <span className="mcp-badge">Shell env</span>
+                  )}
+                </div>
+              </div>
+            ))}
+            <p className="settings-hint">After saving a key, pick that provider in Model (top bar or above). Auto uses the first configured provider.</p>
           </fieldset>
 
           <fieldset className="settings-group">
