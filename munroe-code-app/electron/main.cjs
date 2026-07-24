@@ -48,6 +48,7 @@ let turn
 let threads
 let cron
 let systems
+let mcp
 
 async function loadService() {
   if (service) return service;
@@ -141,6 +142,15 @@ async function loadSystems() {
     : path.join(__dirname, '..', '..', 'munroe-code-cli', 'src', 'systems.js');
   systems = await import(pathToFileURL(systemsPath).href);
   return systems;
+}
+
+async function loadMcp() {
+  if (mcp) return mcp;
+  const mcpPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'munroe-code-cli', 'src', 'mcp.js')
+    : path.join(__dirname, '..', '..', 'munroe-code-cli', 'src', 'mcp.js');
+  mcp = await import(pathToFileURL(mcpPath).href);
+  return mcp;
 }
 
 async function resolveProjectPath(value) {
@@ -514,6 +524,40 @@ ipcMain.handle('munroe:systems:computer-use', async (event) => {
 ipcMain.handle('munroe:systems:computer-use:doctor', async (event) => {
   ensureRendererTrusted(event);
   return (await loadSystems()).computerUseDoctor();
+});
+
+ipcMain.handle('munroe:mcp:list', async (event) => {
+  ensureRendererTrusted(event);
+  return (await loadMcp()).listMcpServers();
+});
+
+ipcMain.handle('munroe:mcp:catalog', async (event) => {
+  ensureRendererTrusted(event);
+  return (await loadMcp()).listMcpCatalog();
+});
+
+ipcMain.handle('munroe:mcp:add', async (event, payload) => {
+  ensureRendererTrusted(event);
+  if (!payload || typeof payload !== 'object') throw new Error('Payload required.');
+  return (await loadMcp()).addMcpServer(payload);
+});
+
+ipcMain.handle('munroe:mcp:install', async (event, name) => {
+  ensureRendererTrusted(event);
+  if (typeof name !== 'string' || !name.trim()) throw new Error('Name required.');
+  return (await loadMcp()).installMcpCatalog(name.trim());
+});
+
+ipcMain.handle('munroe:mcp:remove', async (event, name) => {
+  ensureRendererTrusted(event);
+  if (typeof name !== 'string' || !name.trim()) throw new Error('Name required.');
+  return (await loadMcp()).removeMcpServer(name.trim());
+});
+
+ipcMain.handle('munroe:mcp:test', async (event, name) => {
+  ensureRendererTrusted(event);
+  if (typeof name !== 'string' || !name.trim()) throw new Error('Name required.');
+  return (await loadMcp()).testMcpServer(name.trim());
 });
 
 app.whenReady().then(createWindow);

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bell, Bot, ChevronDown, Clock, Code2, Folder, FolderOpen, GitBranch, Info, Menu, MessageSquarePlus, Mic, MicOff, Paperclip, Pause, Play, RefreshCcw, RotateCcw, Save, Search, Send, Settings2, ShieldCheck, Sparkles, Square, TerminalSquare, Trash2, X, Zap } from 'lucide-react'
-import type { About, Attachment, Checkpoint, ComputerUseStatus, Conversation, CronJob, CronStatus, MemoryStatus, Message, ProfileInfo, Project, ProjectStatus, ThreadSummary, TurnEvent, Usage } from './types'
+import { Bell, Bot, ChevronDown, Clock, Code2, Folder, FolderOpen, GitBranch, Info, Link2, Menu, MessageSquarePlus, Mic, MicOff, Paperclip, Pause, Play, Plug, RefreshCcw, RotateCcw, Save, Search, Send, Settings2, ShieldCheck, Sparkles, Square, TerminalSquare, Trash2, X, Zap } from 'lucide-react'
+import type { About, Attachment, Checkpoint, ComputerUseStatus, Conversation, CronJob, CronStatus, McpCatalogEntry, McpServer, MemoryStatus, Message, ProfileInfo, Project, ProjectStatus, ThreadSummary, TurnEvent, Usage } from './types'
 
 const MODEL_OPTIONS = [
   { value: 'auto', label: 'Auto', detail: 'Best available intelligence' },
@@ -115,6 +115,16 @@ export default function App() {
   const [computerUse, setComputerUse] = useState<ComputerUseStatus | null>(null)
   const [memoryPreview, setMemoryPreview] = useState('')
   const [listening, setListening] = useState(false)
+  const [mcpOpen, setMcpOpen] = useState(false)
+  const [mcpServers, setMcpServers] = useState<McpServer[]>([])
+  const [mcpCatalog, setMcpCatalog] = useState<McpCatalogEntry[]>([])
+  const [mcpBusy, setMcpBusy] = useState(false)
+  const [mcpName, setMcpName] = useState('')
+  const [mcpMode, setMcpMode] = useState<'url' | 'command'>('url')
+  const [mcpUrl, setMcpUrl] = useState('')
+  const [mcpCommand, setMcpCommand] = useState('npx')
+  const [mcpArgs, setMcpArgs] = useState('')
+  const [mcpAuth, setMcpAuth] = useState<'none' | 'oauth' | 'header'>('none')
   const recognitionRef = useRef<any>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const composerRef = useRef<HTMLTextAreaElement>(null)
@@ -140,6 +150,7 @@ export default function App() {
       await refreshCron()
       try { setAboutInfo(await window.munroe.about()) } catch (e) { /* ignore */ }
       void refreshSystems()
+      void refreshMcp()
     }).catch(e => setError(String(e.message || e)))
   }, [])
 
@@ -271,6 +282,99 @@ export default function App() {
       setComputerUse(cu)
     } catch (e) {
       notify('error', 'Failed to refresh systems', String((e as Error).message || e))
+    }
+  }
+
+  async function refreshMcp() {
+    try {
+      const [listed, catalog] = await Promise.all([
+        window.munroe.mcpList(),
+        window.munroe.mcpCatalog(),
+      ])
+      setMcpServers(listed.servers || [])
+      setMcpCatalog(catalog.entries || [])
+    } catch (e) {
+      notify('error', 'Failed to load MCP connections', String((e as Error).message || e))
+    }
+  }
+
+  async function installCatalogMcp(name: string) {
+    setMcpBusy(true)
+    try {
+      const result = await window.munroe.mcpInstall(name)
+      notify(result.ok ? 'success' : 'error', result.ok ? `Installed ${name}` : `Install failed`, result.message)
+      await refreshMcp()
+    } catch (e) {
+      notify('error', 'Install failed', String((e as Error).message || e))
+    } finally {
+      setMcpBusy(false)
+    }
+  }
+
+  async function addCustomMcp() {
+    const name = mcpName.trim()
+    if (!name) {
+      notify('error', 'Name required')
+      return
+    }
+    setMcpBusy(true)
+    try {
+      const payload: Parameters<typeof window.munroe.mcpAdd>[0] = { name }
+      if (mcpMode === 'url') {
+        if (!mcpUrl.trim()) {
+          notify('error', 'URL required')
+          setMcpBusy(false)
+          return
+        }
+        payload.url = mcpUrl.trim()
+        if (mcpAuth !== 'none') payload.auth = mcpAuth
+      } else {
+        if (!mcpCommand.trim()) {
+          notify('error', 'Command required')
+          setMcpBusy(false)
+          return
+        }
+        payload.command = mcpCommand.trim()
+        if (mcpArgs.trim()) payload.args = mcpArgs.trim()
+      }
+      const result = await window.munroe.mcpAdd(payload)
+      notify(result.ok ? 'success' : 'error', result.ok ? `Connected ${name}` : 'Connect failed', result.message)
+      if (result.ok) {
+        setMcpName('')
+        setMcpUrl('')
+        setMcpArgs('')
+      }
+      await refreshMcp()
+    } catch (e) {
+      notify('error', 'Connect failed', String((e as Error).message || e))
+    } finally {
+      setMcpBusy(false)
+    }
+  }
+
+  async function testMcp(name: string) {
+    setMcpBusy(true)
+    try {
+      const result = await window.munroe.mcpTest(name)
+      notify(result.ok ? 'success' : 'error', result.ok ? `${name} ok` : `${name} failed`, result.message.slice(0, 220))
+    } catch (e) {
+      notify('error', 'Test failed', String((e as Error).message || e))
+    } finally {
+      setMcpBusy(false)
+    }
+  }
+
+  async function removeMcp(name: string) {
+    if (!confirm(`Disconnect MCP server "${name}"?`)) return
+    setMcpBusy(true)
+    try {
+      const result = await window.munroe.mcpRemove(name)
+      notify(result.ok ? 'success' : 'error', result.ok ? `Removed ${name}` : 'Remove failed', result.message)
+      await refreshMcp()
+    } catch (e) {
+      notify('error', 'Remove failed', String((e as Error).message || e))
+    } finally {
+      setMcpBusy(false)
     }
   }
 
@@ -495,6 +599,7 @@ export default function App() {
     { id: 'refresh-cron', group: 'Workspace', title: 'Refresh cron jobs', run: refreshCron },
     { id: 'attach-files', group: 'Composer', title: 'Attach files', run: attachFiles },
     { id: 'open-settings', group: 'App', title: 'Open settings', run: () => setSettingsOpen(true) },
+    { id: 'open-mcp', group: 'App', title: 'Open MCP connections', run: () => { setMcpOpen(true); setSettingsOpen(false); void refreshMcp() } },
     { id: 'open-about', group: 'App', title: 'About Munroe Code', run: openAbout },
     ...MODEL_OPTIONS.map((option) => ({
       id: `model-${option.value}`,
@@ -907,7 +1012,8 @@ export default function App() {
         <div className="sidebar-bottom">
           <div className="status-line"><span className={status?.runtime === 'available' ? 'live-dot' : 'live-dot offline'} /> {runtimeLabel}</div>
           <button onClick={() => setPaletteOpen(true)}><Search size={15} /> Command palette <small>⌘K</small></button>
-          <button onClick={() => setSettingsOpen((v) => !v)}><Settings2 size={15} /> Settings</button>
+          <button onClick={() => { setMcpOpen((v) => !v); setSettingsOpen(false); if (!mcpOpen) void refreshMcp() }}><Plug size={15} /> MCP connections</button>
+          <button onClick={() => { setSettingsOpen((v) => !v); setMcpOpen(false) }}><Settings2 size={15} /> Settings</button>
           <button onClick={openAbout}><Info size={15} /> About</button>
         </div>
       </aside>
@@ -1018,6 +1124,110 @@ export default function App() {
             <p className="settings-hint">{computerUse?.message?.slice(0, 160) || 'Status unknown'}</p>
             <div className="settings-actions">
               <button className="settings-action" onClick={runComputerUseDoctor}><ShieldCheck size={13} /> Run doctor</button>
+            </div>
+          </fieldset>
+        </section>}
+
+        {mcpOpen && <section className="settings-panel mcp-panel">
+          <header className="settings-header">
+            <h3>MCP connections</h3>
+            <button className="settings-close" onClick={() => setMcpOpen(false)} aria-label="Close MCP"><X size={14} /></button>
+          </header>
+          <p className="settings-hint">Connect third-party apps and tools to Munroe via the Model Context Protocol. Catalog installs and custom HTTP/stdio servers are supported.</p>
+
+          <fieldset className="settings-group">
+            <legend>Connected</legend>
+            <div className="settings-actions">
+              <button className="settings-action" onClick={() => void refreshMcp()} disabled={mcpBusy}><RefreshCcw size={13} /> Refresh</button>
+            </div>
+            {mcpServers.length === 0 ? (
+              <p className="settings-hint">No MCP servers connected yet.</p>
+            ) : mcpServers.map((server) => (
+              <div key={server.name} className="mcp-row">
+                <div className="mcp-row-main">
+                  <span className={server.enabled ? 'live-dot' : 'live-dot offline'} />
+                  <div>
+                    <strong>{server.name}</strong>
+                    <small>{server.transport} · tools: {server.tools} · {server.status}</small>
+                  </div>
+                </div>
+                <div className="mcp-row-actions">
+                  <button className="settings-action" disabled={mcpBusy} onClick={() => void testMcp(server.name)}>Test</button>
+                  <button className="settings-action danger" disabled={mcpBusy} onClick={() => void removeMcp(server.name)}><Trash2 size={12} /> Remove</button>
+                </div>
+              </div>
+            ))}
+          </fieldset>
+
+          <fieldset className="settings-group">
+            <legend>Catalog</legend>
+            <p className="settings-hint">One-click installs from the approved MCP catalog.</p>
+            {mcpCatalog.length === 0 ? (
+              <p className="settings-hint">Catalog unavailable.</p>
+            ) : mcpCatalog.map((entry) => (
+              <div key={entry.name} className="mcp-row">
+                <div className="mcp-row-main">
+                  <Plug size={14} />
+                  <div>
+                    <strong>{entry.name}</strong>
+                    <small>{entry.status} — {entry.description}</small>
+                  </div>
+                </div>
+                <div className="mcp-row-actions">
+                  {entry.installed ? (
+                    <span className="mcp-badge">Installed</span>
+                  ) : (
+                    <button className="settings-action" disabled={mcpBusy || !entry.available} onClick={() => void installCatalogMcp(entry.name)}>
+                      <Link2 size={12} /> Install
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </fieldset>
+
+          <fieldset className="settings-group">
+            <legend>Add custom connection</legend>
+            <div className="settings-control">
+              <label htmlFor="mcp-name">Name</label>
+              <input id="mcp-name" value={mcpName} onChange={(e) => setMcpName(e.target.value)} placeholder="linear" />
+            </div>
+            <div className="settings-control">
+              <label htmlFor="mcp-mode">Type</label>
+              <select id="mcp-mode" value={mcpMode} onChange={(e) => setMcpMode(e.target.value as 'url' | 'command')}>
+                <option value="url">HTTP / SSE URL</option>
+                <option value="command">Local command (stdio)</option>
+              </select>
+            </div>
+            {mcpMode === 'url' ? (
+              <>
+                <div className="settings-control">
+                  <label htmlFor="mcp-url">URL</label>
+                  <input id="mcp-url" value={mcpUrl} onChange={(e) => setMcpUrl(e.target.value)} placeholder="https://mcp.example.com/sse" />
+                </div>
+                <div className="settings-control">
+                  <label htmlFor="mcp-auth">Auth</label>
+                  <select id="mcp-auth" value={mcpAuth} onChange={(e) => setMcpAuth(e.target.value as 'none' | 'oauth' | 'header')}>
+                    <option value="none">None</option>
+                    <option value="oauth">OAuth</option>
+                    <option value="header">Header</option>
+                  </select>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="settings-control">
+                  <label htmlFor="mcp-command">Command</label>
+                  <input id="mcp-command" value={mcpCommand} onChange={(e) => setMcpCommand(e.target.value)} placeholder="npx" />
+                </div>
+                <div className="settings-control">
+                  <label htmlFor="mcp-args">Args</label>
+                  <input id="mcp-args" value={mcpArgs} onChange={(e) => setMcpArgs(e.target.value)} placeholder="-y @modelcontextprotocol/server-github" />
+                </div>
+              </>
+            )}
+            <div className="settings-actions">
+              <button className="settings-action" disabled={mcpBusy} onClick={() => void addCustomMcp()}><Plug size={13} /> Connect</button>
             </div>
           </fieldset>
         </section>}

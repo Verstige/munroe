@@ -57,6 +57,22 @@ export type MemoryFile = { path: string; name: string; bytes: number; updatedAt:
 export type MemoryStatus = { ok: boolean; message: string; files: MemoryFile[] }
 export type ProfileInfo = { name: string; active?: boolean; label: string }
 export type ComputerUseStatus = { ok: boolean; installed: boolean; message: string }
+export type McpServer = {
+  name: string
+  transport: string
+  tools: string
+  status: string
+  enabled: boolean
+  source: string
+}
+export type McpCatalogEntry = {
+  name: string
+  status: string
+  description: string
+  installed: boolean
+  available: boolean
+  source: string
+}
 
 export interface MunroeBridge {
   bootstrap(): Promise<{ initialProject: string; projects: Project[]; error?: { message: string } }>
@@ -99,6 +115,12 @@ export interface MunroeBridge {
   listProfiles(): Promise<{ ok: boolean; profiles: ProfileInfo[]; raw: string }>
   computerUseStatus(): Promise<ComputerUseStatus>
   computerUseDoctor(): Promise<{ ok: boolean; message: string }>
+  mcpList(): Promise<{ ok: boolean; servers: McpServer[]; raw: string }>
+  mcpCatalog(): Promise<{ ok: boolean; entries: McpCatalogEntry[]; raw: string }>
+  mcpAdd(payload: { name: string; url?: string; command?: string; args?: string[] | string; preset?: string; auth?: 'oauth' | 'header'; env?: string[] }): Promise<{ ok: boolean; message: string }>
+  mcpInstall(name: string): Promise<{ ok: boolean; message: string }>
+  mcpRemove(name: string): Promise<{ ok: boolean; message: string }>
+  mcpTest(name: string): Promise<{ ok: boolean; message: string }>
   onTurnEvent(handler: (event: TurnEvent) => void): () => void
 }
 

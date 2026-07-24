@@ -41,6 +41,12 @@ contextBridge.exposeInMainWorld('munroe', {
   listProfiles: () => ipcRenderer.invoke('munroe:systems:profiles'),
   computerUseStatus: () => ipcRenderer.invoke('munroe:systems:computer-use'),
   computerUseDoctor: () => ipcRenderer.invoke('munroe:systems:computer-use:doctor'),
+  mcpList: () => ipcRenderer.invoke('munroe:mcp:list'),
+  mcpCatalog: () => ipcRenderer.invoke('munroe:mcp:catalog'),
+  mcpAdd: (payload) => ipcRenderer.invoke('munroe:mcp:add', payload),
+  mcpInstall: (name) => ipcRenderer.invoke('munroe:mcp:install', name),
+  mcpRemove: (name) => ipcRenderer.invoke('munroe:mcp:remove', name),
+  mcpTest: (name) => ipcRenderer.invoke('munroe:mcp:test', name),
   onTurnEvent: (handler) => {
     const listener = (_event, payload) => handler(payload);
     ipcRenderer.on('munroe:turn:event', listener);

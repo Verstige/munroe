@@ -87,7 +87,17 @@ body { background: var(--bg); color: var(--text); overflow: hidden; font-size: 1
 .settings-control { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: center; }
 .settings-control label { color: var(--muted); font-size: 11px; }
 .settings-control select { background: #0a0a0c; border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
-.settings-control select:focus { outline: 1px solid var(--accent); }
+.settings-control input { background: #0a0a0c; border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px; font-size: 12px; width: 100%; }
+.settings-control select:focus, .settings-control input:focus { outline: 1px solid var(--accent); }
+
+.mcp-panel { max-height: 70vh; }
+.mcp-row { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.mcp-row:last-child { border-bottom: 0; }
+.mcp-row-main { display: flex; gap: 8px; align-items: flex-start; min-width: 0; flex: 1; }
+.mcp-row-main strong { display: block; font-size: 12px; }
+.mcp-row-main small { display: block; color: var(--muted); font-size: 10px; line-height: 1.35; }
+.mcp-row-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.mcp-badge { font-size: 10px; color: var(--accent-2); border: 1px solid rgba(111,207,151,.35); border-radius: 999px; padding: 3px 8px; }
 .settings-hint { margin: 0; color: var(--muted); font-size: 10px; }
 .settings-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
 .settings-row:last-of-type { border-bottom: 0; }
